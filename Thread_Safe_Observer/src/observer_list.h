@@ -11,11 +11,13 @@
 
 #include <algorithm>
 #include <memory>
-#include <mutex>
 #include <vector>
 
 template<typename ObserverT>
 class ObserverList {
+private:
+    using ListType = std::vector<std::weak_ptr<ObserverT>>;
+
 public:
     ObserverList() = default;
 
@@ -31,9 +33,9 @@ public:
 
     void Add(std::weak_ptr<ObserverT> observer)
     {
-        std::lock_guard<std::mutex> lock(mutex_);
-#if defined(_DEBUG)
-        if (Has(observer)) {
+#if !defined(NDEBUG)
+        bool has_already = Find(observer) != list_.cend();
+        if (has_already) {
             throw std::logic_error("Observer can only be added once!");
         }
 #endif
@@ -42,31 +44,64 @@ public:
 
     void Remove(std::weak_ptr<ObserverT> observer)
     {
-        std::lock_guard<std::mutex> lock(mutex_);
-
-        auto it = std::find_if(list_.cbegin(), list_.cend(), [&observer](const auto& ptr) {
-            return !observer.owner_before(ptr) && ptr.owner_before(observer);
-        });
-
+        auto it = Find(observer);
         if (it != list_.cend()) {
             list_.erase(it);
         }
     }
 
-private:
-    bool Has(const std::weak_ptr<ObserverT>& observer)
+    void Compact()
     {
-        auto it = std::find_if(list_.cbegin(), list_.cend(), [&observer](const auto& ptr) {
-            return !observer.owner_before(ptr) && ptr.owner_before(observer);
-        });
+        list_.erase(std::remove_if(list_.begin(), list_.end(), [](const auto& ptr) {
+            return ptr.expired();
+        }), list_.end());
+    }
 
-        return it != list_.cend();
+    class Enumerator {
+    public:
+        explicit Enumerator(ObserverList& observer_list)
+            : iter_(observer_list.list_.cbegin()), end_(observer_list.list_.cend())
+        {}
+
+        std::shared_ptr<ObserverT> Next()
+        {
+            while (iter_ != end_) {
+                auto owned = iter_->lock();
+                ++iter_;
+                if (owned) {
+                    return owned;
+                }
+            }
+
+            return std::shared_ptr<ObserverT>();
+        }
+
+    private:
+        using iterator = typename ListType::const_iterator;
+        iterator iter_;
+        iterator end_;
+    };
+
+private:
+    auto Find(const std::weak_ptr<ObserverT>& observer)
+    {
+        return std::find_if(list_.cbegin(), list_.cend(), [&observer](const auto& ptr) {
+            return !observer.owner_before(ptr) && !ptr.owner_before(observer);
+        });
     }
 
 private:
-    using ListType = std::vector<std::weak_ptr<ObserverT>>;
     ListType list_;
-    std::mutex mutex_;
 };
+
+#define FOR_EACH_OBSERVER(ObserverType, List, Fn)           \
+    do {                                                    \
+        decltype(List)::Enumerator enumerator(List);        \
+        std::shared_ptr<ObserverType> observer;             \
+        while (observer = enumerator.Next()) {              \
+            observer->Fn;                                   \
+        }                                                   \
+        List.Compact();                                     \
+    } while(false);
 
 #endif // THREAD_SAFE_OBSERVER_OBSERVER_LIST_H_
