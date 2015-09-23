@@ -13,6 +13,10 @@
 #include <memory>
 #include <vector>
 
+// A helper class for implementing observer pattern.
+// Note that this class itself is not thread-safe, its containing observable should take care
+// of synchronization between threads.
+// See sample code for its usage.
 template<typename ObserverT>
 class ObserverList {
 private:
@@ -23,13 +27,22 @@ public:
 
     ObserverList(const ObserverList&) = delete;
 
-    // TODO: move-ctor
+    ObserverList(ObserverList&& other)
+        : list_(std::move(other.list_))
+    {}
 
     ~ObserverList() = default;
 
     ObserverList& operator=(const ObserverList&) = delete;
 
-    // TODO: move-assignment
+    ObserverList& operator=(ObserverList&& rhs)
+    {
+        if (this != &rhs) {
+            list_ = std::move(rhs.list_);
+        }
+
+        return *this;
+    }
 
     void Add(std::weak_ptr<ObserverT> observer)
     {
@@ -57,12 +70,16 @@ public:
         }), list_.end());
     }
 
+    // The containing observable must keep the ObserverList object alive when iterating
+    // its observers.
     class Enumerator {
     public:
         explicit Enumerator(ObserverList& observer_list)
             : iter_(observer_list.list_.cbegin()), end_(observer_list.list_.cend())
         {}
 
+        // Returns a shared_ptr object that refers to the next alive observer; or
+        // returns an empty shared_ptr if there is no alive observer.
         std::shared_ptr<ObserverT> Next()
         {
             while (iter_ != end_) {

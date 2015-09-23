@@ -29,6 +29,8 @@ public:
         observers_.Remove(observer);
     }
 
+    // Don't call `AddObserver` or `RemoveObserver` during notifying;
+    // Otherwise it will result in deadlock since the lock is not reentranble.
     void NotifyFoo(int x, int y)
     {
         std::lock_guard<std::mutex> lock(mutex_);
