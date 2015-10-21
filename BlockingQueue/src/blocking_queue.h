@@ -38,8 +38,7 @@ public:
     T Dequeue()
     {
         std::unique_lock<std::mutex> lock(mutex_);
-        // TODO: eliminate default-capture.
-        not_empty_.wait(lock, [&] { return !buffer_.empty(); });
+        not_empty_.wait(lock, [this] { return !buffer_.empty(); });
 
         auto ele = buffer_.front();
         buffer_.pop();
