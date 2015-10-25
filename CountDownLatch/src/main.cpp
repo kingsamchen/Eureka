@@ -40,6 +40,11 @@ int main()
         std::cout << "main thread signals workers" << std::endl;
         start_signal.Countdown();
         done_signal.Wait();
+
+        // Make sure thread objects get destroyed before return from main.
+        th1.join();
+        th2.join();
+        th3.join();
     }
     std::cout << "all workers have finished their job" << std::endl;
 
