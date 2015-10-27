@@ -37,9 +37,9 @@ int main()
     srand(time(nullptr));
     BlockingQueue<int> bq;
 
-    std::async(std::launch::async, Produce<int>, std::ref(bq));
-    std::async(std::launch::async, Consume<int>, std::ref(bq));
-    std::async(std::launch::async, Consume<int>, std::ref(bq));
+    auto f_p(std::async(std::launch::async, Produce<int>, std::ref(bq)));
+    auto f_c(std::async(std::launch::async, Consume<int>, std::ref(bq)));
+    auto f_c2(std::async(std::launch::async, Consume<int>, std::ref(bq)));
 
     return 0;
 }
