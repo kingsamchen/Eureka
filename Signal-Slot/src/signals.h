@@ -18,15 +18,38 @@
 
 namespace internal {
 
-template<typename Func>
-class SlotImpl {
+template<typename Func, typename... Args>
+class SignalImpl;
 
+template<typename Func, typename... Args>
+struct SlotImpl {
+    using Source = SignalImpl<Func, Args...>;
+
+    SlotImpl(const std::shared_ptr<Source>& signal_source, Func&& func)
+        : fn(func), source(signal_source), weakly_bound(false)
+    {}
+
+    SlotImpl(const std::shared_ptr<Source>& signal_source, Func&& func,
+             const std::shared_ptr<void>& object)
+        : fn(func), source(signal_source), weakly_bound_object(object), weakly_bound(true)
+    {}
+
+    ~SlotImpl() = default;
+
+    DISALLOW_COPY(SlotImpl);
+
+    DISALLOW_MOVE(SlotImpl);
+
+    Func fn;
+    std::weak_ptr<Source> source;
+    std::weak_ptr<void> weakly_bound_object;
+    bool weakly_bound;
 };
 
 template<typename Func, typename... Args>
 class SignalImpl {
 private:
-    using SlotImpl = SlotImpl<Func>;
+    using SlotImpl = SlotImpl<Func, Args...>;
     using SlotList = std::vector<std::shared_ptr<SlotImpl>>;
 
 public:
