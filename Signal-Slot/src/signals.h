@@ -65,13 +65,28 @@ public:
 
     void AddSlot(const std::shared_ptr<SlotImpl>& slot)
     {
-        // TODO: would modify slots_
+        // TODO: would modify slots
     }
 
     void Invoke(Args... args)
     {
-        // TODO: call on each slot
-        __debugbreak();
+        std::shared_ptr<SlotList> slots;
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            slots = slots_;
+        }
+
+        for (const auto& slot : *slots) {
+            if (slot->weakly_bound) {
+                auto guard = slot->weakly_bound_object.lock();
+                if (!guard) {
+                    // The bound object that member function relies on has gone.
+                    continue;
+                }
+            }
+
+            slot->fn(std::forward<Args>(args)...);
+        }
     }
 
 private:
