@@ -65,7 +65,9 @@ public:
 
     void AddSlot(const std::shared_ptr<SlotImpl>& slot)
     {
-        // TODO: would modify slots
+        std::lock_guard<std::mutex> lock(mutex_);
+        CopyIfModified();
+        slots_->push_back(slot);
     }
 
     void Invoke(Args... args)
@@ -86,6 +88,15 @@ public:
             }
 
             slot->fn(std::forward<Args>(args)...);
+        }
+    }
+
+private:
+    // This call requires a mutex for protection.
+    void CopyIfModified()
+    {
+        if (!slots_.unique()) {
+            slots_.reset(std::make_shared<SlotList>(*slots_));
         }
     }
 
