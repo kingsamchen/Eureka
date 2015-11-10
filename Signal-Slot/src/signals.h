@@ -33,12 +33,13 @@ struct SlotImpl : std::enable_shared_from_this<SlotImpl<Func, Args...>>, IDispos
     using Source = SignalImpl<Func, Args...>;
 
     SlotImpl(const std::shared_ptr<Source>& signal_source, Func&& func)
-        : fn(func), source(signal_source), weakly_bound(false)
+        : fn(std::move(func)), source(signal_source), weakly_bound(false)
     {}
 
     SlotImpl(const std::shared_ptr<Source>& signal_source, Func&& func,
              const std::shared_ptr<void>& object)
-        : fn(func), source(signal_source), weakly_bound_object(object), weakly_bound(true)
+        : fn(std::move(func)), source(signal_source),
+          weakly_bound_object(object), weakly_bound(true)
     {}
 
     ~SlotImpl() = default;
@@ -149,7 +150,9 @@ private:
 public:
     ~Slot() = default;
 
-    // TODO: copy-ctor
+    // TODO: copy-semantics
+
+    // TODO: move-semantics
 
     void Disconnect() const
     {
@@ -185,24 +188,41 @@ public:
 
     DISALLOW_MOVE(Signal);
 
-    // TODO: add another overload for Slot(const Func&)
+    Slot Connect(const Func& fn)
+    {
+        return Connect(Func(fn));
+    }
 
     Slot Connect(Func&& fn)
     {
-        // TODO: Do we really need std::forward here ?
-        auto slot_impl = std::make_shared<SlotImpl>(impl_, std::forward<Func>(fn));
+        auto slot_impl = std::make_shared<SlotImpl>(impl_, std::move(fn));
         impl_->AddSlot(slot_impl);
+
         return Slot(slot_impl);
     }
 
-    Slot Connect(Func&& fn, const std::shared_ptr<void>& weakly_bound_object);
+    Slot Connect(const Func& fn, const std::shared_ptr<void>& weakly_bound_object)
+    {
+        return Connect(Func(fn), weakly_bound_object);
+    }
 
-    void Emit(Args... args)
+    Slot Connect(Func&& fn, const std::shared_ptr<void>& weakly_bound_object)
+    {
+        auto slot_impl = std::make_shared<SlotImpl>(impl_, std::move(fn), weakly_bound_object);
+        impl_->AddSlot(slot_impl);
+
+        return Slot(slot_impl);
+    }
+
+    void Emit(Args... args) const
     {
         impl_->Invoke(std::forward<Args>(args)...);
     }
 
-    void DisconnectAll();
+    void DisconnectAll()
+    {
+        // TODO: try to remove all slots from the signal.
+    }
 
 private:
     std::shared_ptr<SignalImpl> impl_;
