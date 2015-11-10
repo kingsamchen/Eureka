@@ -9,6 +9,7 @@
 #ifndef EUREKA_SIGNALS_H_
 #define EUREKA_SIGNALS_H_
 
+#include <algorithm>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -18,11 +19,17 @@
 
 namespace internal {
 
+class IDisposable {
+public:
+    virtual ~IDisposable() = default;
+    virtual void Dispose() = 0;
+};
+
 template<typename Func, typename... Args>
 class SignalImpl;
 
 template<typename Func, typename... Args>
-struct SlotImpl {
+struct SlotImpl : std::enable_shared_from_this<SlotImpl<Func, Args...>>, IDisposable {
     using Source = SignalImpl<Func, Args...>;
 
     SlotImpl(const std::shared_ptr<Source>& signal_source, Func&& func)
@@ -39,6 +46,16 @@ struct SlotImpl {
     DISALLOW_COPY(SlotImpl);
 
     DISALLOW_MOVE(SlotImpl);
+
+    void Dispose() override
+    {
+        auto signal_source = source.lock();
+        if (!signal_source) {
+            return;
+        }
+
+        signal_source->RemoveSlot(this->shared_from_this());
+    }
 
     Func fn;
     std::weak_ptr<Source> source;
@@ -91,12 +108,25 @@ public:
         }
     }
 
+    void RemoveSlot(const std::shared_ptr<SlotImpl>& slot)
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        CopyIfModified();
+        SlotList& slots(*slots_);
+        auto it = std::find_if(slots.begin(), slots.end(), [&slot](const auto& other_slot) {
+            return !slot.owner_before(other_slot) && !other_slot.owner_before(slot);
+        });
+        if (it != slots.end()) {
+            slots.erase(it);
+        }
+    }
+
 private:
     // This call requires a mutex for protection.
     void CopyIfModified()
     {
         if (!slots_.unique()) {
-            slots_.reset(std::make_shared<SlotList>(*slots_));
+            slots_.reset(new SlotList(*slots_));
         }
     }
 
@@ -108,14 +138,45 @@ private:
 }   // namespace internal
 
 template<typename... Args>
+class Signal;
+
+class Slot {
+private:
+    explicit Slot(const std::shared_ptr<internal::IDisposable>& slot_impl)
+        : impl_(slot_impl)
+    {}
+
+public:
+    ~Slot() = default;
+
+    // TODO: copy-ctor
+
+    void Disconnect() const
+    {
+        auto slot_impl = impl_.lock();
+        if (!slot_impl) {
+            return;
+        }
+
+        slot_impl->Dispose();
+    }
+
+private:
+    template<typename... Args>
+    friend class Signal;
+    std::weak_ptr<internal::IDisposable> impl_;
+};
+
+template<typename... Args>
 class Signal {
 private:
     using Func = std::function<void(Args...)>;
     using SignalImpl = internal::SignalImpl<Func, Args...>;
+    using SlotImpl = internal::SlotImpl<Func, Args...>;
 
 public:
     Signal()
-        : impl_(std::make_unique<SignalImpl>())
+        : impl_(std::make_shared<SignalImpl>())
     {}
 
     ~Signal() = default;
@@ -124,16 +185,27 @@ public:
 
     DISALLOW_MOVE(Signal);
 
-    void Connect(Func fn)
-    {}
+    // TODO: add another overload for Slot(const Func&)
+
+    Slot Connect(Func&& fn)
+    {
+        // TODO: Do we really need std::forward here ?
+        auto slot_impl = std::make_shared<SlotImpl>(impl_, std::forward<Func>(fn));
+        impl_->AddSlot(slot_impl);
+        return Slot(slot_impl);
+    }
+
+    Slot Connect(Func&& fn, const std::shared_ptr<void>& weakly_bound_object);
 
     void Emit(Args... args)
     {
         impl_->Invoke(std::forward<Args>(args)...);
     }
 
+    void DisconnectAll();
+
 private:
-    std::unique_ptr<SignalImpl> impl_;
+    std::shared_ptr<SignalImpl> impl_;
 };
 
 #endif  // EUREKA_SIGNALS_H_
