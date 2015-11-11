@@ -84,7 +84,7 @@ public:
     void AddSlot(const std::shared_ptr<SlotImpl>& slot)
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        CopyIfModified();
+        CopyIfNeeded();
         slots_->push_back(slot);
     }
 
@@ -112,7 +112,7 @@ public:
     void RemoveSlot(const std::shared_ptr<SlotImpl>& slot)
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        CopyIfModified();
+        CopyIfNeeded();
         SlotList& slots(*slots_);
         auto it = std::find_if(slots.begin(), slots.end(), [&slot](const auto& other_slot) {
             return !slot.owner_before(other_slot) && !other_slot.owner_before(slot);
@@ -125,13 +125,14 @@ public:
     void RemoveAllSlots()
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        CopyIfModified();
+        CopyIfNeeded();
         slots_->clear();
     }
 
 private:
+    // Make a copy of `slots_`, if there are readers in other threads.
     // This call requires a mutex for protection.
-    void CopyIfModified()
+    void CopyIfNeeded()
     {
         if (!slots_.unique()) {
             slots_.reset(new SlotList(*slots_));
