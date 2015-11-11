@@ -122,6 +122,13 @@ public:
         }
     }
 
+    void RemoveAllSlots()
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        CopyIfModified();
+        slots_->clear();
+    }
+
 private:
     // This call requires a mutex for protection.
     void CopyIfModified()
@@ -221,7 +228,7 @@ public:
 
     void DisconnectAll()
     {
-        // TODO: try to remove all slots from the signal.
+        impl_->RemoveAllSlots();
     }
 
 private:

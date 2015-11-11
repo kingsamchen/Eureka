@@ -29,6 +29,7 @@ int main()
 
     slot.Disconnect();
     s.Emit(5, 3, 1);
-
+    s.DisconnectAll();
+    s.Emit(3, 2, 1);
     return 0;
 }
