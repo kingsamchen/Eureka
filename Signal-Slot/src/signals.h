@@ -158,9 +158,20 @@ private:
 public:
     ~Slot() = default;
 
-    // TODO: copy-semantics
+    DISALLOW_COPY(Slot);
 
-    // TODO: move-semantics
+    Slot(Slot&& other)
+        : impl_(std::move(other.impl_))
+    {}
+
+    Slot& operator=(Slot&& rhs)
+    {
+        if (this != &rhs) {
+            impl_ = std::move(rhs.impl_);
+        }
+
+        return *this;
+    }
 
     void Disconnect() const
     {
