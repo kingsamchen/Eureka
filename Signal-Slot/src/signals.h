@@ -98,8 +98,8 @@ public:
 
         for (const auto& slot : *slots) {
             if (slot->weakly_bound) {
-                auto guard = slot->weakly_bound_object.lock();
-                if (!guard) {
+                auto bound_object = slot->weakly_bound_object.lock();
+                if (!bound_object) {
                     // The bound object that member function relies on has gone.
                     continue;
                 }
