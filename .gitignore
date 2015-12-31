@@ -154,3 +154,14 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+
+# Intellij IDEA & Gradle
+
+.gradle/
+gradle/
+.idea/
+build/
+local.properties
+gradle.properties
+gradlew
+gradlew.bat
