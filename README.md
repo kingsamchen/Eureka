@@ -1,4 +1,4 @@
 Eureka
 ===
 
-A code collection of Aha-moment.
+A collection of code in Aha-moment.
