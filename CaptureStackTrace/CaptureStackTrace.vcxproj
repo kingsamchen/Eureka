@@ -150,6 +150,7 @@
     <ClCompile Include="src\stack_walker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\basic_macros.h" />
     <ClInclude Include="src\stack_walker.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
