@@ -154,3 +154,28 @@ StackWalker::StackWalker()
 }
 
 #pragma optimize("", on)
+
+void StackWalker::OutputCallStack(std::ostream& stream)
+{
+    if (!SymbolContext::GetInstance()->SymbolInitialized()) {
+        stream << "Failed to initialize symbols ("
+               << SymbolContext::GetInstance()->error_code()
+               << "). Dumping unresolved callstack:\n";
+        for (size_t i = 0; i < valid_frame_count_; ++i) {
+            stream << "\t" << stack_frames_[i] << "\n";
+        }
+    } else {
+        stream << "Dumping callstack:\n";
+        SymbolContext::GetInstance()->ResolveCallStackToStream(stack_frames_.data(),
+                                                               valid_frame_count_,
+                                                               stream);
+    }
+}
+
+std::string StackWalker::CallStackToString()
+{
+    std::ostringstream callstack;
+    OutputCallStack(callstack);
+
+    return callstack.str();
+}

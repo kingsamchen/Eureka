@@ -24,6 +24,10 @@ public:
 
     DEFAULT_MOVE(StackWalker);
 
+    void OutputCallStack(std::ostream& stream);
+
+    std::string CallStackToString();
+
 private:
     static const size_t kMaxStackFrames = 64;
     std::array<void*, kMaxStackFrames> stack_frames_;
