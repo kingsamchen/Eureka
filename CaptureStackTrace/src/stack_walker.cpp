@@ -10,6 +10,8 @@
 #include <Windows.h>
 #include <DbgHelp.h>
 
+#pragma comment(lib, "dbghelp.lib")
+
 std::wstring GetExeDir()
 {
     wchar_t exe_path[MAX_PATH];
@@ -72,6 +74,11 @@ void SymbolContext::InitializeSymbols()
                   SYMOPT_LOAD_LINES |
                   SYMOPT_UNDNAME);
 
+    if (!SymInitializeW(GetCurrentProcess(), nullptr, TRUE)) {
+        last_error_code = GetLastError();
+        return;
+    }
+
     // The directory that contains the executable file is not on the list by default,
     // include it on our onw.
     constexpr size_t kMaxListSize = 1024;
@@ -86,11 +93,6 @@ void SymbolContext::InitializeSymbols()
     search_path_list.append(L";").append(GetExeDir());
 
     if (!SymSetSearchPathW(GetCurrentProcess(), search_path_buffer)) {
-        last_error_code = GetLastError();
-        return;
-    }
-
-    if (!SymInitializeW(GetCurrentProcess(), search_path_list.c_str(), TRUE)) {
         last_error_code = GetLastError();
         return;
     }
