@@ -13,10 +13,16 @@
 
 #include "basic_macros.h"
 
+struct _CONTEXT;
+using CONTEXT = _CONTEXT;
+
 class StackWalker {
 public:
     // Captures stack frame on calling thread.
     StackWalker();
+
+    // For SEH
+    explicit StackWalker(CONTEXT* context);
 
     ~StackWalker() = default;
 

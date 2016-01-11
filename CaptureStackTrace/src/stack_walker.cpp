@@ -21,6 +21,7 @@ std::wstring GetExeDir()
     return std::wstring(exe_path, slash_pos);
 }
 
+// A helper class to resolve symbol information in callstack.
 class SymbolContext {
 public:
     ~SymbolContext() = default;
@@ -154,6 +155,25 @@ StackWalker::StackWalker()
 }
 
 #pragma optimize("", on)
+
+StackWalker::StackWalker(CONTEXT* context)
+{
+    STACKFRAME64 stack_frame { 0 };
+#if defined(_WIN64)
+    unsigned int machine_arch = IMAGE_FILE_MACHINE_AMD64;
+    stack_frame.AddrPC.Offset = context->Rip;
+    stack_frame.AddrFrame.Offset = context->Rbp;
+    stack_frame.AddrStack.Offset = context->Rsp;
+#else
+    unsigned int machine_arch = IMAGE_FILE_MACHINE_I386;
+    stack_frame.AddrPC.Offset = context->Eip;
+    stack_frame.AddrFrame.Offset = context->Ebp;
+    stack_frame.AddrStack.Offset = context->Esp;
+#endif
+    stack_frame.AddrPC.Mode = AddrModeFlat;
+    stack_frame.AddrFrame.Mode = AddrModeFlat;
+    stack_frame.AddrStack.Mode = AddrModeFlat;
+}
 
 void StackWalker::OutputCallStack(std::ostream& stream)
 {
