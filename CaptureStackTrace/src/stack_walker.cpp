@@ -156,23 +156,43 @@ StackWalker::StackWalker()
 
 #pragma optimize("", on)
 
-StackWalker::StackWalker(CONTEXT* context)
+StackWalker::StackWalker(CONTEXT& context)
 {
+    // Force initializing.
+    // It's important to call `SymInitialize` on x64, prior to calling `StackWalk64`;
+    SymbolContext::GetInstance();
     STACKFRAME64 stack_frame { 0 };
 #if defined(_WIN64)
-    unsigned int machine_arch = IMAGE_FILE_MACHINE_AMD64;
-    stack_frame.AddrPC.Offset = context->Rip;
-    stack_frame.AddrFrame.Offset = context->Rbp;
-    stack_frame.AddrStack.Offset = context->Rsp;
+    DWORD machine_arch = IMAGE_FILE_MACHINE_AMD64;
+    stack_frame.AddrPC.Offset = context.Rip;
+    stack_frame.AddrFrame.Offset = context.Rsp;
+    stack_frame.AddrStack.Offset = context.Rsp;
 #else
     unsigned int machine_arch = IMAGE_FILE_MACHINE_I386;
-    stack_frame.AddrPC.Offset = context->Eip;
-    stack_frame.AddrFrame.Offset = context->Ebp;
-    stack_frame.AddrStack.Offset = context->Esp;
+    stack_frame.AddrPC.Offset = context.Eip;
+    stack_frame.AddrFrame.Offset = context.Ebp;
+    stack_frame.AddrStack.Offset = context.Esp;
 #endif
     stack_frame.AddrPC.Mode = AddrModeFlat;
     stack_frame.AddrFrame.Mode = AddrModeFlat;
     stack_frame.AddrStack.Mode = AddrModeFlat;
+
+    while (valid_frame_count_ < stack_frames_.size() &&
+           StackWalk64(machine_arch,
+                       GetCurrentProcess(),
+                       GetCurrentThread(),
+                       &stack_frame,
+                       &context,
+                       nullptr,
+                       &SymFunctionTableAccess64,
+                       &SymGetModuleBase64,
+                       nullptr)) {
+        if (stack_frame.AddrPC.Offset == 0) {
+            break;
+        }
+
+        stack_frames_[valid_frame_count_++] = reinterpret_cast<void*>(stack_frame.AddrPC.Offset);
+    }
 }
 
 void StackWalker::OutputCallStack(std::ostream& stream)

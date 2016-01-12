@@ -22,7 +22,7 @@ public:
     StackWalker();
 
     // For SEH
-    explicit StackWalker(CONTEXT* context);
+    explicit StackWalker(CONTEXT& context);
 
     ~StackWalker() = default;
 
@@ -36,7 +36,7 @@ public:
 
 private:
     static const size_t kMaxStackFrames = 64;
-    std::array<void*, kMaxStackFrames> stack_frames_;
+    std::array<void*, kMaxStackFrames> stack_frames_ { nullptr };
     int valid_frame_count_ = 0;
 };
 
