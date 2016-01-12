@@ -6,18 +6,24 @@
 
 #include <iostream>
 
+#include <windows.h>
+
 #include "stack_walker.h"
 
 void CaptureCallStack()
 {
-    StackWalker callstack;
+    CONTEXT context { 0 };
+    context.ContextFlags = CONTEXT_FULL;
+    RtlCaptureContext(&context);
+
+    StackWalker callstack(context);
+    //StackWalker callstack;
     callstack.OutputCallStack(std::cout);
 }
 
 void Func3(int& val)
 {
     ++val;
-    std::cout << val;
     CaptureCallStack();
 }
 
