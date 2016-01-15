@@ -11,8 +11,10 @@
 
 #include <string>
 
-#include <Windows.h>
+struct _EXCEPTION_POINTERS;
+using EXCEPTION_POINTERS = _EXCEPTION_POINTERS;
 
-void CreateMiniDump(const std::wstring& path, EXCEPTION_POINTERS* exception_pointers);
+void CreateMiniDump(const std::wstring& path);
+void WriteMiniDumpFile(const std::wstring& path, EXCEPTION_POINTERS* exception_pointers);
 
 #endif  // MINIDUMPER_MINIDUMPER_H_
