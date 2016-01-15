@@ -11,22 +11,17 @@
 
 #pragma comment(lib, "dbghelp.lib")
 
-PEXCEPTION_POINTERS g_ex_ptr = nullptr;
-
-BOOL ExceptionFilter(EXCEPTION_POINTERS* ex_ptr)
+void ExceptionFilter(const std::wstring& path, EXCEPTION_POINTERS* ex_ptr)
 {
-    g_ex_ptr = ex_ptr;
-    return EXCEPTION_EXECUTE_HANDLER;
+    WriteMiniDumpFile(path, ex_ptr);
 }
 
 void CreateMiniDump(const std::wstring& path)
 {
     __try {
-        *(reinterpret_cast<int*>(0x0)) = 0xDEADBEEF;
-    } __except (ExceptionFilter(GetExceptionInformation())) {
+        RaiseException(EXCEPTION_BREAKPOINT, 0, 0, nullptr);
+    } __except (ExceptionFilter(path, GetExceptionInformation()), EXCEPTION_EXECUTE_HANDLER) {
     }
-
-    WriteMiniDumpFile(path, g_ex_ptr);
 }
 
 void WriteMiniDumpFile(const std::wstring& path, EXCEPTION_POINTERS* exception_pointers)
@@ -53,7 +48,7 @@ void WriteMiniDumpFile(const std::wstring& path, EXCEPTION_POINTERS* exception_p
                                 GetCurrentProcessId(),
                                 file,
                                 MiniDumpNormal,
-                                nullptr,
+                                &exception_information,
                                 nullptr,
                                 nullptr);
     if (!rv) {
