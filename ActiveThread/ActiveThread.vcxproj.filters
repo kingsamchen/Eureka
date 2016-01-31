@@ -14,5 +14,16 @@
     <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\active_thread.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\active_thread.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\basic_macros.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
