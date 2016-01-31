@@ -37,6 +37,9 @@ public:
 
     T Dequeue()
     {
+        static_assert(std::is_nothrow_move_constructible<T>::value &&
+                      std::is_nothrow_move_assignable<T>::value,
+                      "Element requires no-throw move");
         std::unique_lock<std::mutex> lock(mutex_);
         not_empty_.wait(lock, [this] { return !buffer_.empty(); });
 
@@ -44,6 +47,15 @@ public:
         buffer_.pop();
 
         return ele;
+    }
+
+    void Dequeue(T* ele)
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+        not_empty_.wait(lock, [this] { return !buffer_.empty(); });
+
+        *ele = buffer_.front();
+        buffer_.pop();
     }
 
     size_t size() const
