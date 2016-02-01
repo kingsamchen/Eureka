@@ -4,6 +4,8 @@
 
 #include "active_thread.h"
 
+#include <thread>
+
 ActiveThread::ActiveThread()
     : done_(false)
 {
@@ -14,6 +16,7 @@ ActiveThread::~ActiveThread()
 {
     auto quit_task = [this] { done_ = true; };
     PostTask(std::move(quit_task));
+    thread_->join();
 }
 
 void ActiveThread::Run()
