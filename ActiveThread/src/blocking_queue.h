@@ -12,7 +12,7 @@
 #include <mutex>
 #include <queue>
 
-#include "compiler_helper.h"
+#include "basic_macros.h"
 
 template<typename T>
 class BlockingQueue {
@@ -21,9 +21,9 @@ public:
 
     ~BlockingQueue() = default;
 
-    DISALLOW_COPY(BlockingQueue)
+    DISALLOW_COPY(BlockingQueue);
 
-    DISALLOW_MOVE(BlockingQueue)
+    DISALLOW_MOVE(BlockingQueue);
 
     void Enqueue(const T& ele)
     {

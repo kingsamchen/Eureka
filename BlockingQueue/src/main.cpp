@@ -34,7 +34,7 @@ void Consume(BlockingQueue<T>& queue)
 
 int main()
 {
-    srand(time(nullptr));
+    srand(static_cast<unsigned>(time(nullptr)));
     BlockingQueue<int> bq;
 
     auto f_p(std::async(std::launch::async, Produce<int>, std::ref(bq)));
