@@ -21,9 +21,9 @@ public:
 
     ~BlockingQueue() = default;
 
-    DISALLOW_COPY(BlockingQueue)
+    DISALLOW_COPY(BlockingQueue);
 
-    DISALLOW_MOVE(BlockingQueue)
+    DISALLOW_MOVE(BlockingQueue);
 
     void Enqueue(const T& ele)
     {

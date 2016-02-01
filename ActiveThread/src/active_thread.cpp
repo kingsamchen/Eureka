@@ -10,5 +10,22 @@ ActiveThread::ActiveThread()
     thread_ = std::make_unique<std::thread>(&ActiveThread::Run, this);
 }
 
+ActiveThread::~ActiveThread()
+{
+    auto quit_task = [this] { done_ = true; };
+    PostTask(std::move(quit_task));
+}
+
 void ActiveThread::Run()
-{}
+{
+    while (!done_) {
+        Task task;
+        task_queue_.Dequeue(&task);
+        task();
+    }
+}
+
+void ActiveThread::PostTask(Task&& task)
+{
+    task_queue_.Enqueue(task);
+}

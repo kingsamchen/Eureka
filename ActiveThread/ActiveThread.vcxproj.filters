@@ -25,5 +25,8 @@
     <ClInclude Include="src\basic_macros.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\blocking_queue.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

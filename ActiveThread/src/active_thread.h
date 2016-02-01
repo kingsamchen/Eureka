@@ -24,11 +24,13 @@ class ActiveThread {
 public:
     ActiveThread();
 
-    // TODO: dtor
+    ~ActiveThread();
 
     DISALLOW_COPY(ActiveThread);
 
     DISALLOW_MOVE(ActiveThread);
+
+    void PostTask(Task&& task);
 
 private:
     void Run();
