@@ -12,7 +12,7 @@
 #include <mutex>
 #include <queue>
 
-#include "compiler_helper.h"
+#include "basic_macros.h"
 
 template<typename T>
 class BlockingQueue {
@@ -21,11 +21,11 @@ public:
 
     ~BlockingQueue() = default;
 
-    DISALLOW_COPY(BlockingQueue)
+    DISALLOW_COPY(BlockingQueue);
 
-    DISALLOW_MOVE(BlockingQueue)
+    DISALLOW_MOVE(BlockingQueue);
 
-    void Enqueue(const T& ele)
+    void Push(const T& ele)
     {
         {
             std::lock_guard<std::mutex> lock(mutex_);
@@ -35,7 +35,7 @@ public:
         not_empty_.notify_one();
     }
 
-    T Dequeue()
+    T Pop()
     {
         static_assert(std::is_nothrow_move_constructible<T>::value &&
                       std::is_nothrow_move_assignable<T>::value,
@@ -49,7 +49,7 @@ public:
         return ele;
     }
 
-    void Dequeue(T* ele)
+    void Pop(T* ele)
     {
         std::unique_lock<std::mutex> lock(mutex_);
         not_empty_.wait(lock, [this] { return !buffer_.empty(); });
