@@ -9,6 +9,7 @@
 #ifndef BLOCKING_QUEUE_H_
 #define BLOCKING_QUEUE_H_
 
+#include <condition_variable>
 #include <mutex>
 #include <queue>
 

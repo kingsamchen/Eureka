@@ -168,3 +168,4 @@ gradlew
 gradlew.bat
 
 *.dmp
+.ycm*

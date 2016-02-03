@@ -4,6 +4,7 @@
 
 #include "active_thread.h"
 
+#include <memory>
 #include <thread>
 
 ActiveThread::ActiveThread()

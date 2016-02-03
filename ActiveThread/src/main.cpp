@@ -3,6 +3,7 @@
 */
 
 #include <iostream>
+#include <thread>
 
 #include "active_thread.h"
 
@@ -15,6 +16,5 @@ int main()
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
-    std::cin.get();
     return 0;
 }
