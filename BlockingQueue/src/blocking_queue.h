@@ -19,9 +19,15 @@ class BlockingQueue {
 public:
     BlockingQueue() = default;
 
-    ~BlockingQueue() = default;
+    BlockingQueue(const BlockingQueue& other)
+    {
+        std::lock_guard<std::mutex> lock(other.mutex_);
+        queue_ = other.queue_;
+    }
 
-    DISALLOW_COPY(BlockingQueue);
+    BlockingQueue& operator=(const BlockingQueue&) = delete;
+
+    ~BlockingQueue() = default;
 
     DISALLOW_MOVE(BlockingQueue);
 
@@ -29,7 +35,17 @@ public:
     {
         {
             std::lock_guard<std::mutex> lock(mutex_);
-            buffer_.push(ele);
+            queue_.push(ele);
+        }
+
+        not_empty_.notify_one();
+    }
+
+    void Push(T&& ele)
+    {
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            queue_.push(std::move(ele));
         }
 
         not_empty_.notify_one();
@@ -41,10 +57,10 @@ public:
                       std::is_nothrow_move_assignable<T>::value,
                       "Element requires no-throw move");
         std::unique_lock<std::mutex> lock(mutex_);
-        not_empty_.wait(lock, [this] { return !buffer_.empty(); });
+        not_empty_.wait(lock, [this] { return !queue_.empty(); });
 
-        auto ele = buffer_.front();
-        buffer_.pop();
+        auto ele = queue_.front();
+        queue_.pop();
 
         return ele;
     }
@@ -52,22 +68,22 @@ public:
     void Pop(T* ele)
     {
         std::unique_lock<std::mutex> lock(mutex_);
-        not_empty_.wait(lock, [this] { return !buffer_.empty(); });
+        not_empty_.wait(lock, [this] { return !queue_.empty(); });
 
-        *ele = buffer_.front();
-        buffer_.pop();
+        *ele = queue_.front();
+        queue_.pop();
     }
 
     size_t size() const
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        return buffer_.size();
+        return queue_.size();
     }
 
 private:
     mutable std::mutex mutex_;
     std::condition_variable not_empty_;
-    std::queue<T> buffer_;
+    std::queue<T> queue_;
 };
 
 #endif  // BLOCKING_QUEUE_H_
