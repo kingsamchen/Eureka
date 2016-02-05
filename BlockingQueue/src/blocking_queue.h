@@ -9,6 +9,7 @@
 #ifndef BLOCKING_QUEUE_H_
 #define BLOCKING_QUEUE_H_
 
+#include <memory>
 #include <mutex>
 #include <queue>
 
@@ -72,6 +73,32 @@ public:
 
         *ele = queue_.front();
         queue_.pop();
+    }
+
+    bool TryPop(T* ele)
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (queue_.empty()) {
+            return false;
+        }
+
+        *ele = queue_.front();
+        queue_.pop();
+
+        return true;
+    }
+
+    std::unique_ptr<T> TryPop()
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (queue_.empty()) {
+            return std::unique_ptr<T>();
+        }
+
+        auto ele_handle = std::make_unique<T>(queue_.front());
+        queue_.pop();
+
+        return ele_handle;
     }
 
     size_t size() const
