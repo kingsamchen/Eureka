@@ -16,7 +16,7 @@ void Produce(BlockingQueue<T>& queue)
     while (true) {
         auto item = rand() % 1000;
         std::cout << "produced item " << item << std::endl;
-        queue.Enqueue(item);
+        queue.Push(item);
         std::this_thread::sleep_for(std::chrono::milliseconds(rand() % 500));
     }
 }
@@ -25,7 +25,7 @@ template<typename T>
 void Consume(BlockingQueue<T>& queue)
 {
     while (true) {
-        auto item = queue.Dequeue();
+        auto item = queue.Pop();
         std::cout << "consume item " << item << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(rand() % 1000));
     }
