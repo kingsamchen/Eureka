@@ -10,12 +10,16 @@ SERVER_PORT = 12345
 def main():
     buffer_size = 2048
     client_socket = socket(AF_INET, SOCK_DGRAM)
-    message = raw_input('Please input a sentence')
-    client_socket.sendto(message, (SERVER_NAME, SERVER_PORT))
-    modified_msg, server_addr = client_socket.recvfrom(buffer_size)
-    client_socket.close()
-    print('-> ' + modified_msg)
+    while True:
+        message = raw_input('Please input a sentence:')
+        if message == 'exit':
+            break
+        client_socket.sendto(message, (SERVER_NAME, SERVER_PORT))
+        modified_msg, server_addr = client_socket.recvfrom(buffer_size)
+        print('Received reply from server({0})'.format(server_addr))
+        print('-> ' + modified_msg)
 
+    client_socket.close()
 
 if __name__ == '__main__':
     main()
