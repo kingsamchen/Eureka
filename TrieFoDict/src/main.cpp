@@ -8,6 +8,7 @@
 
 int main()
 {
-    std::cout << alphabet::GetCharacterIndex('c');
+    std::string s = "hello world";
+    std::cout << (Alphabet::GetCharacterIndex(' ') == Alphabet::npos) << std::endl;
     return 0;
 }

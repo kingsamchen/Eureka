@@ -1,19 +1,22 @@
+/*
+ @ 0xCCCCCCCC
+*/
 
 #include "alphabet.h"
 
-#include <cstdlib>
+#include <cstring>
 
+namespace {
 
-constexpr const char kAlphabet[] = "abcdefghijklmnopqrstuvwxyz";
+const char kAlphabet[] = "abcdefghijklmnopqrstuvwxyz-";
 
-constexpr int GetCharacterIndexInternal(char ch, int pos)
-{
-    return pos >= _countof(kAlphabet) ? -1 :
-        kAlphabet[pos] == ch ? pos : GetCharacterIndexInternal(ch, pos + 1);
 }
 
+size_t Alphabet::npos = static_cast<size_t>(-1);
+
 // static
-constexpr int Alphabet::GetCharacterIndex(char ch)
+size_t Alphabet::GetCharacterIndex(char ch)
 {
-    return GetCharacterIndexInternal(ch, 0);
+    auto ptr = strchr(kAlphabet, ch);
+    return ptr == nullptr ? npos : ptr - &kAlphabet[0];
 }
