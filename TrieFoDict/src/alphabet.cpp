@@ -4,6 +4,7 @@
 
 #include "alphabet.h"
 
+#include <cstdlib>
 #include <cstring>
 
 namespace {
@@ -19,4 +20,11 @@ size_t Alphabet::GetCharacterIndex(char ch)
 {
     auto ptr = strchr(kAlphabet, ch);
     return ptr == nullptr ? npos : ptr - &kAlphabet[0];
+}
+
+// static
+size_t Alphabet::length()
+{
+    // Don't forget to exclude the hidden null-terminator.
+    return _countof(kAlphabet) - 1;
 }

@@ -17,6 +17,8 @@ public:
 
     static size_t GetCharacterIndex(char ch);
 
+    static size_t length();
+
     static size_t npos;
 };
 
