@@ -9,9 +9,14 @@
 #ifndef TRIE_FOR_DICT_TRIE_H_
 #define TRIE_FOR_DICT_TRIE_H_
 
-class TrieNode;
+struct TrieNode;
 
 class Trie {
+public:
+    Trie();
+
+    ~Trie();
+
 private:
     TrieNode* header_;
 };
