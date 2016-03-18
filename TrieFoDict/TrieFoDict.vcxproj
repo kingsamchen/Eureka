@@ -21,9 +21,11 @@
   <ItemGroup>
     <ClCompile Include="src\alphabet.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\trie.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\alphabet.h" />
+    <ClInclude Include="src\trie.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{481124BE-1EE2-43E5-B1CC-5604D8E8B1C5}</ProjectGuid>
