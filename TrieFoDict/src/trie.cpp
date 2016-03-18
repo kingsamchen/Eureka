@@ -14,7 +14,7 @@ struct TrieNode {
 
     ~TrieNode() = default;
 
-    size_t char_index { Alphabet::npos };
+    char character { 0 };
     bool last_char_of_word { false };
     std::vector<TrieNode*> children { Alphabet::length(), nullptr };
 };
@@ -44,3 +44,23 @@ Trie::~Trie()
     DestroyTrie(header_);
     header_ = nullptr;
 }
+
+bool Trie::Insert(const std::string& word)
+{
+    TrieNode* node = header_;
+    for (char ch : word) {
+        auto pos = Alphabet::GetCharacterIndex(ch);
+        if (pos == Alphabet::npos) {
+            return false;
+        }
+
+        TrieNode*& sub = node->children[pos];
+        if (!sub) {
+            sub = new TrieNode();
+            sub->character = ch;
+        }
+
+        // TODO:
+    }
+}
+

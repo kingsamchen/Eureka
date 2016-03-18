@@ -4,11 +4,10 @@
 
 #include <iostream>
 
-#include "alphabet.h"
+#include "trie.h"
 
 int main()
 {
-    std::string s = "hello world";
-    std::cout << (Alphabet::GetCharacterIndex(' ') == Alphabet::npos) << std::endl;
+    Trie trie;
     return 0;
 }
