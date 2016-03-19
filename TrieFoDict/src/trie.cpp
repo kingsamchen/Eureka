@@ -45,13 +45,14 @@ Trie::~Trie()
     header_ = nullptr;
 }
 
-bool Trie::Insert(const std::string& word)
+// ReSharper disable once CppMemberFunctionMayBeConst
+void Trie::Insert(const std::string& word)
 {
     TrieNode* node = header_;
     for (char ch : word) {
         auto pos = Alphabet::GetCharacterIndex(ch);
         if (pos == Alphabet::npos) {
-            return false;
+            throw std::invalid_argument("word contains illegal character!");
         }
 
         TrieNode*& sub = node->children[pos];
@@ -60,7 +61,14 @@ bool Trie::Insert(const std::string& word)
             sub->character = ch;
         }
 
-        // TODO:
+        node = sub;
     }
+
+    node->last_char_of_word = true;
+}
+
+bool Trie::Contains(const std::string& word) const
+{
+    // TODO:
 }
 

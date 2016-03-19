@@ -21,7 +21,9 @@ public:
 
     // Consider copy and move semantics later.
 
-    bool Insert(const std::string& word);
+    void Insert(const std::string& word);
+
+    bool Contains(const std::string& word) const;
 
 private:
     TrieNode* header_;
