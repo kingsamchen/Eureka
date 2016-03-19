@@ -10,7 +10,7 @@
 #include "basic_macros.h"
 #include "trie.h"
 
-void AssertAlphabet()
+void TestAlphabet()
 {
     assert(Alphabet::length() == 27);
 
@@ -19,21 +19,31 @@ void AssertAlphabet()
     assert(Alphabet::GetCharacterIndex(' ') == Alphabet::npos);
 }
 
-void AssertTrieCtorDtor()
+void TestTrieCtorDtor()
 {
     Trie trie;
     UNREFED_VAR(trie);
 }
 
-void AssertTrieInsert()
+void TestTrieInsert()
 {
     Trie trie;
     trie.Insert("hello");
     //trie.Insert("go ahead");
 }
 
+void TestTrieContains()
+{
+    Trie trie;
+    trie.Insert("hello");
+    assert(trie.Contains("hello") == true);
+    assert(trie.Contains("hell") == false);
+    assert(trie.Contains("helloo") == false);
+    assert(trie.Contains("he.llo") == false);
+}
+
 int main()
 {
-    AssertTrieInsert();
+    TestTrieContains();
     return 0;
 }

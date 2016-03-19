@@ -69,6 +69,20 @@ void Trie::Insert(const std::string& word)
 
 bool Trie::Contains(const std::string& word) const
 {
-    // TODO:
-}
+    const TrieNode* node = header_;
+    for (char ch : word) {
+        auto pos = Alphabet::GetCharacterIndex(ch);
+        if (pos == Alphabet::npos) {
+            return false;
+        }
 
+        const TrieNode* child = node->children[pos];
+        if (!child) {
+            return false;
+        }
+
+        node = child;
+    }
+
+    return node->last_char_of_word;
+}
