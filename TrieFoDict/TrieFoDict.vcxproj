@@ -25,6 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\alphabet.h" />
+    <ClInclude Include="src\basic_macros.h" />
     <ClInclude Include="src\trie.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
