@@ -42,8 +42,20 @@ void TestTrieContains()
     assert(trie.Contains("he.llo") == false);
 }
 
+void TestTrieSearch()
+{
+    Trie trie;
+    trie.Insert("hello");
+    trie.Insert("hell");
+    trie.Insert("here");
+    auto words = trie.Search("he");
+    for (auto&& w : words) {
+        std::cout << w << std::endl;
+    }
+}
+
 int main()
 {
-    TestTrieContains();
+    TestTrieSearch();
     return 0;
 }
