@@ -148,10 +148,12 @@
   <ItemGroup>
     <ClCompile Include="src\alphabet.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\ternary_search_tree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\alphabet.h" />
     <ClInclude Include="src\basic_macros.h" />
+    <ClInclude Include="src\ternary_search_tree.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

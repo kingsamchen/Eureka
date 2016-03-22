@@ -17,12 +17,18 @@
     <ClCompile Include="src\alphabet.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\ternary_search_tree.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\alphabet.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\basic_macros.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ternary_search_tree.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
