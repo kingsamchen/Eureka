@@ -15,6 +15,8 @@ public:
 
     ~Alphabet() = delete;
 
+    static char GetCharacter(size_t index);
+
     static size_t GetCharacterIndex(char ch);
 
     static size_t length();

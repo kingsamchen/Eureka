@@ -4,6 +4,7 @@
 
 #include "alphabet.h"
 
+#include <cassert>
 #include <cstdlib>
 #include <cstring>
 
@@ -14,6 +15,13 @@ const char kAlphabet[] = "abcdefghijklmnopqrstuvwxyz-";
 }
 
 size_t Alphabet::npos = static_cast<size_t>(-1);
+
+// static
+char Alphabet::GetCharacter(size_t index)
+{
+    assert(index < Alphabet::length());
+    return kAlphabet[index];
+}
 
 // static
 size_t Alphabet::GetCharacterIndex(char ch)
