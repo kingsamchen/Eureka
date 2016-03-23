@@ -14,5 +14,6 @@ void TestInsertion()
 
 int main()
 {
+    TestInsertion();
     return 0;
 }

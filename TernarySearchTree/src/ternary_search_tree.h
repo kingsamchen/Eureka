@@ -29,6 +29,7 @@ public:
     std::vector<std::string> Search(const std::string& prefix);
 
 private:
+    // We use `root_` as sentinel.
     Node* root_;
 };
 
