@@ -5,6 +5,7 @@
 #include "ternary_search_tree.h"
 
 #include <cassert>
+#include <iostream>
 
 void TestInsertion()
 {
@@ -29,8 +30,22 @@ void TestContains()
     assert(ternary_tree.Contains("her") == false);
 }
 
+void TestSearch()
+{
+    TernaryTree ternary_tree;
+    ternary_tree.Insert("hello");
+    ternary_tree.Insert("here");
+    ternary_tree.Insert("world");
+    ternary_tree.Insert("he");
+
+    auto words = ternary_tree.Search("he");
+    for (auto&& word : words) {
+        std::cout << word << std::endl;
+    }
+}
+
 int main()
 {
-    TestContains();
+    TestSearch();
     return 0;
 }

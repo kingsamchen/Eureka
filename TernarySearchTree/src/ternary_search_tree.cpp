@@ -52,6 +52,31 @@ Node* TouchNodeChild(Node* node, size_t child_id, size_t char_index)
     return child;
 }
 
+void SearchWord(Node* node, std::vector<std::string>* words, std::vector<char>* seq,
+                const std::string& prefix)
+{
+    seq->push_back(Alphabet::GetCharacter(node->char_index));
+    if (node->end_word) {
+        std::string word(prefix);
+        word.append(seq->begin(), seq->end());
+        words->push_back(std::move(word));
+    }
+
+    if (node->children[Node::kMiddle]) {
+        SearchWord(node->children[Node::kMiddle], words, seq, prefix);
+    }
+
+    seq->pop_back();
+
+    if (node->children[Node::kLeft]) {
+        SearchWord(node->children[Node::kLeft], words, seq, prefix);
+    }
+
+    if (node->children[Node::kRight]) {
+        SearchWord(node->children[Node::kRight], words, seq, prefix);
+    }
+}
+
 }   // namespace
 
 TernaryTree::TernaryTree()
@@ -121,4 +146,48 @@ bool TernaryTree::Contains(const std::string& word) const
     }
 
     return node->end_word;
+}
+
+std::vector<std::string> TernaryTree::Search(const std::string& prefix) const
+{
+    std::vector<std::string> words;
+
+    // Locate the node matching the last character of `prefix`.
+    const Node* node = root_;
+    for (char ch : prefix) {
+        auto index = Alphabet::GetCharacterIndex(ch);
+        if (index == Alphabet::npos) {
+            return words;
+        }
+
+        const Node* next_node = node->children[Node::kMiddle];
+        if (!next_node) {
+            return words;
+        }
+
+        while (index != next_node->char_index) {
+            if (index < next_node->char_index) {
+                next_node = next_node->children[Node::kLeft];
+            } else {
+                next_node = next_node->children[Node::kRight];
+            }
+
+            if (!next_node) {
+                return words;
+            }
+        }
+
+        node = next_node;
+    }
+
+    if (node->end_word) {
+        words.push_back(prefix);
+    }
+
+    std::vector<char> sequence;
+    if (node->children[Node::kMiddle]) {
+        SearchWord(node->children[Node::kMiddle], &words, &sequence, prefix);
+    }
+
+    return words;
 }
