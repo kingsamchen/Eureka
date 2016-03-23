@@ -24,9 +24,9 @@ public:
 
     void Insert(const std::string& word);
 
-    bool Contains(const std::string& word);
+    bool Contains(const std::string& word) const;
 
-    std::vector<std::string> Search(const std::string& prefix);
+    std::vector<std::string> Search(const std::string& prefix) const;
 
 private:
     // We use `root_` as sentinel.

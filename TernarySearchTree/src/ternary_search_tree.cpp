@@ -90,3 +90,35 @@ void TernaryTree::Insert(const std::string& word)
 
     node->end_word = true;
 }
+
+bool TernaryTree::Contains(const std::string& word) const
+{
+    const Node* node = root_;
+    for (char ch : word) {
+        auto index = Alphabet::GetCharacterIndex(ch);
+        if (index == Alphabet::npos) {
+            return false;
+        }
+
+        const Node* next_node = node->children[Node::kMiddle];
+        if (!next_node) {
+            return false;
+        }
+
+        while (index != next_node->char_index) {
+            if (index < next_node->char_index) {
+                next_node = next_node->children[Node::kLeft];
+            } else {
+                next_node = next_node->children[Node::kRight];
+            }
+
+            if (!next_node) {
+                return false;
+            }
+        }
+
+        node = next_node;
+    }
+
+    return node->end_word;
+}
