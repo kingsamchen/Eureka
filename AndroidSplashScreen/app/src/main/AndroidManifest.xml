@@ -9,7 +9,7 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
         <activity android:name=".SplashActivity"
-                  android:theme="@style/AppTheme.SplashScreen">
+                  android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
