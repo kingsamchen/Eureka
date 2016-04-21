@@ -3,6 +3,8 @@ package com.kc.example.android_login_mvp.login;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -43,6 +45,29 @@ public class LoginActivity extends AppCompatActivity implements LoginContract.Vi
                 mPresenter.login(username, password);
             }
         });
+
+        TextWatcher inputWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mPresenter.checkHasPreparedForLogin(mEditUserName.getText().toString(),
+                        mEditPassword.getText().toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        };
+
+        mEditUserName.addTextChangedListener(inputWatcher);
+        mEditPassword.addTextChangedListener(inputWatcher);
+
+        inputWatcher.onTextChanged("", 0, 0, 0);
     }
 
     @Override
@@ -58,4 +83,13 @@ public class LoginActivity extends AppCompatActivity implements LoginContract.Vi
         mEditPassword.getText().clear();
     }
 
+    @Override
+    public void setReady() {
+        mBtnLogin.setEnabled(true);
+    }
+
+    @Override
+    public void setNotReady() {
+        mBtnLogin.setEnabled(false);
+    }
 }

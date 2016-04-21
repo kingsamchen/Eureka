@@ -1,5 +1,7 @@
 package com.kc.example.android_login_mvp.login;
 
+import android.support.annotation.NonNull;
+
 /**
  @ 0xCCCCCCCC
  */
@@ -7,7 +9,7 @@ public class LoginPresenter implements LoginContract.Presenter {
 
     LoginContract.View mView;
 
-    public LoginPresenter(LoginContract.View view) {
+    public LoginPresenter(@NonNull LoginContract.View view) {
         mView = view;
     }
 
@@ -20,4 +22,12 @@ public class LoginPresenter implements LoginContract.Presenter {
         }
     }
 
+    @Override
+    public void checkHasPreparedForLogin(String username, String password) {
+        if (username.isEmpty() || password.isEmpty()) {
+            mView.setNotReady();
+        } else {
+            mView.setReady();
+        }
+    }
 }
