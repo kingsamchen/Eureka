@@ -66,8 +66,12 @@ public class LoginActivity extends AppCompatActivity implements LoginContract.Vi
 
         mEditUserName.addTextChangedListener(inputWatcher);
         mEditPassword.addTextChangedListener(inputWatcher);
+    }
 
-        inputWatcher.onTextChanged("", 0, 0, 0);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mPresenter.start();
     }
 
     @Override

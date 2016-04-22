@@ -1,5 +1,7 @@
 package com.kc.example.android_login_mvp.login;
 
+import com.kc.example.android_login_mvp.BasePresenter;
+
 /**
  @ 0xCCCCCCCC
  */
@@ -16,7 +18,7 @@ public interface LoginContract {
         void setNotReady();
     }
 
-    interface Presenter {
+    interface Presenter extends BasePresenter {
 
         void login(String username, String password);
 

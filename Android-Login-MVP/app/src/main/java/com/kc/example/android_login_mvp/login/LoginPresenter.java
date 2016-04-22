@@ -17,6 +17,14 @@ public class LoginPresenter implements LoginContract.Presenter {
     }
 
     @Override
+    public void start() {
+        checkHasPreparedForLogin("", "");
+    }
+
+    @Override
+    public void stop() {}
+
+    @Override
     public void login(String username, String password) {
         if (mUserModel.validateUserAccount(username, password)) {
             mView.showSuccessfullyLogin();
