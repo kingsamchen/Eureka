@@ -1,6 +1,7 @@
 package com.kc.example.android_login_mvp.login;
 
 import android.support.annotation.NonNull;
+import com.kc.example.android_login_mvp.data.UserModel;
 
 /**
  @ 0xCCCCCCCC
@@ -8,14 +9,16 @@ import android.support.annotation.NonNull;
 public class LoginPresenter implements LoginContract.Presenter {
 
     LoginContract.View mView;
+    UserModel mUserModel;
 
     public LoginPresenter(@NonNull LoginContract.View view) {
         mView = view;
+        mUserModel = new UserModel();
     }
 
     @Override
     public void login(String username, String password) {
-        if (username.equals("kc") && password.equals("kckckc")) {
+        if (mUserModel.validateUserAccount(username, password)) {
             mView.showSuccessfullyLogin();
         } else {
             mView.showLoginError();
