@@ -17,5 +17,8 @@
     <ClCompile Include="src\stable_partition.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\sort_subrange.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
