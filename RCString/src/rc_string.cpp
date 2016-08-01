@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstring>
+#include <memory>
 #include <string>
 
 constexpr size_t kBaseSize = 4;
@@ -27,10 +28,7 @@ public:
 
     ~StringData()
     {
-        assert(buf_ != nullptr);
         assert(ref_count_ == 0);
-        operator delete(buf_);
-        std::cout << "[debug]: release StringData\n";
     }
 
     StringData(const StringData&) = delete;
@@ -47,7 +45,7 @@ public:
 
     char* data() const noexcept
     {
-        return buf_;
+        return buffer_.get();
     }
 
     size_t size() const noexcept
@@ -96,7 +94,7 @@ public:
     }
 
 private:
-    char* buf_;
+    std::unique_ptr<char[]> buffer_;
     size_t capacity_;
     size_t size_;
     mutable unsigned int ref_count_;
@@ -111,11 +109,9 @@ void StringData::Reserve(size_t required_capacity)
 
     auto new_base = std::max(capacity_ * 3 / 2, required_capacity);
     auto new_capacity = RoundToMultiple(new_base, kBaseSize);
-    char* new_buf = static_cast<char*>(operator new(new_capacity));
-    memcpy_s(new_buf, new_capacity, buf_, size_);
-
-    operator delete(buf_);  // operator delete is a no-throw op.
-    buf_ = new_buf;
+    char* new_buf = new char[new_capacity];
+    memcpy_s(new_buf, new_capacity, buffer_.get(), size_);
+    buffer_.reset(new_buf);
     capacity_ = new_capacity;
 }
 
@@ -124,14 +120,14 @@ void StringData::CopyData(const char* str, size_t length, size_t pos) noexcept
     assert(Unique());
     assert(pos <= size_);
     assert(pos + length <= capacity_);
-    memcpy_s(buf_ + pos, capacity_, str, length);
+    memcpy_s(buffer_.get() + pos, capacity_, str, length);
     size_ = std::max(pos + length, size_);
 }
 
 StringData* StringData::Clone(size_t new_capacity) const
 {
     auto* data = new StringData(std::max(new_capacity, capacity_));
-    data->CopyData(buf_, size_, 0);
+    data->CopyData(buffer_.get(), size_, 0);
     return data;
 }
 
