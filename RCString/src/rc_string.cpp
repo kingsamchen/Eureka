@@ -28,7 +28,8 @@ public:
 
     ~StringData()
     {
-        assert(ref_count_ == 0);
+        assert(ref_count_ == 0 || ref_count_ == kUnsharedRefMark);
+        std::cout << "[D]: releasing StringData\n";
     }
 
     StringData(const StringData&) = delete;
@@ -86,7 +87,7 @@ public:
     bool Release() const noexcept
     {
         assert(ref_count_ > 0);
-        if (--ref_count_ == 0) {
+        if (Unsharedable() || --ref_count_ == 0) {
             return true;
         }
 
@@ -134,13 +135,17 @@ StringData* StringData::Clone(size_t new_capacity) const
 // -*- RCString implementation -*-
 
 RCString::RCString()
-    : data_(nullptr)
+    : data_(new StringData(kBaseSize))
 {}
 
 RCString::RCString(const RCString& other)
 {
-    data_ = other.data_;
-    data_->AddRef();
+    if (!other.data_->Unsharedable()) {
+        data_ = other.data_;
+        data_->AddRef();
+    } else {
+        data_ = other.data_->Clone(other.size());
+    }
 }
 
 RCString::RCString(const char* str)
@@ -155,7 +160,6 @@ RCString::RCString(const char* str, size_t length)
 
 RCString::~RCString()
 {
-    std::cout << "[debug]: destroying RCString\n";
     if (data_ && data_->Release()) {
         delete data_;
     }
@@ -199,6 +203,17 @@ const char* RCString::data() const noexcept
 size_t RCString::size() const noexcept
 {
     return data_->size();
+}
+
+const char& RCString::operator[](size_t pos) const
+{
+    return *(data() + pos);
+}
+
+char& RCString::operator[](size_t pos)
+{
+    PrepareToModify(size(), true);
+    return *(data_->data() + pos);
 }
 
 std::ostream& operator<< (std::ostream& os, const RCString& str)

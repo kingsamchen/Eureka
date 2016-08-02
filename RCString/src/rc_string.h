@@ -33,6 +33,10 @@ public:
 
     void Append(const char* str, size_t length);
 
+    const char& operator[](size_t pos) const;
+
+    char& operator[](size_t pos);
+
 private:
     // For every mutable operations, make the underlying data **unique** first.
     // Note that performing some operations may make the underlying data unsharedable.
