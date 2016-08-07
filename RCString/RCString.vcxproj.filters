@@ -13,9 +13,15 @@
     <ClCompile Include="src\rc_string.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\thread_safe_rc_string.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\rc_string.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thread_safe_rc_string.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

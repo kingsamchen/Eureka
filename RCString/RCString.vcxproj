@@ -21,9 +21,11 @@
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\rc_string.cpp" />
+    <ClCompile Include="src\thread_safe_rc_string.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\rc_string.h" />
+    <ClInclude Include="src\thread_safe_rc_string.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B82556D1-823A-4373-8957-DBBBD246C578}</ProjectGuid>
