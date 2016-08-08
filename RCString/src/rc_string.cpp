@@ -160,7 +160,7 @@ RCString::RCString(const char* str, size_t length)
 
 RCString::~RCString()
 {
-    if (data_ && data_->Release()) {
+    if (data_->Release()) {
         delete data_;
     }
 }

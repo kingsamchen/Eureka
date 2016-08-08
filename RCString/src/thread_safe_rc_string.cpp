@@ -30,7 +30,7 @@ public:
     {
         auto ref_count = ref_count_.load();
         assert(ref_count == 0 || ref_count == kUnsharedRefMark);
-        std::cout << "[D]: releasing StringData\n";
+        std::cout << "[D]: releasing ThreadSafeStringData\n";
     }
 
     ThreadSafeStringData(const ThreadSafeStringData&) = delete;
@@ -91,7 +91,7 @@ public:
     bool Release() const noexcept
     {
         assert(ref_count_.load() > 0);
-        if (Unsharedable() || ref_count_.fetch_sub(1) == 0) {
+        if (Unsharedable() || ref_count_.fetch_sub(1) - 1 == 0) {
             return true;
         }
 
@@ -134,4 +134,97 @@ ThreadSafeStringData* ThreadSafeStringData::Clone(size_t new_capacity) const
     auto* data = new ThreadSafeStringData(std::max(new_capacity, capacity_));
     data->CopyData(buffer_.get(), size_, 0);
     return data;
+}
+
+// -*- ThreadSafeRCString -*-
+
+ThreadSafeRCString::ThreadSafeRCString()
+    : data_(new ThreadSafeStringData(kBaseSize))
+{}
+
+ThreadSafeRCString::ThreadSafeRCString(const char* str)
+    : ThreadSafeRCString(str, std::char_traits<char>::length(str))
+{}
+
+ThreadSafeRCString::ThreadSafeRCString(const char* str, size_t length)
+    : data_(new ThreadSafeStringData(length))
+{
+    data_->CopyData(str, length, 0);
+}
+
+ThreadSafeRCString::ThreadSafeRCString(const ThreadSafeRCString& other)
+{
+    if (!other.data_->Unsharedable()) {
+        data_ = other.data_;
+        data_->AddRef();
+    } else {
+        data_ = other.data_->Clone(other.size());
+    }
+}
+
+ThreadSafeRCString::~ThreadSafeRCString()
+{
+    if (data_->Release()) {
+        delete data_;
+    }
+}
+
+size_t ThreadSafeRCString::size() const noexcept
+{
+    return data_->size();
+}
+
+const char* ThreadSafeRCString::data() const noexcept
+{
+    return data_->data();
+}
+
+void ThreadSafeRCString::Append(const char* str)
+{
+    Append(str, std::char_traits<char>::length(str));
+}
+
+void ThreadSafeRCString::Append(const char* str, size_t length)
+{
+    auto new_size_required = size() + length;
+    PrepareToModify(new_size_required, false);
+    data_->CopyData(str, length, data_->size());
+}
+
+const char& ThreadSafeRCString::operator[](size_t pos) const
+{
+    return *(data_->data() + pos);
+}
+
+char& ThreadSafeRCString::operator[](size_t pos)
+{
+    PrepareToModify(size(), true);
+    return *(data_->data() + pos);
+}
+
+void ThreadSafeRCString::PrepareToModify(size_t required_capacity, bool make_unsharedable)
+{
+    if (!data_->Unique()) {
+        auto new_data = data_->Clone(required_capacity);
+        // At this moment, current string might be the sole owner of the underlying data.
+        if (data_->Release()) {
+            delete  data_;
+        }
+
+        data_ = new_data;
+    } else {
+        data_->Reserve(required_capacity);
+    }
+
+    if (make_unsharedable) {
+        data_->MakeUnsharedable();
+    } else {
+        data_->ResetSharedable();
+    }
+}
+
+std::ostream& operator<<(std::ostream& os, const ThreadSafeRCString& str)
+{
+    os.write(str.data(), str.size());
+    return os;
 }
