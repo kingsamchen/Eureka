@@ -170,3 +170,6 @@ gradlew.bat
 
 *.dmp
 .ycm*
+
+.vscode/
+out/
