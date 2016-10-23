@@ -2,7 +2,6 @@
 # 0xCCCCCCCC
 
 import cgi
-import logging
 import os
 import SocketServer
 import sys
@@ -38,6 +37,7 @@ class ServerHandler(SimpleHTTPRequestHandler):
 
 
 def main():
+    global SAVE_DIR
     if len(sys.argv) > 3:
         SAVE_DIR = sys.argv[1]
         PORT = int(sys.argv[2])
