@@ -17,6 +17,9 @@
     <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\downloader\url_downloader.cpp">
+      <Filter>src\downloader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\downloader\url_downloader.h">
