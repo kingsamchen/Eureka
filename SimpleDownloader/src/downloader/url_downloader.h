@@ -2,6 +2,7 @@
 #define DOWNLOADER_URL_DOWNLOADER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
@@ -44,8 +45,9 @@ private:
 private:
     GURL url_;
     base::FilePath save_path_;
-    // Non-owning. The provider of the callback should take care of the lifetime for callback.
     CompleteCallback* complete_callback_;
+    size_t downloaded_bytes_;
+    std::vector<char> disk_write_cache_;
     scoped_refptr<net::IOBuffer> buf_;
     std::unique_ptr<net::URLRequestContext> request_context_;
     std::unique_ptr<net::URLRequest> request_;
