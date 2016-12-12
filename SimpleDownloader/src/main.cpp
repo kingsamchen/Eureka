@@ -17,11 +17,6 @@ public:
         std::cout << "on download success\n";
     }
 
-    void OnDownloadStopped() override
-    {
-        std::cout << "on download stopped\n";
-    }
-
     void OnDownloadFailure() override
     {
         std::cout << "on download failure\n";
@@ -50,9 +45,18 @@ int main(int argc, char* argv[])
     thread_task_fn run_download = []() {
         downloader = std::make_unique<bililive::URLDownloader>(url, path, &complete_event);
         downloader->Start();
+        std::cout << "download started\n";
     };
 
     worker_thread.message_loop_proxy()->PostTask(FROM_HERE, base::Bind(run_download));
+
+    thread_task_fn stop_download = []() {
+        downloader->Stop();
+        std::cout << "download stopped\n";
+    };
+
+    worker_thread.message_loop_proxy()->PostDelayedTask(FROM_HERE, base::Bind(stop_download),
+                                                        base::TimeDelta::FromSeconds(7));
 
     std::cin.get();
     worker_thread.Stop();

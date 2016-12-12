@@ -19,6 +19,11 @@ bool InvalidFailureStatus(net::URLRequestStatus::Status status)
            status != net::URLRequestStatus::CANCELED;
 }
 
+bool DownloadCanceled(net::URLRequestStatus::Status status)
+{
+    return status == net::URLRequestStatus::CANCELED;
+}
+
 bool MarkDownloadedFileComplete(const base::FilePath& tmp_save_path, const base::FilePath& original_path)
 {
     base::PlatformFileError error;
@@ -64,7 +69,9 @@ void URLDownloader::Start()
 }
 
 void URLDownloader::Stop()
-{}
+{
+    request_->Cancel();
+}
 
 void URLDownloader::OnResponseStarted(net::URLRequest* request)
 {
@@ -76,10 +83,10 @@ void URLDownloader::OnResponseStarted(net::URLRequest* request)
         auto status = request->status().status();
         DCHECK(!InvalidFailureStatus(status));
         LOG_IF(ERROR, InvalidFailureStatus(status)) << "Request failed with invalid status: " << status;
-        if (status == net::URLRequestStatus::CANCELED) {
-            complete_callback_->OnDownloadStopped();
-        } else {
-            LOG(WARNING) << "Request failed";
+        if (!DownloadCanceled(status)) {
+            LOG(WARNING) << "Initiate request failed; "
+                         << "status: " << request->status().status()
+                         << "; error: " << request->status().error();
             complete_callback_->OnDownloadFailure();
         }
 
@@ -90,7 +97,7 @@ void URLDownloader::OnResponseStarted(net::URLRequest* request)
     int bytes_read = 0;
     if (request->Read(buf_.get(), kIOBufSize, &bytes_read)) {
         OnReadCompleted(request, bytes_read);
-    } else if (!request->status().is_io_pending()) {
+    } else if (!request->status().is_io_pending() && !DownloadCanceled(request->status().status())) {
         LOG(WARNING) << "Read from response encountered error;"
                      << "status: " << request->status().status()
                      << "; error: " << request->status().error();
@@ -128,8 +135,8 @@ void URLDownloader::OnReadCompleted(net::URLRequest* request, int bytes_read)
         }
     }
 
-    if (!request->status().is_io_pending()) {
-        LOG(WARNING) << "Read from response encountered error;"
+    if (!request->status().is_io_pending() && !DownloadCanceled(request->status().status())) {
+        LOG(WARNING) << "Read from response encountered error; "
                      << "status: " << request->status().status()
                      << "; error: " << request->status().error();
         complete_callback_->OnDownloadFailure();

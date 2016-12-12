@@ -22,8 +22,6 @@ public:
 
         virtual void OnDownloadSuccess() = 0;
 
-        virtual void OnDownloadStopped() = 0;
-
         virtual void OnDownloadFailure() = 0;
     };
 
