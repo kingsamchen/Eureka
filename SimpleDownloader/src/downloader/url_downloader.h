@@ -42,9 +42,12 @@ private:
 
     void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
+    void SaveReceivedChunk(int bytes_received, bool force_write_to_disk);
+
 private:
     GURL url_;
     base::FilePath save_path_;
+    base::FilePath tmp_save_path_;
     CompleteCallback* complete_callback_;
     size_t downloaded_bytes_;
     std::vector<char> disk_write_cache_;

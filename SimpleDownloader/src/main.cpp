@@ -28,8 +28,10 @@ public:
     }
 };
 
-GURL url("http://photo.fanfou.com/v1/mss_3d027b52ec5a4d589e68050845611e68/ff/n0/0d/ab/yr_164422.jpg@596w_1l.jpg");
-base::FilePath path(L"D:\\misc\\test.jpg");
+//GURL url("http://photo.fanfou.com/v1/mss_3d027b52ec5a4d589e68050845611e68/ff/n0/0d/ab/yr_164422.jpg@596w_1l.jpg");
+GURL url("https://download.microsoft.com/download/8/4/A/84A35BF1-DAFE-4AE8-82AF-AD2AE20B6B14/directx_Jun2010_redist.exe");
+//base::FilePath path(L"D:\\misc\\test.jpg");
+base::FilePath path(L"D:\\misc\\dx_redist.exe");
 DownloadCompleteEvent complete_event;
 std::unique_ptr<bililive::URLDownloader> downloader;
 

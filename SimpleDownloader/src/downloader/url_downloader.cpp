@@ -1,11 +1,14 @@
 #include "downloader/url_downloader.h"
 
+#include <fstream>
+
 #include "base/file_util.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_status.h"
 
 namespace {
 
+const wchar_t kTmpFileExt[] = L"part";
 const int kIOBufSize = 16 * 1024;   // 16KB
 const size_t kDiskWriteThreshold = 4 * 1024 * 1024;  // 4MB
 
@@ -16,6 +19,20 @@ bool InvalidFailureStatus(net::URLRequestStatus::Status status)
            status != net::URLRequestStatus::CANCELED;
 }
 
+bool MarkDownloadedFileComplete(const base::FilePath& tmp_save_path, const base::FilePath& original_path)
+{
+    base::PlatformFileError error;
+    bool rv = base::ReplaceFile(tmp_save_path, original_path, &error);
+    if (!rv) {
+        LOG(WARNING) << "Failed to rename downloaded file (" << tmp_save_path.AsUTF8Unsafe()
+                     << ") to (" << original_path.AsUTF8Unsafe()
+                     << "); Error: " << error;
+        return false;
+    }
+
+    return true;
+}
+
 }   // namespace
 
 namespace bililive {
@@ -23,6 +40,7 @@ namespace bililive {
 URLDownloader::URLDownloader(const GURL& url, const base::FilePath& save_path, CompleteCallback* callback)
     : url_(url),
       save_path_(save_path),
+      tmp_save_path_(save_path.AddExtension(kTmpFileExt)),
       complete_callback_(callback),
       downloaded_bytes_(0U),
       buf_(new net::IOBuffer(kIOBufSize))
@@ -37,6 +55,11 @@ URLDownloader::URLDownloader(const GURL& url, const base::FilePath& save_path, C
 
 void URLDownloader::Start()
 {
+    if (!base::PathExists(tmp_save_path_)) {
+        std::ofstream tmp_file(tmp_save_path_.value());
+        (void)tmp_file;
+    }
+
     request_->Start();
 }
 
@@ -81,27 +104,27 @@ void URLDownloader::OnReadCompleted(net::URLRequest* request, int bytes_read)
 
     if (bytes_read > 0) {
         downloaded_bytes_ += static_cast<size_t>(bytes_read);
-        auto data_begin = buf_->data();
-        auto data_end = buf_->data() + bytes_read;
-        disk_write_cache_.insert(disk_write_cache_.end(), data_begin, data_end);
-        // TODO: should we write to disk at this time?
+        SaveReceivedChunk(bytes_read, false);
     }
 
     if (request->status().is_success() && bytes_read > 0) {
         bytes_read = 0;
         while (request->Read(buf_.get(), kIOBufSize, &bytes_read)) {
             if (bytes_read == 0) {
-                file_util::WriteFile(save_path_, disk_write_cache_.data(), disk_write_cache_.size());
-                complete_callback_->OnDownloadSuccess();
+                SaveReceivedChunk(0, true);
+                if (MarkDownloadedFileComplete(tmp_save_path_, save_path_)) {
+                    complete_callback_->OnDownloadSuccess();
+                } else {
+                    // Extremely rare, but possible.
+                    complete_callback_->OnDownloadFailure();
+                }
+
                 return;
             }
 
             DCHECK(bytes_read > 0);
             downloaded_bytes_ += static_cast<size_t>(bytes_read);
-            auto data_begin = buf_->data();
-            auto data_end = buf_->data() + bytes_read;
-            disk_write_cache_.insert(disk_write_cache_.end(), data_begin, data_end);
-            // TODO: should we write to disk at this time?
+            SaveReceivedChunk(bytes_read, false);
         }
     }
 
@@ -110,6 +133,19 @@ void URLDownloader::OnReadCompleted(net::URLRequest* request, int bytes_read)
                      << "status: " << request->status().status()
                      << "; error: " << request->status().error();
         complete_callback_->OnDownloadFailure();
+    }
+}
+
+void URLDownloader::SaveReceivedChunk(int bytes_received, bool force_write_to_disk)
+{
+    DCHECK(bytes_received >= 0);
+
+    auto data_begin = buf_->data();
+    auto data_end = buf_->data() + bytes_received;
+    disk_write_cache_.insert(disk_write_cache_.end(), data_begin, data_end);
+    if (disk_write_cache_.size() >= kDiskWriteThreshold || force_write_to_disk) {
+        file_util::AppendToFile(tmp_save_path_, disk_write_cache_.data(), disk_write_cache_.size());
+        disk_write_cache_.clear();
     }
 }
 
