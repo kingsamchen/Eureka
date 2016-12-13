@@ -3,6 +3,8 @@
 #include <fstream>
 
 #include "base/file_util.h"
+#include "base/format_macros.h"
+#include "base/strings/stringprintf.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_status.h"
 
@@ -61,8 +63,22 @@ URLDownloader::URLDownloader(const GURL& url, const base::FilePath& save_path, C
 void URLDownloader::Start()
 {
     if (!base::PathExists(tmp_save_path_)) {
+        // Appending file requires the file must exist already.
         std::ofstream tmp_file(tmp_save_path_.value());
         (void)tmp_file;
+    } else {
+        int64 current_file_size = 0;
+        bool succeeded = file_util::GetFileSize(tmp_save_path_, &current_file_size);
+        if (succeeded) {
+            request_->SetExtraRequestHeaderByName(net::HttpRequestHeaders::kRange,
+                                                  base::StringPrintf("bytes=%" PRIuS "-", current_file_size),
+                                                  true);
+        } else {
+            // Empty the file content and start downloading from scratch.
+            NOTREACHED();
+            std::ofstream tmp_file(tmp_save_path_.value());
+            (void)tmp_file;
+        }
     }
 
     request_->Start();
@@ -76,9 +92,6 @@ void URLDownloader::Stop()
 void URLDownloader::OnResponseStarted(net::URLRequest* request)
 {
     DCHECK(!request->status().is_io_pending());
-
-    // TODO: Get full request headers? we need to resume download from where last ends.
-
     if (!request->status().is_success()) {
         auto status = request->status().status();
         DCHECK(!InvalidFailureStatus(status));
@@ -108,7 +121,6 @@ void URLDownloader::OnResponseStarted(net::URLRequest* request)
 void URLDownloader::OnReadCompleted(net::URLRequest* request, int bytes_read)
 {
     DCHECK(!request->status().is_io_pending());
-
     if (bytes_read > 0) {
         downloaded_bytes_ += static_cast<size_t>(bytes_read);
         SaveReceivedChunk(bytes_read, false);
@@ -135,18 +147,21 @@ void URLDownloader::OnReadCompleted(net::URLRequest* request, int bytes_read)
         }
     }
 
-    if (!request->status().is_io_pending() && !DownloadCanceled(request->status().status())) {
-        LOG(WARNING) << "Read from response encountered error; "
-                     << "status: " << request->status().status()
-                     << "; error: " << request->status().error();
-        complete_callback_->OnDownloadFailure();
+    if (!request->status().is_io_pending()) {
+        if (DownloadCanceled(request->status().status())) {
+            SaveReceivedChunk(0, true);
+        } else {
+            LOG(WARNING) << "Read from response encountered error; "
+                << "status: " << request->status().status()
+                << "; error: " << request->status().error();
+            complete_callback_->OnDownloadFailure();
+        }
     }
 }
 
 void URLDownloader::SaveReceivedChunk(int bytes_received, bool force_write_to_disk)
 {
     DCHECK(bytes_received >= 0);
-
     auto data_begin = buf_->data();
     auto data_end = buf_->data() + bytes_received;
     disk_write_cache_.insert(disk_write_cache_.end(), data_begin, data_end);

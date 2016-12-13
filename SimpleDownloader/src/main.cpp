@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
     };
 
     worker_thread.message_loop_proxy()->PostDelayedTask(FROM_HERE, base::Bind(stop_download),
-                                                        base::TimeDelta::FromSeconds(7));
+                                                        base::TimeDelta::FromSeconds(30));
 
     std::cin.get();
     worker_thread.Stop();
