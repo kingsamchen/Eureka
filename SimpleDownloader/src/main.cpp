@@ -28,7 +28,7 @@ GURL url("https://download.microsoft.com/download/8/4/A/84A35BF1-DAFE-4AE8-82AF-
 //base::FilePath path(L"D:\\misc\\test.jpg");
 base::FilePath path(L"D:\\misc\\dx_redist.exe");
 DownloadCompleteEvent complete_event;
-std::unique_ptr<bililive::URLDownloader> downloader;
+std::unique_ptr<downloader::URLDownloader> downloader;
 
 int main(int argc, char* argv[])
 {
@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
 
     // Seems URLRequestContext requires construction and starting request must be on the same thread.
     thread_task_fn run_download = []() {
-        downloader = std::make_unique<bililive::URLDownloader>(url, path, &complete_event);
+        downloader = std::make_unique<downloader::URLDownloader>(url, path, &complete_event);
         downloader->Start();
         std::cout << "download started\n";
     };

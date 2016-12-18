@@ -8,11 +8,27 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_status.h"
 
+namespace net {
+
+std::ostream& operator<<(std::ostream& os, const URLRequestStatus& request_status)
+{
+    os << "status: " << request_status.status() << "\n"
+       << "error: " << ErrorToString(request_status.error());
+    return os;
+}
+
+}   // namespace net
+
 namespace {
 
 const wchar_t kTmpFileExt[] = L"part";
 const int kIOBufSize = 16 * 1024;   // 16KB
 const size_t kDiskWriteThreshold = 4 * 1024 * 1024;  // 4MB
+
+void CreateEmptyFile(const base::FilePath& file_path)
+{
+    std::ofstream(file_path.value(), std::ios_base::binary | std::ios_base::trunc);
+}
 
 // If a request has failed, it must end up with the status being either failed, or canceled.
 bool InvalidFailureStatus(net::URLRequestStatus::Status status)
@@ -42,7 +58,7 @@ bool MarkDownloadedFileComplete(const base::FilePath& tmp_save_path, const base:
 
 }   // namespace
 
-namespace bililive {
+namespace downloader {
 
 URLDownloader::URLDownloader(const GURL& url, const base::FilePath& save_path, CompleteCallback* callback)
     : url_(url),
@@ -58,14 +74,20 @@ URLDownloader::URLDownloader(const GURL& url, const base::FilePath& save_path, C
     request_context_.reset(context_builder.Build());
 
     request_ = std::make_unique<net::URLRequest>(url, this, request_context_.get());
+    request_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
+                             net::LOAD_DO_NOT_SAVE_COOKIES |
+                             net::LOAD_DO_NOT_SEND_AUTH_DATA |
+                             net::LOAD_IS_DOWNLOAD |
+                             net::LOAD_DISABLE_CACHE);
 }
 
 void URLDownloader::Start()
 {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
     if (!base::PathExists(tmp_save_path_)) {
-        // Appending file requires the file must exist already.
-        std::ofstream tmp_file(tmp_save_path_.value());
-        (void)tmp_file;
+        // Our append-to-file implementation requires the file must exist first.
+        CreateEmptyFile(tmp_save_path_);
     } else {
         int64 current_file_size = 0;
         bool succeeded = file_util::GetFileSize(tmp_save_path_, &current_file_size);
@@ -74,10 +96,10 @@ void URLDownloader::Start()
                                                   base::StringPrintf("bytes=%" PRIuS "-", current_file_size),
                                                   true);
         } else {
-            // Empty the file content and start downloading from scratch.
+            // Extremely rare but possible; If this is the case, unlucky us, we have no choice
+            // but empty the file content and start downloading from scratch.
             NOTREACHED();
-            std::ofstream tmp_file(tmp_save_path_.value());
-            (void)tmp_file;
+            CreateEmptyFile(tmp_save_path_);
         }
     }
 
@@ -86,20 +108,21 @@ void URLDownloader::Start()
 
 void URLDownloader::Stop()
 {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
     request_->Cancel();
 }
 
 void URLDownloader::OnResponseStarted(net::URLRequest* request)
 {
     DCHECK(!request->status().is_io_pending());
+
     if (!request->status().is_success()) {
         auto status = request->status().status();
         DCHECK(!InvalidFailureStatus(status));
         LOG_IF(ERROR, InvalidFailureStatus(status)) << "Request failed with invalid status: " << status;
         if (!DownloadCanceled(status)) {
-            LOG(WARNING) << "Initiate request failed; "
-                         << "status: " << request->status().status()
-                         << "; error: " << request->status().error();
+            LOG(WARNING) << "Initiate request failed;\n" << request->status();
             complete_callback_->OnDownloadFailure();
         }
 
@@ -111,9 +134,7 @@ void URLDownloader::OnResponseStarted(net::URLRequest* request)
     if (request->Read(buf_.get(), kIOBufSize, &bytes_read)) {
         OnReadCompleted(request, bytes_read);
     } else if (!request->status().is_io_pending() && !DownloadCanceled(request->status().status())) {
-        LOG(WARNING) << "Read from response encountered error;"
-                     << "status: " << request->status().status()
-                     << "; error: " << request->status().error();
+        LOG(WARNING) << "Read from response encountered error;\n" << request->status();
         complete_callback_->OnDownloadFailure();
     }
 }
@@ -121,6 +142,7 @@ void URLDownloader::OnResponseStarted(net::URLRequest* request)
 void URLDownloader::OnReadCompleted(net::URLRequest* request, int bytes_read)
 {
     DCHECK(!request->status().is_io_pending());
+
     if (bytes_read > 0) {
         downloaded_bytes_ += static_cast<size_t>(bytes_read);
         SaveReceivedChunk(bytes_read, false);
@@ -151,9 +173,7 @@ void URLDownloader::OnReadCompleted(net::URLRequest* request, int bytes_read)
         if (DownloadCanceled(request->status().status())) {
             SaveReceivedChunk(0, true);
         } else {
-            LOG(WARNING) << "Read from response encountered error; "
-                << "status: " << request->status().status()
-                << "; error: " << request->status().error();
+            LOG(WARNING) << "Read from response encountered error;\n" << request->status();
             complete_callback_->OnDownloadFailure();
         }
     }
