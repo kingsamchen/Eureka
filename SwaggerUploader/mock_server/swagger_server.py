@@ -1,66 +1,44 @@
 #!/usr/bin/python
 # 0xCCCCCCCC
 
-import cgi
-import os
-import SocketServer
-import sys
+import json
 
-from SimpleHTTPServer import SimpleHTTPRequestHandler
+from flask import Flask, request, Response, url_for
 
-SAVE_DIR = ''
+app = Flask('__name__')
 
-class ServerHandler(SimpleHTTPRequestHandler):
-    def do_GET(self):
-        print('--- GET Request ---')
-        print(self.headers)
-        SimpleHTTPRequestHandler.do_GET(self)
 
-    def do_POST(self):
-        print('--- POST Request ---')
-        print(self.headers)
-        form = cgi.FieldStorage(fp=self.rfile,
-                                headers=self.headers,
-                                environ={'REQUEST_METHOD':'POST',
-                                         'CONTENT_TYPE':self.headers['Content-Type']})
-        print('--- POST values ---')
-        dest_filepath = os.path.join(SAVE_DIR, 'test-video')
-        data = form['file'].file.read()
-        with open(dest_filepath, 'ab') as df:
-            df.write(data)
-        current_chunk = form.getvalue('chunk')
-        total_chunks = form.getvalue('chunks')
-        chunk_size = form.getvalue('filesize')
-        print('receive data chunk {0}/{1} with size {2}'.format(current_chunk, total_chunks,
-                                                                chunk_size))
-        SimpleHTTPRequestHandler.do_GET(self)
+@app.route('/')
+def root():
+    return 'Welcome and see the instruction manual as follows'
+
+
+@app.route('/preupload')
+def prepare_upload():
+    profile = request.args['profile']
+    mid = request.args['mid']
+    print('profile = {0}\nmid = {1}'.format(profile, mid))
+
+    upload_info = {
+        'url': 'http://127.0.0.1:5000/upload',
+        'complete': 'http://127.0.0.1:5000/complete'
+    }
+
+    return Response(json.dumps(upload_info), status=200, mimetype='application/json')
+
+
+@app.route('/upload')
+def upload():
+    pass
+
+
+@app.route('/complete')
+def complete_upload():
+    pass
 
 
 def main():
-    global SAVE_DIR
-    if len(sys.argv) > 3:
-        SAVE_DIR = sys.argv[1]
-        PORT = int(sys.argv[2])
-        HOST = sys.argv[1]
-    elif len(sys.argv) > 2:
-        SAVE_DIR = sys.argv[1]
-        PORT = int(sys.argv[1])
-        HOST = ""
-    elif len(sys.argv) > 1:
-        SAVE_DIR = sys.argv[1]
-    else:
-        SAVE_DIR = "e:/Caches"
-        PORT = 8000
-        HOST = "127.0.0.1"
-
-    Handler = ServerHandler
-    httpd = SocketServer.TCPServer((HOST, PORT), Handler)
-
-    print('Tiny http server for breakpad test')
-    print("Serving at: http://{0}:{1}".format(HOST, PORT))
-
-    httpd.serve_forever()
-
+    app.run()
 
 if __name__ == '__main__':
     main()
