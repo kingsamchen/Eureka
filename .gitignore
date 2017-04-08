@@ -12,8 +12,10 @@
 [Dd]ebug_X64/
 [Rr]elease/
 [Rr]elease_X64/
-[Bb]in/
+[Bb]in/*
 [Oo]bj/
+
+!ThirdParty/FFMpeg/bin/
 
 # Enable "build/" folder in the NuGet Packages folder since NuGet packages use it for MSBuild targets
 !packages/*/build/
