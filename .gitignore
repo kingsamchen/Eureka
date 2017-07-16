@@ -175,3 +175,5 @@ gradlew.bat
 
 .vscode/
 out/
+
+*.out
