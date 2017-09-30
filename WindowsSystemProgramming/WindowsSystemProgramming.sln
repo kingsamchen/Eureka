@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "memory_management", "memory_management\memory_management.vcxproj", "{D6081F5F-9AEA-4AFF-8A47-D9AA9D4AF9A6}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "advanced_thread_synchronization", "advanced_thread_synchronization\advanced_thread_synchronization.vcxproj", "{D8529186-87A5-4BF6-B463-26730926B0BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{D6081F5F-9AEA-4AFF-8A47-D9AA9D4AF9A6}.Release|x64.Build.0 = Release|x64
 		{D6081F5F-9AEA-4AFF-8A47-D9AA9D4AF9A6}.Release|x86.ActiveCfg = Release|Win32
 		{D6081F5F-9AEA-4AFF-8A47-D9AA9D4AF9A6}.Release|x86.Build.0 = Release|Win32
+		{D8529186-87A5-4BF6-B463-26730926B0BD}.Debug|x64.ActiveCfg = Debug|x64
+		{D8529186-87A5-4BF6-B463-26730926B0BD}.Debug|x64.Build.0 = Debug|x64
+		{D8529186-87A5-4BF6-B463-26730926B0BD}.Debug|x86.ActiveCfg = Debug|Win32
+		{D8529186-87A5-4BF6-B463-26730926B0BD}.Debug|x86.Build.0 = Debug|Win32
+		{D8529186-87A5-4BF6-B463-26730926B0BD}.Release|x64.ActiveCfg = Release|x64
+		{D8529186-87A5-4BF6-B463-26730926B0BD}.Release|x64.Build.0 = Release|x64
+		{D8529186-87A5-4BF6-B463-26730926B0BD}.Release|x86.ActiveCfg = Release|Win32
+		{D8529186-87A5-4BF6-B463-26730926B0BD}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
