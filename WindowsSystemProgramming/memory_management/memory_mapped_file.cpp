@@ -14,7 +14,7 @@
 
 void BasicMemoryMappedFile()
 {
-    kbase::ScopedHandle file(CreateFileW(L"test.txt",
+    kbase::ScopedWinHandle file(CreateFileW(L"test.txt",
                                          GENERIC_READ | GENERIC_WRITE,
                                          0,
                                          nullptr,
@@ -23,9 +23,10 @@ void BasicMemoryMappedFile()
                                          nullptr));
     ENSURE(CHECK, !!file)(kbase::LastError()).Require();
 
-    auto info = kbase::GetFileInfo(kbase::Path(L"test.txt"));
+    kbase::FileInfo info;
+    kbase::GetFileInfo(kbase::Path(L"test.txt"), info);
 
-    kbase::ScopedHandle mapping(CreateFileMappingW(file.get(),
+    kbase::ScopedWinHandle mapping(CreateFileMappingW(file.get(),
                                                    nullptr,
                                                    PAGE_READWRITE,
                                                    0,
@@ -41,6 +42,6 @@ void BasicMemoryMappedFile()
     std::cout << "First 8 bytes of the file is:\n" << sv << std::endl;
 
     // Now we point to the first byte beyond original file content.
-    ptr = static_cast<char*>(map_view) + info.size();
-    strcpy_s(ptr, 1024 - info.size(), "write to mapped memory!");
+    ptr = static_cast<char*>(map_view) + info.file_size();
+    strcpy_s(ptr, 1024 - info.file_size(), "write to mapped memory!");
 }
