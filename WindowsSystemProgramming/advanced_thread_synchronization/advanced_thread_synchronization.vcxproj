@@ -116,6 +116,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="apc.cpp" />
     <ClCompile Include="blocking_queue_with_nt_cond.cpp" />
     <ClCompile Include="broadcast_event.cpp" />
     <ClCompile Include="main.cpp" />

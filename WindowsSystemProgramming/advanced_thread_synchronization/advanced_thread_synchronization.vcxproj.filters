@@ -16,6 +16,9 @@
     <ClCompile Include="blocking_queue_with_nt_cond.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="apc.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="blocking_queue_with_nt_cond.h">

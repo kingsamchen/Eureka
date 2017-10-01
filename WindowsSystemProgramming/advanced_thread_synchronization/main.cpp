@@ -6,10 +6,11 @@
 
 void TestBroadcastOnEvent();
 void TestMTQueue();
+void TestAPC();
 
 int main()
 {
-    TestMTQueue();
+    TestAPC();
     _getch();
     return 0;
 }
