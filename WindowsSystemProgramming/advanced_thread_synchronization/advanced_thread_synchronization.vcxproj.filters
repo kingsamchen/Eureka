@@ -13,5 +13,13 @@
     <ClCompile Include="broadcast_event.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="blocking_queue_with_nt_cond.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="blocking_queue_with_nt_cond.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

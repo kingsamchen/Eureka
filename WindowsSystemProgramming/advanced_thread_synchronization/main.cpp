@@ -5,10 +5,11 @@
 #include <conio.h>
 
 void TestBroadcastOnEvent();
+void TestMTQueue();
 
 int main()
 {
-    TestBroadcastOnEvent();
+    TestMTQueue();
     _getch();
     return 0;
 }

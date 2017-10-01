@@ -177,3 +177,5 @@ gradlew.bat
 out/
 
 *.out
+
+.vs/
