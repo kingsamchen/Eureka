@@ -25,6 +25,9 @@
     <ClCompile Include="advanced_thread_synchronization\broadcast_event.cpp">
       <Filter>advanced_thread_synchronization</Filter>
     </ClCompile>
+    <ClCompile Include="interprocess_communication\anonymous_pipe.cpp">
+      <Filter>interprocess_communication</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="advanced_thread_synchronization\blocking_queue_with_nt_cond.h">
