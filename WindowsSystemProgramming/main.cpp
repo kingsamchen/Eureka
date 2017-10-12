@@ -6,10 +6,12 @@
 
 void BasicMemoryMappedFile();
 
+void TestBroadcastOnEvent();
+void TestMTQueue();
+void TestAPC();
+
 int main()
 {
-    BasicMemoryMappedFile();
-
     _getch();
     return 0;
 }
