@@ -11,10 +11,11 @@ void TestMTQueue();
 void TestAPC();
 
 void TestAnonymousPipe();
+void TestNamedPipe();
 
 int main()
 {
-    TestAnonymousPipe();
+    TestNamedPipe();
 
     _getch();
     return 0;

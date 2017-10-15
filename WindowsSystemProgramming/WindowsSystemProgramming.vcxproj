@@ -147,6 +147,7 @@
     <ClCompile Include="interprocess_communication\anonymous_pipe.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="memory_management\memory_mapped_file.cpp" />
+    <ClCompile Include="interprocess_communication\named_pipe.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="advanced_thread_synchronization\blocking_queue_with_nt_cond.h" />

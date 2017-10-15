@@ -28,6 +28,9 @@
     <ClCompile Include="interprocess_communication\anonymous_pipe.cpp">
       <Filter>interprocess_communication</Filter>
     </ClCompile>
+    <ClCompile Include="interprocess_communication\named_pipe.cpp">
+      <Filter>interprocess_communication</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="advanced_thread_synchronization\blocking_queue_with_nt_cond.h">
