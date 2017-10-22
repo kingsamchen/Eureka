@@ -10,6 +10,9 @@
     <Filter Include="interprocess_communication">
       <UniqueIdentifier>{5ed8253e-34ce-4d05-a133-ddbeadfa028c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="windows_sockets">
+      <UniqueIdentifier>{0324db76-2bd8-47e2-9130-56682899d320}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -30,6 +33,9 @@
     </ClCompile>
     <ClCompile Include="interprocess_communication\named_pipe.cpp">
       <Filter>interprocess_communication</Filter>
+    </ClCompile>
+    <ClCompile Include="windows_sockets\socket_message.cpp">
+      <Filter>windows_sockets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

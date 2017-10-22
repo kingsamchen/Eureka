@@ -99,7 +99,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\KBase\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -148,6 +148,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="memory_management\memory_mapped_file.cpp" />
     <ClCompile Include="interprocess_communication\named_pipe.cpp" />
+    <ClCompile Include="windows_sockets\socket_message.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="advanced_thread_synchronization\blocking_queue_with_nt_cond.h" />

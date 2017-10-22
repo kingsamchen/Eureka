@@ -13,10 +13,11 @@ void TestAPC();
 void TestAnonymousPipe();
 void TestNamedPipe();
 
+void TestSocketMessage();
+
 int main()
 {
-    TestNamedPipe();
-
+    TestSocketMessage();
     _getch();
     return 0;
 }
