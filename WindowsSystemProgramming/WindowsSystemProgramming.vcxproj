@@ -144,6 +144,7 @@
     <ClCompile Include="advanced_thread_synchronization\apc.cpp" />
     <ClCompile Include="advanced_thread_synchronization\blocking_queue_with_nt_cond.cpp" />
     <ClCompile Include="advanced_thread_synchronization\broadcast_event.cpp" />
+    <ClCompile Include="asynchronous_io\overlapped_io.cpp" />
     <ClCompile Include="interprocess_communication\anonymous_pipe.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="memory_management\memory_mapped_file.cpp" />

@@ -13,6 +13,9 @@
     <Filter Include="windows_sockets">
       <UniqueIdentifier>{0324db76-2bd8-47e2-9130-56682899d320}</UniqueIdentifier>
     </Filter>
+    <Filter Include="asynchronous_io">
+      <UniqueIdentifier>{76fb7794-0e01-43fd-8cbd-f01413e01344}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -36,6 +39,9 @@
     </ClCompile>
     <ClCompile Include="windows_sockets\socket_message.cpp">
       <Filter>windows_sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="asynchronous_io\overlapped_io.cpp">
+      <Filter>asynchronous_io</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
