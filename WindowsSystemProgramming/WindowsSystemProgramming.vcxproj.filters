@@ -43,6 +43,9 @@
     <ClCompile Include="asynchronous_io\overlapped_io.cpp">
       <Filter>asynchronous_io</Filter>
     </ClCompile>
+    <ClCompile Include="asynchronous_io\extended_io.cpp">
+      <Filter>asynchronous_io</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="advanced_thread_synchronization\blocking_queue_with_nt_cond.h">

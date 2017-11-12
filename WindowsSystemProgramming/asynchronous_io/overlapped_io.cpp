@@ -11,7 +11,7 @@
 #include "kbase/error_exception_util.h"
 #include "kbase/scoped_handle.h"
 #include "kbase/path.h"
-#include <kbase/file_util.h>
+#include "kbase/file_util.h"
 
 constexpr DWORD kReadChunkSize = 1024;
 constexpr DWORD kConcurrentReader = 4;

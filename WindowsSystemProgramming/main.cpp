@@ -16,10 +16,11 @@ void TestNamedPipe();
 void TestSocketMessage();
 
 void TestOverlappedIO();
+void TestExtendedIO();
 
 int main()
 {
-    TestOverlappedIO();
+    TestExtendedIO();
     _getch();
     return 0;
 }
