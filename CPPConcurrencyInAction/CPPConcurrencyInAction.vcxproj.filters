@@ -8,6 +8,9 @@
     <Filter Include="hello_world">
       <UniqueIdentifier>{10e48cdc-26c8-4eb8-bec9-c52c3b911d51}</UniqueIdentifier>
     </Filter>
+    <Filter Include="managing_threads">
+      <UniqueIdentifier>{0e3c0c9c-2c5c-4e84-b1d6-488a1df90437}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
