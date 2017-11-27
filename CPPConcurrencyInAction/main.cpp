@@ -7,10 +7,13 @@
 void HelloConcurrencyWorld();
 
 void SafeWaitThreadComplete();
+void UseScopedThread();
+
+void TestParallelAccumulate();
 
 int main()
 {
-    SafeWaitThreadComplete();
+    TestParallelAccumulate();
     _getch();
     return 0;
 }

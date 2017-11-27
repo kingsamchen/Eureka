@@ -143,7 +143,12 @@
   <ItemGroup>
     <ClCompile Include="hello_world\hello_world.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="managing_threads\parallel_accumulate.cpp" />
     <ClCompile Include="managing_threads\wait_threads_complete.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="managing_threads\parallel_accumulate.h" />
+    <ClInclude Include="managing_threads\scoped_thread.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -7,6 +7,8 @@
 
 #include "kbase/scope_guard.h"
 
+#include "scoped_thread.h"
+
 void RaiseException()
 {
     throw std::runtime_error("god");
@@ -45,4 +47,21 @@ void SafeWaitThreadComplete()
     }
 
     std::cout << "SafeWaitThreadComplete() returns!\n";
+}
+
+void UseScopedThread()
+{
+    int sum = 0;
+
+    {
+        ScopedThread thread(std::thread([&sum] {
+            for (int i = 1; i <= 100; ++i) {
+                sum += i;
+            }
+        }));
+
+        std::cout << "worker is running!\n";
+    }
+
+    std::cout << "the sum is " << sum << std::endl;
 }
