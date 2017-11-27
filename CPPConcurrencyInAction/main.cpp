@@ -6,9 +6,11 @@
 
 void HelloConcurrencyWorld();
 
+void SafeWaitThreadComplete();
+
 int main()
 {
-    HelloConcurrencyWorld();
+    SafeWaitThreadComplete();
     _getch();
     return 0;
 }

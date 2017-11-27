@@ -17,5 +17,8 @@
     <ClCompile Include="hello_world\hello_world.cpp">
       <Filter>hello_world</Filter>
     </ClCompile>
+    <ClCompile Include="managing_threads\wait_threads_complete.cpp">
+      <Filter>managing_threads</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
