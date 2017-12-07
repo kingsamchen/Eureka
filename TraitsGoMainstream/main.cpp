@@ -2,6 +2,8 @@
  @ 0xCCCCCCCC
 */
 
+#include <conio.h>
+
 #include "failure_case.h"
 #include "with_sfinae.h"
 
@@ -9,14 +11,11 @@ void TestRaw()
 {
     using namespace raw;
 
-    int i = 0;
     Bar bar;
 
-    Foo(i);
+    std::cout << "Foo(10) = " << Foo(10) << std::endl;
 
-    // Ambiguous call! because the first Foo is still considered even if the instantiation code will
-    // be illegal.
-    //Foo(bar);
+    std::cout << "Foo(bar) = " << Foo(bar) << std::endl;
 }
 
 void TestSFINAE()
@@ -40,11 +39,14 @@ void TestProcessIntOnly()
     ProcessIntOnly(i);
     ProcessIntOnly(j);
 
-    // ProcessIntOnly(3.14);
+    //ProcessIntOnly(3.14);
 }
 
 int main()
 {
+    TestRaw();
+    TestSFINAE();
     TestProcessIntOnly();
+    _getch();
     return 0;
 }
