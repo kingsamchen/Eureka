@@ -11,6 +11,9 @@
     <Filter Include="managing_threads">
       <UniqueIdentifier>{0e3c0c9c-2c5c-4e84-b1d6-488a1df90437}</UniqueIdentifier>
     </Filter>
+    <Filter Include="sharing_data_between_threads">
+      <UniqueIdentifier>{ccfc1110-edd4-463e-962a-25e1ca3d4953}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -23,6 +26,9 @@
     <ClCompile Include="managing_threads\parallel_accumulate.cpp">
       <Filter>managing_threads</Filter>
     </ClCompile>
+    <ClCompile Include="sharing_data_between_threads\hierarchical_mutex.cpp">
+      <Filter>sharing_data_between_threads</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="managing_threads\scoped_thread.h">
@@ -30,6 +36,9 @@
     </ClInclude>
     <ClInclude Include="managing_threads\parallel_accumulate.h">
       <Filter>managing_threads</Filter>
+    </ClInclude>
+    <ClInclude Include="sharing_data_between_threads\hierarchical_mutex.h">
+      <Filter>sharing_data_between_threads</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

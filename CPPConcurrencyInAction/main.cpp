@@ -11,9 +11,11 @@ void UseScopedThread();
 
 void TestParallelAccumulate();
 
+void TestHierarchicalMutex();
+
 int main()
 {
-    TestParallelAccumulate();
+    TestHierarchicalMutex();
     _getch();
     return 0;
 }

@@ -99,7 +99,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\KBase\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -145,10 +145,12 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="managing_threads\parallel_accumulate.cpp" />
     <ClCompile Include="managing_threads\wait_threads_complete.cpp" />
+    <ClCompile Include="sharing_data_between_threads\hierarchical_mutex.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="managing_threads\parallel_accumulate.h" />
     <ClInclude Include="managing_threads\scoped_thread.h" />
+    <ClInclude Include="sharing_data_between_threads\hierarchical_mutex.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
