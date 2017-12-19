@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="thread_pool_timer.cpp" />
+    <ClCompile Include="thread_pool_wait.cpp" />
     <ClCompile Include="thread_pool_work.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

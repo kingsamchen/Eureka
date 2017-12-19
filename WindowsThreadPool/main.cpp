@@ -6,10 +6,11 @@
 
 void TestThreadpoolWork();
 void TestThreadpoolTimer();
+void TestThreadpoolWait();
 
 int main()
 {
-    TestThreadpoolTimer();
+    TestThreadpoolWait();
     _getch();
     return 0;
 }
