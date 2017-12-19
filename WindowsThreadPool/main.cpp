@@ -7,10 +7,11 @@
 void TestThreadpoolWork();
 void TestThreadpoolTimer();
 void TestThreadpoolWait();
+void TestThreadpoolIO();
 
 int main()
 {
-    TestThreadpoolWait();
+    TestThreadpoolIO();
     _getch();
     return 0;
 }
