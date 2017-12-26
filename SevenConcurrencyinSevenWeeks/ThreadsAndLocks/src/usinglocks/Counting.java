@@ -41,11 +41,20 @@ public class Counting {
         System.out.println("Value of counter is: " + String.valueOf(counter.getCount()));
     }
 
-    public static void main(String[] args) throws InterruptedException, IOException {
+    void testDownloader() throws InterruptedException, IOException {
         String url = "https://s3-img.meituan.net/v1/mss_3d027b52ec5a4d589e68050845611e68/ff/n0/0f/1f/eq_520021.jpg@596w_1l.jpg";
         Downloader imgDownloader = new Downloader(new URL(url), "ffimage.jpg");
         imgDownloader.addListener(p -> System.out.println("Image downloaded " + String.valueOf(p)));
         imgDownloader.run();
         imgDownloader.join();
+    }
+
+    void testConcurrentSortedListST() {
+        ConcurrentSortedList slt = new ConcurrentSortedList();
+
+    }
+
+    public static void main(String[] args) throws InterruptedException, IOException {
+
     }
 }
