@@ -163,7 +163,8 @@ $RECYCLE.BIN/
 
 .gradle/
 gradle/
-.idea/
+**/.idea/workspace.xml
+**/.idea/tasks.xml
 build/
 local.properties
 gradle.properties
