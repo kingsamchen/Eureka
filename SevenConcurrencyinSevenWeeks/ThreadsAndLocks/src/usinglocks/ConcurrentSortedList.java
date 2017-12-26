@@ -55,9 +55,31 @@ public class ConcurrentSortedList {
     }
 
     // Don't call this function while others using the list.
-    public void dumpList() {
-        for (Node node = head.next; node != tail; node = node.next) {
-            System.out.println(node.value);
+    public boolean checkList() {
+        int checkedCount = 0;
+
+        if (head.next == tail) {
+            return true;
         }
+
+        boolean sorted = true;
+
+        Node cur = head.next;
+        Node next = cur.next;
+        while (next != tail) {
+            ++checkedCount;
+
+            if (cur.value > next.value) {
+                sorted = false;
+                break;
+            }
+
+            cur = next;
+            next = cur.next;
+        }
+
+        System.out.println("Checked count: " + String.valueOf(checkedCount));
+
+        return sorted;
     }
 }

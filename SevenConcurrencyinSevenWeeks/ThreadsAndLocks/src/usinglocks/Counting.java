@@ -3,6 +3,7 @@ package usinglocks;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Random;
 
 public class Counting {
     static class Counter {
@@ -19,7 +20,7 @@ public class Counting {
         }
     }
 
-    void testCounting() throws InterruptedException {
+    private static void testCounting() throws InterruptedException {
         final Counter counter = new Counter();
 
         class CounterThread extends Thread {
@@ -41,7 +42,7 @@ public class Counting {
         System.out.println("Value of counter is: " + String.valueOf(counter.getCount()));
     }
 
-    void testDownloader() throws InterruptedException, IOException {
+    private static void testDownloader() throws InterruptedException, IOException {
         String url = "https://s3-img.meituan.net/v1/mss_3d027b52ec5a4d589e68050845611e68/ff/n0/0f/1f/eq_520021.jpg@596w_1l.jpg";
         Downloader imgDownloader = new Downloader(new URL(url), "ffimage.jpg");
         imgDownloader.addListener(p -> System.out.println("Image downloaded " + String.valueOf(p)));
@@ -49,12 +50,52 @@ public class Counting {
         imgDownloader.join();
     }
 
-    void testConcurrentSortedListST() {
+    private static void testConcurrentSortedListST() {
+        System.out.println("[Test round 1]");
+        ConcurrentSortedList slt = new ConcurrentSortedList();
+        slt.insert(1);
+        slt.insert(3);
+        slt.insert(5);
+        slt.insert(7);
+        slt.insert(9);
+        System.out.println(slt.checkList());
+
+        System.out.println("[Test round 2]");
+        slt = new ConcurrentSortedList();
+        slt.insert(1);
+        slt.insert(3);
+        slt.insert(5);
+        slt.insert(7);
+        slt.insert(6);
+        slt.insert(9);
+        System.out.println(slt.checkList());
+    }
+
+    private static void testConcurrentSortedListMT() throws InterruptedException {
         ConcurrentSortedList slt = new ConcurrentSortedList();
 
+        Runnable r = ()-> {
+            Random rnd = new Random();
+            for (int i = 0; i < 20; ++i) {
+                slt.insert(rnd.nextInt());
+            }
+        };
+
+        System.out.println("[Multithreading Test]");
+
+        Thread t1 = new Thread(r);
+        t1.start();
+
+        Thread t2 = new Thread(r);
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println(slt.checkList());
     }
 
     public static void main(String[] args) throws InterruptedException, IOException {
-
+        testConcurrentSortedListMT();
     }
 }
