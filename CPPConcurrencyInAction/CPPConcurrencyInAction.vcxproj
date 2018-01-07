@@ -146,6 +146,8 @@
     <ClCompile Include="managing_threads\parallel_accumulate.cpp" />
     <ClCompile Include="managing_threads\wait_threads_complete.cpp" />
     <ClCompile Include="sharing_data_between_threads\hierarchical_mutex.cpp" />
+    <ClCompile Include="using_futures\packaged_tasks.cpp" />
+    <ClCompile Include="using_futures\promises.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="managing_threads\parallel_accumulate.h" />

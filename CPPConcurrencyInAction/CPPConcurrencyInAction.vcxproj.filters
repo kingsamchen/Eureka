@@ -14,6 +14,9 @@
     <Filter Include="sharing_data_between_threads">
       <UniqueIdentifier>{ccfc1110-edd4-463e-962a-25e1ca3d4953}</UniqueIdentifier>
     </Filter>
+    <Filter Include="using_futures">
+      <UniqueIdentifier>{d90b8cd8-b595-4a0c-b543-ad49e5767a14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -28,6 +31,12 @@
     </ClCompile>
     <ClCompile Include="sharing_data_between_threads\hierarchical_mutex.cpp">
       <Filter>sharing_data_between_threads</Filter>
+    </ClCompile>
+    <ClCompile Include="using_futures\packaged_tasks.cpp">
+      <Filter>using_futures</Filter>
+    </ClCompile>
+    <ClCompile Include="using_futures\promises.cpp">
+      <Filter>using_futures</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

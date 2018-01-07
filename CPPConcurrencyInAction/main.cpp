@@ -13,9 +13,12 @@ void TestParallelAccumulate();
 
 void TestHierarchicalMutex();
 
+void TestPackagedTasks();
+void TestPromise();
+
 int main()
 {
-    TestHierarchicalMutex();
+    TestPromise();
     _getch();
     return 0;
 }
