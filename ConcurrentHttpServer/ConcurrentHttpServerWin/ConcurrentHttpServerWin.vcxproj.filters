@@ -19,5 +19,8 @@
     <ClInclude Include="src\iocp_utils.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\scoped_socket.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
