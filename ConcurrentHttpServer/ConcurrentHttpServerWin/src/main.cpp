@@ -10,7 +10,6 @@
 #include "kbase/at_exit_manager.h"
 #include "kbase/command_line.h"
 #include "kbase/error_exception_util.h"
-#include "kbase/os_info.h"
 #include "kbase/scope_guard.h"
 #include "kbase/scoped_handle.h"
 
@@ -56,9 +55,11 @@ ScopedSocketHandle CreateListener(unsigned short port, int max_pending_clients)
     server_addr.sin_port = htons(port);
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    bind(listener.get(), reinterpret_cast<sockaddr*>(&server_addr), sizeof(server_addr));
+    int rv = bind(listener.get(), reinterpret_cast<sockaddr*>(&server_addr), sizeof(server_addr));
+    ENSURE(CHECK, rv == 0)(WSAGetLastError()).Require();
 
-    listen(listener.get(), max_pending_clients);
+    rv = listen(listener.get(), max_pending_clients);
+    ENSURE(CHECK, rv == 0)(WSAGetLastError()).Require();
 
     return listener;
 }
@@ -76,14 +77,18 @@ int main()
     SetConsoleCtrlHandler(ControlCtrlHandler, TRUE);
     ON_SCOPE_EXIT { SetConsoleCtrlHandler(nullptr, FALSE); };
 
-    auto listener = CreateListener(8088, 10);
+    constexpr unsigned short kPort = 8088;
+    constexpr int kMaxPending = 10;
 
-    DWORD kConcurrentWorkers = kbase::OSInfo::GetInstance()->number_of_cores();
-    auto io_port = utils::CreateNewIOCP(utils::CompletionKeyIO, kConcurrentWorkers);
+    auto listener = CreateListener(kPort, kMaxPending);
+
+    // Default to number of cores in the system.
+    auto io_port = utils::CreateNewIOCP(utils::CompletionKeyIO, 0);
 
     bool success = utils::AssociateDeviceWithIOCP(reinterpret_cast<HANDLE>(listener.get()),
                                                   io_port.get(),
                                                   utils::CompletionKeyIO);
+    ENSURE(CHECK, success)(kbase::LastError()).Require();
 
     std::cin.get();
 
