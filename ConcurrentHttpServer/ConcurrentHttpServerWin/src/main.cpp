@@ -15,6 +15,7 @@
 #include "kbase/scoped_handle.h"
 
 #include "iocp_utils.h"
+#include "scoped_socket.h"
 
 namespace {
 
@@ -44,6 +45,24 @@ void CleanWinsock()
     std::cout << "-*- Windows Socket Library Cleaned -*-\n";
 }
 
+ScopedSocketHandle CreateListener(unsigned short port, int max_pending_clients)
+{
+    ScopedSocketHandle listener(
+        WSASocketW(AF_INET, SOCK_STREAM, 0, nullptr, 0, WSA_FLAG_OVERLAPPED));
+    ENSURE(CHECK, !!listener).Require();
+
+    sockaddr_in server_addr {0};
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(port);
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    bind(listener.get(), reinterpret_cast<sockaddr*>(&server_addr), sizeof(server_addr));
+
+    listen(listener.get(), max_pending_clients);
+
+    return listener;
+}
+
 }   // namespace
 
 int main()
@@ -57,8 +76,14 @@ int main()
     SetConsoleCtrlHandler(ControlCtrlHandler, TRUE);
     ON_SCOPE_EXIT { SetConsoleCtrlHandler(nullptr, FALSE); };
 
+    auto listener = CreateListener(8088, 10);
+
     DWORD kConcurrentWorkers = kbase::OSInfo::GetInstance()->number_of_cores();
     auto io_port = utils::CreateNewIOCP(utils::CompletionKeyIO, kConcurrentWorkers);
+
+    bool success = utils::AssociateDeviceWithIOCP(reinterpret_cast<HANDLE>(listener.get()),
+                                                  io_port.get(),
+                                                  utils::CompletionKeyIO);
 
     std::cin.get();
 
