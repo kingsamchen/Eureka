@@ -16,19 +16,20 @@
 namespace utils {
 
 enum CompletionKey : ULONG_PTR {
-    CompletionKeyIO = 0,
-    CompletionKeyError
+    CompletionKeyAccept = 0,
+    CompletionKeyIO,
+    CompletionKeyShutdown
 };
 
-inline kbase::ScopedWinHandle CreateNewIOCP(ULONG_PTR key, DWORD worker_thread_count)
+inline kbase::ScopedWinHandle CreateNewIOCP(DWORD worker_thread_count)
 {
     return kbase::ScopedWinHandle(
-        CreateIoCompletionPort(nullptr, nullptr, key, worker_thread_count));
+        CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, worker_thread_count));
 }
 
 inline bool AssociateDeviceWithIOCP(HANDLE device, HANDLE iocp, ULONG_PTR key)
 {
-    return CreateIoCompletionPort(device, iocp, key, 0) == device;
+    return CreateIoCompletionPort(device, iocp, key, 0) == iocp;
 }
 
 }   // namespace utils
