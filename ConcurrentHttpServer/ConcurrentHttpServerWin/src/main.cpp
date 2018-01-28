@@ -120,6 +120,8 @@ int main()
 
     auto workers = LaunchWorkers(io_port.get(), listener.get());
 
+    // TODO: create the first connection and wait for accept.
+
     WaitForSingleObject(exit_event.get(), INFINITE);
 
     QuitWorkers(workers, io_port.get());
