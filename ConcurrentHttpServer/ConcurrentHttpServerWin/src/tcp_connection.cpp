@@ -26,4 +26,7 @@ void TcpConnection::WaitForAccept()
 void TcpConnection::OnIOComplete(int64_t bytes_transferred)
 {
     // TODO:
+    // case Reset:
+    //  if (!TcpConnectionManager::GetInstance()->TryReclaim(this))
+    //    WaitForAccept();
 }
