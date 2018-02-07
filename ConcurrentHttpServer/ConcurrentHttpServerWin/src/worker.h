@@ -16,7 +16,7 @@
 
 class Worker {
 public:
-    Worker(HANDLE io_port, SOCKET listener);
+    explicit Worker(HANDLE io_port);
 
     ~Worker() = default;
 
@@ -31,7 +31,6 @@ private:
 
 private:
     HANDLE io_port_;
-    SOCKET listener_;
 };
 
 #endif  // WORKER_H_

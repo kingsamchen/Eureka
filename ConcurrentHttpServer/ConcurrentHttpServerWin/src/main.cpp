@@ -17,7 +17,6 @@
 #include "kbase/scoped_handle.h"
 
 #include "iocp_utils.h"
-#include "scoped_socket.h"
 #include "tcp_connection_manager.h"
 #include "worker.h"
 
@@ -52,32 +51,12 @@ void CleanWinsock()
     std::cout << "-*- Windows Socket Library Cleaned -*-\n";
 }
 
-ScopedSocketHandle CreateListener(unsigned short port, int max_pending_clients)
-{
-    ScopedSocketHandle listener(
-        WSASocketW(AF_INET, SOCK_STREAM, 0, nullptr, 0, WSA_FLAG_OVERLAPPED));
-    ENSURE(CHECK, !!listener).Require();
-
-    sockaddr_in server_addr {0};
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(port);
-    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    int rv = bind(listener.get(), reinterpret_cast<sockaddr*>(&server_addr), sizeof(server_addr));
-    ENSURE(CHECK, rv == 0)(WSAGetLastError()).Require();
-
-    rv = listen(listener.get(), max_pending_clients);
-    ENSURE(CHECK, rv == 0)(WSAGetLastError()).Require();
-
-    return listener;
-}
-
-std::vector<std::thread> LaunchWorkers(HANDLE io_port, SOCKET listener)
+std::vector<std::thread> LaunchWorkers(HANDLE io_port)
 {
     auto worker_count = kbase::OSInfo::GetInstance()->number_of_cores() * 2;
     std::vector<std::thread> workers;
     for (size_t i = 0; i < worker_count; ++i) {
-        workers.emplace_back(std::thread(Worker(io_port, listener)));
+        workers.emplace_back(std::thread(Worker(io_port)));
     }
 
     return workers;
@@ -106,26 +85,18 @@ int main()
     ON_SCOPE_EXIT { SetConsoleCtrlHandler(nullptr, FALSE); };
 
     constexpr unsigned short kPort = 8088;
-    constexpr int kMaxPending = 10;
 
-    auto listener = CreateListener(kPort, kMaxPending);
+    TcpConnectionManager::GetInstance()->Configure(kPort, 0);
 
-    // Default to number of cores in the system.
-    auto io_port = utils::CreateNewIOCP(0);
-    ENSURE(CHECK, !!io_port)(kbase::LastError()).Require();
+    auto io_port = TcpConnectionManager::GetInstance()->io_port();
 
-    bool success = utils::AssociateDeviceWithIOCP(reinterpret_cast<HANDLE>(listener.get()),
-                                                  io_port.get(),
-                                                  utils::CompletionKeyAccept);
-    ENSURE(CHECK, success)(kbase::LastError()).Require();
+    auto workers = LaunchWorkers(io_port);
 
-    auto workers = LaunchWorkers(io_port.get(), listener.get());
-
-    TcpConnectionManager::GetInstance()->ListenForNewClient();
+    TcpConnectionManager::GetInstance()->ListenForClient();
 
     WaitForSingleObject(exit_event.get(), INFINITE);
 
-    QuitWorkers(workers, io_port.get());
+    QuitWorkers(workers, io_port);
 
     return 0;
 }

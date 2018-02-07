@@ -9,9 +9,10 @@
 
 #include "iocp_utils.h"
 #include "tcp_connection.h"
+#include "tcp_connection_manager.h"
 
-Worker::Worker(HANDLE io_port, SOCKET listener)
-    : io_port_(io_port), listener_(listener)
+Worker::Worker(HANDLE io_port)
+    : io_port_(io_port)
 {}
 
 void Worker::operator()() const
@@ -29,16 +30,18 @@ void Worker::WorkProc() const
         BOOL status = GetQueuedCompletionStatus(io_port_, &bytes_transferred, &completion_key, &ov,
                                                 INFINITE);
 
-        auto conn = static_cast<TcpConnection*>(ov);
-
         if (!status) {
             kbase::LastError err;
             LOG(WARNING) << err;
-            // TODO: handle error.
-        } else if (completion_key == utils::CompletionKeyAccept) {
-            conn->OnIOComplete(static_cast<int64_t>(bytes_transferred));
-            // TODO: issue another accept request
+            break;
+        }
+
+        if (completion_key == utils::CompletionKeyAccept) {
+            auto conn = TcpConnectionManager::GetInstance()->AcceptNewClient();
+            TcpConnectionManager::GetInstance()->ListenForClient();
+            conn->ReadRequest();
         } else if (completion_key == utils::CompletionKeyIO) {
+            auto conn = static_cast<TcpConnection*>(ov);
             conn->OnIOComplete(static_cast<int64_t>(bytes_transferred));
         } else if (completion_key == utils::CompletionKeyShutdown) {
             break;
