@@ -17,6 +17,7 @@ Worker::Worker(HANDLE io_port)
 
 void Worker::operator()() const
 {
+    printf("Worker %u starts to run\n", GetCurrentThreadId());
     WorkProc();
 }
 
@@ -33,7 +34,8 @@ void Worker::WorkProc() const
         if (!status) {
             kbase::LastError err;
             LOG(WARNING) << err;
-            break;
+            // TODO: handle this failure case.
+            ENSURE(CHECK, kbase::NotReached()).Require();
         }
 
         if (completion_key == utils::CompletionKeyAccept) {

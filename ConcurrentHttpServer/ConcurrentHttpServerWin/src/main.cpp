@@ -2,7 +2,7 @@
  @ 0xCCCCCCCC
 */
 
-#include <iostream>
+#include <cstdio>
 #include <thread>
 #include <vector>
 
@@ -42,13 +42,13 @@ void InitializeWinsock()
     WSADATA data {0};
     auto result_code = WSAStartup(MAKEWORD(2, 2), &data);
     ENSURE(THROW, result_code == 0)(result_code).Require();
-    std::cout << "-*- Windows Socket Library Initialized -*-\n";
+    printf("-*- Windows Socket Library Initialized -*-\n");
 }
 
 void CleanWinsock()
 {
     WSACleanup();
-    std::cout << "-*- Windows Socket Library Cleaned -*-\n";
+    printf("-*- Windows Socket Library Cleaned -*-\n");
 }
 
 std::vector<std::thread> LaunchWorkers(HANDLE io_port)
@@ -58,6 +58,8 @@ std::vector<std::thread> LaunchWorkers(HANDLE io_port)
     for (size_t i = 0; i < worker_count; ++i) {
         workers.emplace_back(std::thread(Worker(io_port)));
     }
+
+    printf("%u workers launched!\n", worker_count);
 
     return workers;
 }
@@ -88,11 +90,15 @@ int main()
 
     TcpConnectionManager::GetInstance()->Configure(kPort, 0);
 
+    printf("Connection manager has been configured!\n");
+
     auto io_port = TcpConnectionManager::GetInstance()->io_port();
 
     auto workers = LaunchWorkers(io_port);
 
     TcpConnectionManager::GetInstance()->ListenForClient();
+
+    printf("Connection manager is listening on localhost:%d\n", kPort);
 
     WaitForSingleObject(exit_event.get(), INFINITE);
 

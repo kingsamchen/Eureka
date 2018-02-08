@@ -45,9 +45,12 @@ private:
 
 private:
     static constexpr size_t kIOBufSize = 1024;
+    static constexpr size_t kClientIPSize = 16;
 
     State state_;
     ScopedSocketHandle conn_socket_;
+    char client_ip_[kClientIPSize];
+    unsigned short client_port_;
 
     // TODO: buffer & request & response data
     WSABUF buf_info_;
