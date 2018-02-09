@@ -150,6 +150,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\tcp_connection.cpp" />
     <ClCompile Include="src\tcp_connection_manager.cpp" />
+    <ClCompile Include="src\winsock_ctx.cpp" />
     <ClCompile Include="src\worker.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -157,6 +158,7 @@
     <ClInclude Include="src\scoped_socket.h" />
     <ClInclude Include="src\tcp_connection.h" />
     <ClInclude Include="src\tcp_connection_manager.h" />
+    <ClInclude Include="src\winsock_ctx.h" />
     <ClInclude Include="src\worker.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -2,12 +2,12 @@
  @ 0xCCCCCCCC
 */
 
-#include <cstdio>
+#include <stdio.h>
+
 #include <thread>
 #include <vector>
 
 #include <windows.h>
-#include <winsock2.h>
 
 #include "kbase/at_exit_manager.h"
 #include "kbase/command_line.h"
@@ -18,6 +18,7 @@
 
 #include "iocp_utils.h"
 #include "tcp_connection_manager.h"
+#include "winsock_ctx.h"
 #include "worker.h"
 
 namespace {
@@ -35,20 +36,6 @@ BOOL WINAPI ControlCtrlHandler(DWORD ctrl)
         default:
             return FALSE;
     }
-}
-
-void InitializeWinsock()
-{
-    WSADATA data {0};
-    auto result_code = WSAStartup(MAKEWORD(2, 2), &data);
-    ENSURE(THROW, result_code == 0)(result_code).Require();
-    printf("-*- Windows Socket Library Initialized -*-\n");
-}
-
-void CleanWinsock()
-{
-    WSACleanup();
-    printf("-*- Windows Socket Library Cleaned -*-\n");
 }
 
 std::vector<std::thread> LaunchWorkers(HANDLE io_port)
@@ -80,8 +67,8 @@ int main()
     kbase::CommandLine::Init(0, nullptr);
     kbase::AtExitManager exit_manager;
 
-    InitializeWinsock();
-    ON_SCOPE_EXIT { CleanWinsock(); };
+    winsock_ctx::Init();
+    ON_SCOPE_EXIT { winsock_ctx::Cleanup(); };
 
     SetConsoleCtrlHandler(ControlCtrlHandler, TRUE);
     ON_SCOPE_EXIT { SetConsoleCtrlHandler(nullptr, FALSE); };

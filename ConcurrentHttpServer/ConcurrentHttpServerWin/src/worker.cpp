@@ -39,9 +39,8 @@ void Worker::WorkProc() const
         }
 
         if (completion_key == utils::CompletionKeyAccept) {
-            auto conn = TcpConnectionManager::GetInstance()->AcceptNewClient();
+            TcpConnectionManager::GetInstance()->AcceptNewClient();
             TcpConnectionManager::GetInstance()->ListenForClient();
-            conn->ReadRequest();
         } else if (completion_key == utils::CompletionKeyIO) {
             auto conn = static_cast<TcpConnection*>(ov);
             conn->OnIOComplete(static_cast<int64_t>(bytes_transferred));

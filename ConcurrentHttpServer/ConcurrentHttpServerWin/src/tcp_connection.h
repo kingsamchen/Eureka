@@ -34,14 +34,18 @@ public:
 
     void Conncect(ScopedSocketHandle&& conn_socket);
 
+    void OnIOComplete(int64_t bytes_transferred);
+
+private:
     void ReadRequest();
 
     void WriteResponse();
 
-    void OnIOComplete(int64_t bytes_transferred);
+    void Disconnect();
 
-private:
     void OnReadRequestComplete(int64_t bytes_transferred);
+
+    void OnDisconnectComplete();
 
 private:
     static constexpr size_t kIOBufSize = 1024;
@@ -50,7 +54,6 @@ private:
     State state_;
     ScopedSocketHandle conn_socket_;
     char client_ip_[kClientIPSize];
-    unsigned short client_port_;
 
     // TODO: buffer & request & response data
     WSABUF buf_info_;

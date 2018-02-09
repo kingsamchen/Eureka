@@ -10,8 +10,10 @@
 #include "kbase/error_exception_util.h"
 #include "kbase/logging.h"
 
+#include "winsock_ctx.h"
+
 TcpConnection::TcpConnection()
-    : state_(State::WaitConnect), client_port_(0)
+    : state_(State::WaitConnect)
 {
     Internal = 0;
     InternalHigh = 0;
@@ -32,11 +34,10 @@ void TcpConnection::Conncect(ScopedSocketHandle&& conn_socket)
     getpeername(conn_socket_.get(), reinterpret_cast<sockaddr*>(&client_addr), &len);
 
     inet_ntop(client_addr.sin_family, &client_addr.sin_addr, client_ip_, kClientIPSize);
-    client_port_ = ntohs(client_addr.sin_port);
 
-    printf("Connects to %s:%hu on worker %u\n", client_ip_, client_port_, GetCurrentThreadId());
+    printf("Connects to %s on worker %u\n", client_ip_, GetCurrentThreadId());
 
-    state_ = State::WaitRequest;
+    ReadRequest();
 }
 
 void TcpConnection::ReadRequest()
@@ -59,12 +60,22 @@ void TcpConnection::WriteResponse()
     state_ = State::WaitResponse;
 }
 
+void TcpConnection::Disconnect()
+{
+    state_ = State::WaitReset;
+    //winsock_ctx::DisconnectEx(conn_socket_.get(), this, 0, 0);
+    conn_socket_.reset();
+}
+
 void TcpConnection::OnIOComplete(int64_t bytes_transferred)
 {
     switch (state_) {
         case State::WaitRequest:
             OnReadRequestComplete(bytes_transferred);
             break;
+
+        case State::WaitReset:
+            OnDisconnectComplete();
 
         default:
             ENSURE(CHECK, kbase::NotReached())(kbase::enum_cast(state_)).Require();
@@ -73,4 +84,27 @@ void TcpConnection::OnIOComplete(int64_t bytes_transferred)
 }
 
 void TcpConnection::OnReadRequestComplete(int64_t bytes_transferred)
-{}
+{
+    if (bytes_transferred == 0) {
+        Disconnect();
+        return;
+    }
+
+    // TODO: implement request parse.
+
+    std::string msg(io_buf_, bytes_transferred);
+
+    printf("-> %s\n", msg.c_str());
+
+    ReadRequest();
+}
+
+void TcpConnection::OnDisconnectComplete()
+{
+    printf("Client %s disconnected! on worker %u\n", client_ip_, GetCurrentThreadId());
+
+    conn_socket_.reset();
+
+    state_ = State::WaitConnect;
+}
+

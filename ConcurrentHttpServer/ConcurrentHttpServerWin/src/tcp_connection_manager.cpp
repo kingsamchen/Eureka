@@ -8,20 +8,9 @@
 
 #include "iocp_utils.h"
 #include "tcp_connection.h"
+#include "winsock_ctx.h"
 
 namespace {
-
-LPFN_ACCEPTEX GetAcceptExFunctionPointer(SOCKET s)
-{
-    LPFN_ACCEPTEX pfn_acceptex = nullptr;
-    GUID guid_acceptex = WSAID_ACCEPTEX;
-
-    DWORD recv_bytes = 0;
-    auto rv = WSAIoctl(s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid_acceptex, sizeof(guid_acceptex),
-                       &pfn_acceptex, sizeof(pfn_acceptex), &recv_bytes, nullptr, nullptr);
-    ENSURE(CHECK, rv == 0)(rv)(WSAGetLastError()).Require();
-    return pfn_acceptex;
-}
 
 ScopedSocketHandle CreateListener(unsigned short port, int max_pending_clients)
 {
@@ -61,7 +50,7 @@ TcpConnectionManager* TcpConnectionManager::GetInstance()
 }
 
 TcpConnectionManager::TcpConnectionManager()
-    : configured_(false), pfn_acceptex_(nullptr)
+    : configured_(false)
 {}
 
 void TcpConnectionManager::Configure(unsigned short port, DWORD concurrent_workers)
@@ -75,8 +64,6 @@ void TcpConnectionManager::Configure(unsigned short port, DWORD concurrent_worke
                                                   io_port_.get(),
                                                   utils::CompletionKeyAccept);
     ENSURE(CHECK, success)(kbase::LastError()).Require();
-
-    pfn_acceptex_ = GetAcceptExFunctionPointer(listener_.get());
 
     configured_ = true;
 }
@@ -95,8 +82,8 @@ void TcpConnectionManager::ListenForClient()
     memset(&accept_overlap_, 0, sizeof(accept_overlap_));
 
     DWORD receive_len = 0;
-    pfn_acceptex_(listener(), accept_conn_.get(), accept_addr_block_, 0, kAcceptAddrLength,
-                  kAcceptAddrLength, &receive_len, &accept_overlap_);
+    winsock_ctx::AcceptEx(listener(), accept_conn_.get(), accept_addr_block_, 0, kAcceptAddrLength,
+                          kAcceptAddrLength, &receive_len, &accept_overlap_);
 }
 
 TcpConnection* TcpConnectionManager::AcceptNewClient()

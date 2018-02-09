@@ -23,6 +23,9 @@
     <ClCompile Include="src\tcp_connection_manager.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\winsock_ctx.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\iocp_utils.h">
@@ -38,6 +41,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\tcp_connection_manager.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\winsock_ctx.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
