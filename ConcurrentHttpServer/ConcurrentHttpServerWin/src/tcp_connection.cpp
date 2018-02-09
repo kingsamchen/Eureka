@@ -63,8 +63,7 @@ void TcpConnection::WriteResponse()
 void TcpConnection::Disconnect()
 {
     state_ = State::WaitReset;
-    //winsock_ctx::DisconnectEx(conn_socket_.get(), this, 0, 0);
-    conn_socket_.reset();
+    winsock_ctx::DisconnectEx(conn_socket_.get(), this, 0, 0);
 }
 
 void TcpConnection::OnIOComplete(int64_t bytes_transferred)
@@ -76,6 +75,7 @@ void TcpConnection::OnIOComplete(int64_t bytes_transferred)
 
         case State::WaitReset:
             OnDisconnectComplete();
+            break;
 
         default:
             ENSURE(CHECK, kbase::NotReached())(kbase::enum_cast(state_)).Require();
@@ -101,10 +101,9 @@ void TcpConnection::OnReadRequestComplete(int64_t bytes_transferred)
 
 void TcpConnection::OnDisconnectComplete()
 {
-    printf("Client %s disconnected! on worker %u\n", client_ip_, GetCurrentThreadId());
+    printf("Client %s disconnected on worker %u!\n", client_ip_, GetCurrentThreadId());
 
     conn_socket_.reset();
 
     state_ = State::WaitConnect;
 }
-
