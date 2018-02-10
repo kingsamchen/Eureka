@@ -16,9 +16,11 @@ void TestHierarchicalMutex();
 void TestPackagedTasks();
 void TestPromise();
 
+void TestRelaxed();
+
 int main()
 {
-    TestPromise();
+    TestRelaxed();
     _getch();
     return 0;
 }

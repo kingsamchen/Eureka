@@ -17,6 +17,9 @@
     <Filter Include="using_futures">
       <UniqueIdentifier>{d90b8cd8-b595-4a0c-b543-ad49e5767a14}</UniqueIdentifier>
     </Filter>
+    <Filter Include="atomics_and_memory_model">
+      <UniqueIdentifier>{a12832b9-cdcd-472a-909c-c3727121cda9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -37,6 +40,9 @@
     </ClCompile>
     <ClCompile Include="using_futures\promises.cpp">
       <Filter>using_futures</Filter>
+    </ClCompile>
+    <ClCompile Include="atomics_and_memory_model\relaxed.cpp">
+      <Filter>atomics_and_memory_model</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
