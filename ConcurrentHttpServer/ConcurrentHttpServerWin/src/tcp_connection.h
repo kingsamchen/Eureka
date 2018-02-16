@@ -10,10 +10,12 @@
 #define TCP_CONNECTION_H_
 
 #include <cstdint>
+#include <string>
 
 #include <Windows.h>
 
 #include "kbase/basic_macros.h"
+#include "kbase/path.h"
 
 #include "scoped_socket.h"
 
@@ -41,9 +43,13 @@ private:
 
     void WriteResponse();
 
+    void TransmitData();
+
     void Disconnect();
 
-    void OnReadRequestComplete(int64_t bytes_transferred);
+    void OnReadComplete(int64_t bytes_read);
+
+    void OnWriteComplete(int64_t bytes_written);
 
     void OnDisconnectComplete();
 
@@ -55,9 +61,18 @@ private:
     ScopedSocketHandle conn_socket_;
     char client_ip_[kClientIPSize];
 
-    // TODO: buffer & request & response data
+    kbase::Path data_dir_;
+    kbase::ScopedWinHandle file_;
+
     WSABUF buf_info_;
     char io_buf_[kIOBufSize];
+
+    // Specialized for HTTP transactions.
+    std::string request_;
+
+    size_t sent_size_;
+    size_t left_sent_size_;
+    size_t remaining_data_size_;
 };
 
 #endif  // TCP_CONNECTION_H_

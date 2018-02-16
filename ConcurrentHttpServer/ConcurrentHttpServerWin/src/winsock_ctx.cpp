@@ -42,13 +42,13 @@ void Init()
     GetExtensionFunctionPointer(AcceptEx, WSAID_ACCEPTEX);
     GetExtensionFunctionPointer(DisconnectEx, WSAID_DISCONNECTEX);
 
+    sock.reset();
+
     printf("-*- Windows Socket Library Initialized -*-\n");
 }
 
 void Cleanup()
 {
-    sock.reset();
-
     WSACleanup();
 
     printf("-*- Windows Socket Library Cleaned -*-\n");
