@@ -115,3 +115,19 @@ TcpConnection* TcpConnectionManager::AcceptNewClient()
 
     return conn;
 }
+
+void TcpConnectionManager::Reclaim(TcpConnection* conn)
+{
+    {
+        std::lock_guard<std::mutex> lock(conn_mgr_mutex_);
+
+        auto it = std::find_if(in_use_.begin(), in_use_.end(), [conn](const auto& in_use_conn) {
+                      return conn == in_use_conn.get();
+                  });
+
+        free_.push_back(std::move(*it));
+        in_use_.erase(it);
+    }
+
+    printf("A connection is reclaimed to free list!\n");
+}

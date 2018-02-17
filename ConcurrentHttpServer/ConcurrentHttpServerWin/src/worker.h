@@ -10,7 +10,6 @@
 #define WORKER_H_
 
 #include <windows.h>
-#include <winsock2.h>
 
 #include "kbase/basic_macros.h"
 

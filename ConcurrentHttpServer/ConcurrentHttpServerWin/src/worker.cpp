@@ -4,6 +4,8 @@
 
 #include "worker.h"
 
+#include <winsock2.h>
+
 #include "kbase/error_exception_util.h"
 #include "kbase/logging.h"
 
@@ -32,10 +34,11 @@ void Worker::WorkProc() const
                                                 INFINITE);
 
         if (!status) {
-            kbase::LastError err;
-            LOG(WARNING) << err;
-            // TODO: handle this failure case.
-            ENSURE(CHECK, kbase::NotReached()).Require();
+            if (!ov || GetLastError() != ERROR_NETNAME_DELETED) {
+                kbase::LastError err;
+                LOG(WARNING) << "Dequeue complete io result failed: " << err;
+                // TODO: force abort the connection.
+            }
         }
 
         if (completion_key == utils::CompletionKeyAccept) {

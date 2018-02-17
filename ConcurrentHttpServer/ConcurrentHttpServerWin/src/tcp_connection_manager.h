@@ -27,8 +27,6 @@ class TcpConnection;
 
 class TcpConnectionManager {
 public:
-    static constexpr int kMaxListeners = 10;
-
     static TcpConnectionManager* GetInstance();
 
     DISALLOW_COPY(TcpConnectionManager);
@@ -40,6 +38,8 @@ public:
     void ListenForClient();
 
     TcpConnection* AcceptNewClient();
+
+    void Reclaim(TcpConnection* conn);
 
     HANDLE io_port() const noexcept
     {

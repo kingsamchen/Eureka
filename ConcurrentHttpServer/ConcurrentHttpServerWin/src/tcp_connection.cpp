@@ -15,6 +15,7 @@
 #include "kbase/string_util.h"
 #include "kbase/tokenizer.h"
 
+#include "tcp_connection_manager.h"
 #include "winsock_ctx.h"
 
 namespace {
@@ -145,7 +146,7 @@ void TcpConnection::ReadRequest()
     auto rv = WSARecv(conn_socket_.get(), &buf_info_, 1, nullptr, &flags, this, nullptr);
     if (rv == SOCKET_ERROR && (WSAGetLastError() != ERROR_IO_PENDING)) {
         LOG(WARNING) << "WSARecv() failed: " << WSAGetLastError();
-        // TODO: reset.
+        Disconnect();
     }
 }
 
@@ -216,6 +217,7 @@ void TcpConnection::TransmitData()
     auto rv = WSASend(conn_socket_.get(), &buf_info_, 1, nullptr, 0, this, nullptr);
     if (rv == SOCKET_ERROR && (WSAGetLastError() != ERROR_IO_PENDING)) {
         LOG(WARNING) << "WSASend() failed: " << WSAGetLastError();
+        Disconnect();
     }
 }
 
@@ -276,6 +278,7 @@ void TcpConnection::OnWriteComplete(int64_t bytes_written)
         if (remaining_data_size_ == 0) {
             sent_size_ = 0;
             file_ = nullptr;
+            request_.clear();
             ReadRequest();
             return;
         }
@@ -299,5 +302,12 @@ void TcpConnection::OnDisconnectComplete()
 
     file_ = nullptr;
 
+    request_.clear();
+    sent_size_ = 0;
+    left_sent_size_ = 0;
+    remaining_data_size_ = 0;
+
     state_ = State::WaitConnect;
+
+    TcpConnectionManager::GetInstance()->Reclaim(this);
 }
