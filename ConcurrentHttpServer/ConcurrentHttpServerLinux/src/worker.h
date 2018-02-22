@@ -1,4 +1,4 @@
-/* 
+/*
  @ 0xCCCCCCCC
 */
 
@@ -16,8 +16,7 @@ public:
     DISALLOW_MOVE(Worker);
 
 private:
-   int epfd_; 
+   int epfd_;
 };
 
 #endif  // WORKER_H_
-

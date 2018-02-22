@@ -17,7 +17,7 @@ struct FDTraits {
 
     static Handle NullHandle() noexcept
     {
-        return -1;    
+        return -1;
     }
 
     static bool IsValid(Handle handle) noexcept
@@ -32,4 +32,3 @@ struct FDTraits {
 };
 
 #endif  // SCOPED_FD_H_
-

@@ -13,6 +13,6 @@ int main(int argc, char* argv[])
     kbase::AtExitManager exit_manager;
 
     printf("hello world!");
-    
+
     return 0;
 }
