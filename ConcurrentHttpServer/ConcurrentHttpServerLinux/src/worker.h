@@ -9,11 +9,18 @@
 
 class Worker {
 public:
+    explicit Worker(int epfd);
+
     ~Worker() = default;
 
-    DISALLOW_COPY(Worker);
+    DEFAULT_COPY(Worker);
 
-    DISALLOW_MOVE(Worker);
+    DEFAULT_MOVE(Worker);
+
+    void operator()() const;
+
+private:
+    void WorkProc() const;
 
 private:
    int epfd_;

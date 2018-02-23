@@ -20,6 +20,9 @@ link_directories(${CMAKE_BINARY_DIR}/../)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/../")
 set(SOURCES
     main.cpp
+    tcp_connection_manager.cpp
+    tcp_connection.cpp
+    worker.cpp
     )
 
 add_executable(khttpd ${SOURCES})

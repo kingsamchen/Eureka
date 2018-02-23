@@ -2,6 +2,8 @@
  @ 0xCCCCCCCC
 */
 
+#include <utility>
+
 #include <unistd.h>
 
 #include "kbase/scoped_handle.h"
@@ -30,5 +32,7 @@ struct FDTraits {
         close(handle);
     }
 };
+
+using ScopedFD = kbase::GenericScopedHandle<FDTraits>;
 
 #endif  // SCOPED_FD_H_
