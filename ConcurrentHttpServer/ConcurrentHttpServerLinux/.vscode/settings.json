@@ -1,0 +1,7 @@
+{
+    "clang.cxxflags": [
+        "-std=c++14",
+        "-I${workspaceRoot}/src",
+        "-I${workspaceRoot}/../../../KBase/src"
+    ]
+}
