@@ -13,6 +13,7 @@
 #include <sys/syscall.h>
 #include <sys/types.h>
 
+#include "tcp_connection.h"
 #include "tcp_connection_manager.h"
 
 Worker::Worker(int epfd)
@@ -40,7 +41,14 @@ void Worker::WorkProc() const
             } else if (ev.data.ptr == TcpConnectionManager::GetInstance()) {
                 TcpConnectionManager::GetInstance()->AcceptNewClient();
             } else {
-                // Handle normal I/O
+                auto conn = static_cast<TcpConnection*>(ev.data.ptr);
+                if (ev.events & EPOLLIN) {
+                    conn->Read();
+                } else if (ev.events & EPOLLOUT) {
+                    conn->Write();
+                } else {
+                    printf("Unexpected epoll events: %x\n", ev.events);
+                }
             }
         }
     }

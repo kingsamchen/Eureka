@@ -28,7 +28,7 @@ void MakeFDNonBlocking(int fd)
 void AddFDToPollCandidates(int epfd, int fd, void* data)
 {
     epoll_event ev {0};
-    ev.events = EPOLLIN | EPOLLET | EPOLLOUT;
+    ev.events = EPOLLIN | EPOLLET;
     ev.data.ptr = data;
     auto rv = epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
     ENSURE(CHECK, rv != -1)(errno).Require();
