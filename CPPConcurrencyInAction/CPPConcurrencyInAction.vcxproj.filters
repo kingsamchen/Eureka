@@ -20,6 +20,9 @@
     <Filter Include="atomics_and_memory_model">
       <UniqueIdentifier>{a12832b9-cdcd-472a-909c-c3727121cda9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lock_free">
+      <UniqueIdentifier>{231550f1-ccfb-4581-b653-4dbaba9cd3fb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -54,6 +57,9 @@
     </ClInclude>
     <ClInclude Include="sharing_data_between_threads\hierarchical_mutex.h">
       <Filter>sharing_data_between_threads</Filter>
+    </ClInclude>
+    <ClInclude Include="lock_free\seq_cst_stack.h">
+      <Filter>lock_free</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

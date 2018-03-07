@@ -153,6 +153,7 @@
     <ClCompile Include="using_futures\promises.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="lock_free\seq_cst_stack.h" />
     <ClInclude Include="managing_threads\parallel_accumulate.h" />
     <ClInclude Include="managing_threads\scoped_thread.h" />
     <ClInclude Include="sharing_data_between_threads\hierarchical_mutex.h" />
