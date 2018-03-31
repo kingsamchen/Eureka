@@ -2,19 +2,23 @@
  @ 0xCCCCCCCC
 */
 
-#include "kbase\at_exit_manager.h"
+#include <iostream>
 
-#include "object_pool.h"
+#include "stock_pool.h"
 
 int main()
 {
-    kbase::AtExitManager exit_manager;
-    auto title = ObjectFactory<std::string>::GetInstance()->Get("title");
-    *title = "hello, world";
+    std::shared_ptr<StockFactory> sf(new StockFactory);
+
     {
-        auto pn = ObjectFactory<std::string>::GetInstance()->Get("name");
-        *pn = "kingsley";
+        auto ms_stock = sf->GetStock("MS");
+        auto gg_stock = sf->GetStock("Google");
+        auto ms2_sotkc = sf->GetStock("Amazon");
     }
+
+    auto ms_stock = sf->GetStock("MS");
+
+    sf->Prune();
 
     return 0;
 }
