@@ -4,6 +4,8 @@
 
 #include "base/bind.h"
 
+#include "bind_lambda.h"
+
 template<typename>
 class CallableCallback;
 
@@ -57,18 +59,32 @@ public:
 
 int main()
 {
-    std::cout << "--- test case 1 ---\n";
-    std::function<int(int)> fn(MakeCallable(base::Bind(&Inc)));
-    std::cout << fn(5) << std::endl;
+    //std::cout << "--- test case 1 ---\n";
+    //std::function<int(int)> fn(MakeCallable(base::Bind(&Inc)));
+    //std::cout << fn(5) << std::endl;
 
-    std::cout << "--- test case 2 ---\n";
-    Test* ptr = new Test();
-    std::function<void()> mfn(
-        MakeCallable(base::Bind(&Test::Bark, ptr->weak_ptr_factory_.GetWeakPtr(), "inside")));
-    mfn();
-    std::cout << "release test instance\n";
-    delete ptr;
-    mfn();
+    //std::cout << "--- test case 2 ---\n";
+    //Test* ptr = new Test();
+    //std::function<void()> mfn(
+    //    MakeCallable(base::Bind(&Test::Bark, ptr->weak_ptr_factory_.GetWeakPtr(), "inside")));
+    //mfn();
+    //std::cout << "release test instance\n";
+    //delete ptr;
+    //mfn();
+
+    std::string s = "hello, world";
+    base::Closure closure = BindLambda([&s] {
+        std::cout << "value of s: " << s << std::endl;
+    });
+
+    closure.Run();
+
+    auto cb = BindLambda([] {
+        std::cout << "with int result\n";
+        return 1024;
+    });
+
+    std::cout << cb.Run();
 
     return 0;
 }
