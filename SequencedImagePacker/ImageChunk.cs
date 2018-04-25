@@ -1,29 +1,30 @@
-﻿using System;
+﻿/*
+ @ 0xCCCCCCCC
+*/
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SequencedImagePacker
 {
     struct ImageInfo
     {
-        public ImageInfo(UInt32 offset, UInt32 size)
+        public ImageInfo(uint offset, uint size)
         {
             StartOffsetInChunk = offset;
             Size = size;
         }
 
-        public UInt32 StartOffsetInChunk
+        public uint StartOffsetInChunk
         {
-            get;set;
+            get;
         }
 
-        public UInt32 Size
+        public uint Size
         {
-            get;set;
+            get;
         }
     }
 

@@ -20,14 +20,15 @@ namespace SequencedImagePacker
 
         static void Main(string[] args)
         {
-            var imgLibrary = @"d:\misc\imgpack";
+            var imgLibrary = @"c:\Users\Kingsley Chen\Downloads\misc\";
 
             var collectionDirs = Directory.EnumerateDirectories(imgLibrary).ToList();
 
             DisplayCollectionOrder(collectionDirs);
 
-            var chunk = ImageChunk.FromCollection(collectionDirs[0]);
-            File.WriteAllBytes(Path.Combine(imgLibrary, "img.pak"), chunk.Marshal());
+            var package = new ImagePackage(collectionDirs);
+
+            File.WriteAllBytes(Path.Combine(imgLibrary, "img.pak"), package.Marshal());
         }
     }
 }
