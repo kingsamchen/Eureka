@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace SequencedImagePacker
 {
-    struct ImageInfo
+    class ImageInfo
     {
         public ImageInfo(uint offset, uint size)
         {
@@ -19,7 +19,7 @@ namespace SequencedImagePacker
 
         public uint StartOffsetInChunk
         {
-            get;
+            get;set;
         }
 
         public uint Size
@@ -61,6 +61,15 @@ namespace SequencedImagePacker
 
         public byte[] Marshal()
         {
+            // Fix in-chunk offset now that we know the size of chunk header.
+            var chunkHeaderSize = (uint)(1 + _imageInfos.Count * 2) * 4;
+            Console.WriteLine("\tChunk size: {0}", chunkHeaderSize);
+
+            foreach (var info in _imageInfos)
+            {
+                info.StartOffsetInChunk += chunkHeaderSize;
+            }
+
             var mem = new MemoryStream();
             using (var writer = new BinaryWriter(mem))
             {

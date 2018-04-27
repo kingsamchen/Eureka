@@ -20,7 +20,7 @@ namespace SequencedImagePacker
 
         static void Main(string[] args)
         {
-            var imgLibrary = @"c:\Users\Kingsley Chen\Downloads\misc\";
+            var imgLibrary = @"d:\misc\imgpack";
 
             var collectionDirs = Directory.EnumerateDirectories(imgLibrary).ToList();
 
