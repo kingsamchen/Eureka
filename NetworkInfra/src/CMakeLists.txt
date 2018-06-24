@@ -1,0 +1,21 @@
+
+set(util_SRCS
+    buffer.cpp
+)
+
+set(test_SRCS
+    tests/main.cpp
+)
+
+add_executable(network_utils ${util_SRCS} ${test_SRCS})
+
+target_include_directories(network_utils
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests
+    PRIVATE ${KBASE_INCLUDE_DIR}
+)
+
+add_library(kbase STATIC IMPORTED)
+set_property(TARGET kbase PROPERTY IMPORTED_LOCATION ${KBASE_LIB_DIR}/libkbase.a)
+
+target_link_libraries(network_utils kbase gtest pthread)
