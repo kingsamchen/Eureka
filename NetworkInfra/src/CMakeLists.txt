@@ -5,6 +5,7 @@ set(util_SRCS
 
 set(test_SRCS
     tests/main.cpp
+    tests/buffer_unittest.cpp
 )
 
 add_executable(network_utils ${util_SRCS} ${test_SRCS})

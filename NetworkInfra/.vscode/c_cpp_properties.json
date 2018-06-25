@@ -1,0 +1,37 @@
+{
+    "configurations": [
+        {
+            "name": "WSL",
+            "intelliSenseMode": "clang-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "includePath": [
+                "${workspaceFolder}/src",
+                "/mnt/c/Projects/KBase/src",
+                "/home/kingsamchen/Projects/googletest-release-1.8.0/googletest/include",
+                "/usr/include/x86_64-linux-gnu/5/include",
+                "/usr/local/include",
+                "/usr/include/x86_64-linux-gnu/5/include-fixed",
+                "/usr/include/x86_64-linux-gnu",
+                "/usr/include"
+            ],
+            "defines": [],
+            "browse": {
+            "path": [
+                "${workspaceFolder}/src",
+                "/mnt/c/Projects/KBase/src",
+                "/home/kingsamchen/Projects/googletest-release-1.8.0/googletest/include",
+                "/usr/include/x86_64-linux-gnu/5/include",
+                "/usr/local/include",
+                "/usr/include/x86_64-linux-gnu/5/include-fixed",
+                "/usr/include/x86_64-linux-gnu",
+                "/usr/include"
+            ],
+            "limitSymbolsToIncludedHeaders": true,
+            "databaseFilename": ""
+        },
+        "cStandard": "c11",
+        "cppStandard": "c++17"
+    }
+    ],
+    "version": 4
+}
