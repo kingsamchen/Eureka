@@ -1,11 +1,13 @@
 
 set(util_SRCS
     buffer.cpp
+    event_loop.cpp
 )
 
 set(test_SRCS
     tests/main.cpp
     tests/buffer_unittest.cpp
+    tests/event_loop_unittest.cpp
 )
 
 add_executable(network_utils ${util_SRCS} ${test_SRCS})
