@@ -5,12 +5,15 @@
 #include "event_loop.h"
 
 #include <cstdlib>
+#include <vector>
 
 #include <poll.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 
 #include "kbase/error_exception_util.h"
+
+#include "channel.h"
 
 namespace {
 
@@ -27,11 +30,13 @@ thread_local EventLoop* tls_loop_in_thread {nullptr};
 
 EventLoop::EventLoop()
     : is_running_(false),
-      associated_thread_id_(GetCurrentThreadID())
+      owner_thread_id_(GetCurrentThreadID())
 {
     ENSURE(CHECK, tls_loop_in_thread == nullptr).Require();
 
     tls_loop_in_thread = this;
+
+    poller_ = std::make_unique<Poller>(this);
 }
 
 EventLoop::~EventLoop()
@@ -49,11 +54,35 @@ void EventLoop::Run()
 
     printf("Running the eventloop\n");
 
-    poll(nullptr, 0, 5000);
+    std::vector<Channel*> active_channels;
 
-    is_running_ = false;
+    while (is_running_) {
+        poller_->Poll(active_channels, std::chrono::seconds(10));
+
+        for (auto& channel : active_channels) {
+            channel->HandleEvents();
+        }
+
+        active_channels.clear();
+    }
 
     printf("Finish the eventloop\n");
+}
+
+void EventLoop::Quit()
+{
+    is_running_ = false;
+}
+
+void EventLoop::UpdateChannel(Channel* channel)
+{
+    ENSURE(CHECK, channel->BelongsToEventLoop(this)).Require();
+    poller_->UpdateChannel(channel);
+}
+
+bool EventLoop::BelongsToCurrentThread() const
+{
+    return owner_thread_id_ == GetCurrentThreadID();
 }
 
 // static
