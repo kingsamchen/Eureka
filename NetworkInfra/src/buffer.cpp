@@ -6,44 +6,11 @@
 
 #include <cstring>
 
-#include <endian.h>
 #include <sys/uio.h>
 
 #include "kbase/error_exception_util.h"
 
-namespace {
-
-inline int16_t HostToNetwork(int16_t n)
-{
-    return static_cast<int16_t>(htobe16(static_cast<uint16_t>(n)));
-}
-
-inline int32_t HostToNetwork(int32_t n)
-{
-    return static_cast<int32_t>(htobe32(static_cast<uint32_t>(n)));
-}
-
-inline int64_t HostToNetwork(int64_t n)
-{
-    return static_cast<int64_t>(htobe64(static_cast<uint64_t>(n)));
-}
-
-inline int16_t NetworkToHost(int16_t n)
-{
-    return static_cast<int16_t>(be16toh(static_cast<uint16_t>(n)));
-}
-
-inline int32_t NetworkToHost(int32_t n)
-{
-    return static_cast<int32_t>(be32toh(static_cast<uint32_t>(n)));
-}
-
-inline int64_t NetworkToHost(int64_t n)
-{
-    return static_cast<int64_t>(be64toh(static_cast<uint64_t>(n)));
-}
-
-}   // namespace
+#include "endian_utils.h"
 
 namespace network {
 
