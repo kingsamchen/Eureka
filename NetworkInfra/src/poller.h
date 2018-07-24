@@ -31,6 +31,8 @@ public:
 
     void UpdateChannel(Channel* channel);
 
+    void RemoveChannel(Channel* channel);
+
 private:
     void FillActiveChannels(int active_count, std::vector<Channel*>& channels);
 

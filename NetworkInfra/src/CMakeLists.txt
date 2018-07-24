@@ -6,6 +6,8 @@ set(util_SRCS
     event_loop.cpp
     poller.cpp
     socket_address.cpp
+    tcp_connection.cpp
+    tcp_server.cpp
     timer.cpp
     timer_queue.cpp
 )
@@ -14,8 +16,9 @@ set(test_SRCS
     tests/main.cpp
     tests/acceptor_unittest.cpp
     tests/buffer_unittest.cpp
-    tests/socket_address_unittest.cpp
     tests/reactor_unittest.cpp
+    tests/socket_address_unittest.cpp
+    tests/tcp_server_unittest.cpp
 )
 
 add_executable(network_utils ${util_SRCS} ${test_SRCS})

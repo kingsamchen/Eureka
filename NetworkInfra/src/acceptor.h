@@ -20,7 +20,7 @@ class EventLoop;
 class Acceptor {
 public:
     // FIXME: conn_fd tpye.
-    using EventHandler = std::function<void(ScopedFD& conn_fd,
+    using EventHandler = std::function<void(ScopedFD&& conn_fd,
                                             const SocketAddress& peer_addr)>;
 
     Acceptor(EventLoop* loop, const SocketAddress& addr);
@@ -35,12 +35,23 @@ public:
 
     void set_new_connection_handler(const EventHandler& handler);
 
+    bool listenning() const noexcept
+    {
+        return listenning_;
+    }
+
+    const SocketAddress& listen_address() const noexcept
+    {
+        return server_addr_;
+    }
+
 private:
     void HandleNewConnection();
 
 private:
     EventLoop* loop_;
     SocketAddress server_addr_;
+    bool listenning_;
     ScopedFD listener_;
     Channel listener_channel_;
     EventHandler new_connection_handler_;

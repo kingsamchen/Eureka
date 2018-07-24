@@ -24,6 +24,7 @@ namespace network {
 Acceptor::Acceptor(EventLoop* loop, const SocketAddress& addr)
     : loop_(loop),
       server_addr_(addr),
+      listenning_(false),
       listener_(CreateNonBlockingSocketFD()),
       listener_channel_(loop, listener_.get())
 {
@@ -42,6 +43,8 @@ Acceptor::Acceptor(EventLoop* loop, const SocketAddress& addr)
 void Acceptor::Listen()
 {
     ENSURE(CHECK, loop_->BelongsToCurrentThread()).Require();
+
+    listenning_ = true;
 
     int rv = listen(listener_.get(), SOMAXCONN);
     ENSURE(CHECK, rv == 0)(errno).Require();
@@ -63,7 +66,7 @@ void Acceptor::HandleNewConnection()
 
     if (conn) {
         if (new_connection_handler_) {
-            new_connection_handler_(conn, peer_addr);
+            new_connection_handler_(std::move(conn), peer_addr);
         } else {
             conn = nullptr;
         }

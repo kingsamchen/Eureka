@@ -27,11 +27,11 @@ public:
 
     Channel(EventLoop* loop, int fd);
 
-    ~Channel() = default;
+    ~Channel();
 
     DISALLOW_COPY(Channel);
 
-    // Default move semantics for now
+    DISALLOW_MOVE(Channel);
 
     void HandleEvents();
 
@@ -46,14 +46,40 @@ public:
         Update();
     }
 
+    void DisableAll()
+    {
+        events_ = IOEvent::None;
+        Update();
+    }
+
     void set_read_handler(const EventHandler& handler)
     {
         read_handler_ = handler;
     }
 
+    void set_write_handler(const EventHandler& handler)
+    {
+        write_handler_ = handler;
+    }
+
+    void set_close_handler(const EventHandler& handler)
+    {
+        close_handler_ = handler;
+    }
+
+    void set_error_handler(const EventHandler& handler)
+    {
+        error_handler_ = handler;
+    }
+
     int fd() const noexcept
     {
         return fd_;
+    }
+
+    bool none_event() const noexcept
+    {
+        return events_ == IOEvent::None;
     }
 
     int events() const noexcept
@@ -85,8 +111,10 @@ private:
     int events_;
     int received_events_;
     int index_;
+    bool handling_events_;
     EventHandler read_handler_;
     EventHandler write_handler_;
+    EventHandler close_handler_;
     EventHandler error_handler_;
 };
 

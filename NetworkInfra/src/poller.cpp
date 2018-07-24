@@ -39,6 +39,11 @@ void Poller::UpdateChannel(network::Channel* channel)
         auto& pfd = pfds_[channel->poller_info_index()];
         pfd.events = static_cast<short>(channel->events());
         pfd.revents = 0;
+        if (channel->none_event()) {
+            // Ignore this pollfd.
+            // Note stdin is 0.
+            pfd.fd = -pfd.fd - 1;
+        }
     } else {
         pollfd new_pfd {};
         new_pfd.fd = fd;
@@ -48,6 +53,31 @@ void Poller::UpdateChannel(network::Channel* channel)
         channel->set_poller_info_index(static_cast<int>(pfds_.size() - 1));
 
         channel_table_[fd] = channel;
+    }
+}
+
+void Poller::RemoveChannel(Channel* channel)
+{
+    auto index = channel->poller_info_index();
+    ENSURE(CHECK, 0 <= index && index < pfds_.size())(index).Require();
+
+    auto count = channel_table_.erase(channel->fd());
+    ENSURE(CHECK, count == 1)(count).Require();
+
+    if (index == pfds_.size() - 1) {
+        pfds_.pop_back();
+    } else {
+        auto victim_fd = pfds_.back().fd;
+        if (victim_fd < 0) {
+            victim_fd = -victim_fd - 1;
+        }
+
+        using std::swap;
+        swap(pfds_[index], pfds_.back());
+
+        channel_table_[victim_fd]->set_poller_info_index(index);
+
+        pfds_.pop_back();
     }
 }
 

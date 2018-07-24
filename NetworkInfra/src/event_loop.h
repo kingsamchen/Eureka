@@ -43,20 +43,22 @@ public:
 
     void RunTaskAfter(chrono::microseconds, const Timer::EventHandler& handler);
 
+    // Wake up if we are queuing from another thread or are queuing during execution of pending
+    // tasks. If the latter being the case, we need to continue running pending tasks. Don't
+    // get stuck at polling.
+    void QueueTask(const Task& task);
+
     void Quit();
 
     void UpdateChannel(Channel* channel);
+
+    void RemoveChannel(Channel* channel);
 
     bool BelongsToCurrentThread() const;
 
     static EventLoop* current();
 
 private:
-    // Wake up if we are queuing from another thread or are queuing during execution of pending
-    // tasks. If the latter being the case, we need to continue running pending tasks. Don't
-    // get stuck at polling.
-    void QueueTask(const Task& task);
-
     void ProcessPendingTasks();
 
     void Wakeup();

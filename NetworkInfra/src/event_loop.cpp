@@ -122,6 +122,12 @@ void EventLoop::UpdateChannel(Channel* channel)
     poller_->UpdateChannel(channel);
 }
 
+void EventLoop::RemoveChannel(Channel* channel)
+{
+    ENSURE(CHECK, channel->BelongsToEventLoop(this)).Require();
+    poller_->RemoveChannel(channel);
+}
+
 bool EventLoop::BelongsToCurrentThread() const
 {
     return owner_thread_id_ == GetCurrentThreadID();
