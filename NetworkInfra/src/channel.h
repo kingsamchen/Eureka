@@ -46,10 +46,27 @@ public:
         Update();
     }
 
+    void EnableWriting()
+    {
+        events_ |= IOEvent::Write;
+        Update();
+    }
+
+    void DisableWriting()
+    {
+        events_ &= ~IOEvent::Write;
+        Update();
+    }
+
     void DisableAll()
     {
         events_ = IOEvent::None;
         Update();
+    }
+
+    bool IsWritingEnabled() const noexcept
+    {
+        return (events_ & IOEvent::Write) != 0;
     }
 
     void set_read_handler(const EventHandler& handler)

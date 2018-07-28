@@ -10,12 +10,13 @@
 
 namespace network {
 
+class Buffer;
 class TCPConnection;
 
 using TCPConnectionPtr = std::shared_ptr<TCPConnection>;
 
 using ConnectionHandler = std::function<void(const TCPConnectionPtr&)>;
-using MessageHandler = std::function<void(const TCPConnectionPtr&, const void*, size_t)>;
+using MessageHandler = std::function<void(const TCPConnectionPtr&, Buffer&)>;
 using CloseHandler = std::function<void(const TCPConnectionPtr&)>;
 
 }   // namespace network

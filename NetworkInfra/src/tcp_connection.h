@@ -11,6 +11,7 @@
 #include "kbase/basic_macros.h"
 #include "kbase/error_exception_util.h"
 
+#include "buffer.h"
 #include "channel.h"
 #include "event_handlers.h"
 #include "event_loop.h"
@@ -26,6 +27,7 @@ private:
     enum class State {
         Connecting,
         Connected,
+        Disconnecting,
         Disconnted
     };
 
@@ -42,6 +44,11 @@ public:
     void EstablishConnection();
 
     void DestroyConnection();
+
+    // Should be thread-safe.
+    void Send(const std::string& msg);
+
+    void Shutdown();
 
     const std::string& name() const noexcept
     {
@@ -74,7 +81,13 @@ public:
     }
 
 private:
+    void SendInLoop(const std::string& msg);
+
+    void ShutdownInLoop();
+
     void HandleRead();
+
+    void HandleWrite();
 
     void HandleClose();
 
@@ -98,6 +111,9 @@ private:
     ConnectionHandler connection_handler_;
     MessageHandler message_handler_;
     CloseHandler close_handler_;
+
+    Buffer input_buf_;
+    Buffer output_buf_;
 };
 
 using TCPConnectionPtr = std::shared_ptr<TCPConnection>;
