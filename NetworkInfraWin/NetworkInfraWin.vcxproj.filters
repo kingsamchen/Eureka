@@ -18,12 +18,24 @@
     <ClCompile Include="src\tests\winsock_context_unittest.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
+    <ClCompile Include="src\event_loop.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\event_pump.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\winsock_context.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\scoped_socket.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\event_loop.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\event_pump.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
