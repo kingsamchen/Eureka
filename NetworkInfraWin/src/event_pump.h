@@ -18,9 +18,10 @@
 #include "kbase/basic_macros.h"
 #include "kbase/scoped_handle.h"
 
-namespace network {
+#include "io_context.h"
+#include "notifier.h"
 
-class Notifier;
+namespace network {
 
 class EventPump {
 public:
@@ -32,9 +33,13 @@ public:
 
     DISALLOW_MOVE(EventPump);
 
-    void Pump(std::chrono::milliseconds timeout);
+    // TODO: Abstract this pair.
+    void Pump(std::chrono::milliseconds timeout,
+              std::vector<std::pair<Notifier*, IOContext*>>& active_notifiers);
 
-    // void UpdateNotifier();
+    void Wakeup() const;
+
+    void SubscribeNotifier(Notifier* notifier);
 
     // void RemoveNotifier();
 

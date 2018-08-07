@@ -11,7 +11,11 @@
 
 #include "kbase/basic_macros.h"
 
+#include "event_pump.h"
+
 namespace network {
+
+class Notifier;
 
 class EventLoop {
 public:
@@ -34,9 +38,12 @@ public:
     // Returns false otherwise.
     bool BelongsToCurrentThread() const noexcept;
 
+    void SubscribeNotifier(Notifier* notifier);
+
 private:
     bool is_running_;
     unsigned long owner_thread_id_;
+    EventPump event_pump_;
 };
 
 }   // namespace network

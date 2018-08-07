@@ -24,6 +24,12 @@
     <ClCompile Include="src\event_pump.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\notifier.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\event_loop_unittest.cpp">
+      <Filter>src\tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\winsock_context.h">
@@ -36,6 +42,12 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\event_pump.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\notifier.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\io_context.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
