@@ -46,9 +46,9 @@ void EventPump::Pump(std::chrono::milliseconds timeout,
     unsigned long dequeued_num = 0;
     GetQueuedCompletionStatusEx(io_port_.get(),
                                 io_events_.data(),
-                                io_events_.size(),
+                                static_cast<ULONG>(io_events_.size()),
                                 &dequeued_num,
-                                timeout.count(),
+                                static_cast<DWORD>(timeout.count()),
                                 FALSE);
     if (dequeued_num == 0) {
         LOG(INFO) << "Timeout or some error occurs: " << kbase::LastError();

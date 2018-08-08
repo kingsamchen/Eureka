@@ -101,7 +101,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>false</ConformanceMode>
+      <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\KBase\src\;$(SolutionDir)..\..\KBase\test\third-party\gtest\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
@@ -146,10 +146,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\acceptor.cpp" />
     <ClCompile Include="src\event_loop.cpp" />
     <ClCompile Include="src\event_pump.cpp" />
     <ClCompile Include="src\notifier.cpp" />
     <ClCompile Include="src\socket_address.cpp" />
+    <ClCompile Include="src\tests\acceptor_unittest.cpp" />
     <ClCompile Include="src\tests\event_loop_unittest.cpp" />
     <ClCompile Include="src\tests\main.cpp" />
     <ClCompile Include="src\tests\socket_address_unittest.cpp" />
@@ -157,6 +159,7 @@
     <ClCompile Include="src\winsock_context.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\acceptor.h" />
     <ClInclude Include="src\endian_utils.h" />
     <ClInclude Include="src\event_loop.h" />
     <ClInclude Include="src\event_pump.h" />

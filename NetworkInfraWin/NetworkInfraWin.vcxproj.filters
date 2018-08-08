@@ -36,6 +36,12 @@
     <ClCompile Include="src\tests\socket_address_unittest.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
+    <ClCompile Include="src\acceptor.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\acceptor_unittest.cpp">
+      <Filter>src\tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\winsock_context.h">
@@ -60,6 +66,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\socket_address.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\acceptor.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
