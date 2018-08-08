@@ -30,6 +30,12 @@
     <ClCompile Include="src\tests\event_loop_unittest.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
+    <ClCompile Include="src\socket_address.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\socket_address_unittest.cpp">
+      <Filter>src\tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\winsock_context.h">
@@ -48,6 +54,12 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\io_context.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\endian_utils.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\socket_address.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

@@ -11,7 +11,7 @@
 
 #include <functional>
 
-#include <Windows.h>
+#include <winsock2.h>
 
 #include "kbase/basic_macros.h"
 

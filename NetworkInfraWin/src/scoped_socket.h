@@ -9,8 +9,7 @@
 #ifndef SCOPED_SOCKET_H_
 #define SCOPED_SOCKET_H_
 
-#include <Windows.h>
-#include <winsock2.h>
+#include <WinSock2.h>
 
 #include "kbase/scoped_handle.h"
 

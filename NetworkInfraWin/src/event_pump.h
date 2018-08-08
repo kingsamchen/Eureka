@@ -10,9 +10,9 @@
 #define EVENT_PUMP_H_
 
 #include <chrono>
-#include <unordered_map>
 #include <vector>
 
+#include <WinSock2.h>
 #include <Windows.h>
 
 #include "kbase/basic_macros.h"
@@ -48,9 +48,6 @@ private:
 
     kbase::ScopedWinHandle io_port_;
     std::vector<OVERLAPPED_ENTRY> io_events_;
-
-    using NotifierMap = std::unordered_map<UINT_PTR, Notifier>;
-    NotifierMap notifier_table_;
 };
 
 }   // namespace network

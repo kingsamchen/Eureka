@@ -4,8 +4,6 @@
 
 #include "event_loop.h"
 
-#include <Windows.h>
-
 #include "kbase/error_exception_util.h"
 #include "kbase/logging.h"
 
