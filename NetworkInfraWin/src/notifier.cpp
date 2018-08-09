@@ -19,6 +19,9 @@ void Notifier::HandleCompletionEvent(IOContext* io_context) const
 {
     switch (io_context->io_event) {
         case IOEvent::ReadProbe:
+            read_complete_event_(io_context);
+            break;
+
         case IOEvent::Read:
             read_complete_event_(io_context);
             break;

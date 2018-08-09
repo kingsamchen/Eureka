@@ -27,6 +27,12 @@ struct IOContext : OVERLAPPED {
         : io_event(event),
           bytes_transferred(0)
     {
+        Reset();
+    }
+
+    void Reset()
+    {
+        bytes_transferred = 0;
         Internal = 0;
         InternalHigh = 0;
         Offset = 0;

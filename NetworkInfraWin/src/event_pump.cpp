@@ -44,14 +44,18 @@ void EventPump::Pump(std::chrono::milliseconds timeout,
 {
     // FIXME: Distinguish timeout and failures.
     unsigned long dequeued_num = 0;
-    GetQueuedCompletionStatusEx(io_port_.get(),
-                                io_events_.data(),
-                                static_cast<ULONG>(io_events_.size()),
-                                &dequeued_num,
-                                static_cast<DWORD>(timeout.count()),
-                                FALSE);
+    if (!GetQueuedCompletionStatusEx(io_port_.get(),
+                                     io_events_.data(),
+                                     static_cast<ULONG>(io_events_.size()),
+                                     &dequeued_num,
+                                     static_cast<DWORD>(timeout.count()),
+                                     FALSE)) {
+        dequeued_num = 0;
+        auto err = WSAGetLastError();
+        LOG_IF(WARNING, err != WAIT_TIMEOUT) << "Sever error ocurred: " << err;
+    }
+
     if (dequeued_num == 0) {
-        LOG(INFO) << "Timeout or some error occurs: " << kbase::LastError();
         return;
     }
 

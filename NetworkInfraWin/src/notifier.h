@@ -42,6 +42,11 @@ public:
         write_complete_event_ = handler;
     }
 
+    void SetCloseEvent(const EventHandler& handler)
+    {
+        close_event_ = handler;
+    }
+
     void HandleCompletionEvent(IOContext* io_context) const;
 
     SOCKET socket() const noexcept
@@ -56,6 +61,7 @@ private:
     SOCKET socket_;
     EventHandler read_complete_event_;
     EventHandler write_complete_event_;
+    EventHandler close_event_;
 };
 
 }   // namespace network
