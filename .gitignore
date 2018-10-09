@@ -179,3 +179,5 @@ out/
 *.out
 
 .vs/
+
+cmake-build*/
