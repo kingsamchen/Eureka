@@ -10,4 +10,4 @@ add_executable(LockfreeStack
                lstack.h
                main.cpp)
 
-target_link_libraries(LockfreeStack PUBLIC atomic)
+target_link_libraries(LockfreeStack PUBLIC atomic pthread)
