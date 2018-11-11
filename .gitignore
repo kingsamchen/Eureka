@@ -165,6 +165,7 @@ $RECYCLE.BIN/
 gradle/
 **/.idea/workspace.xml
 **/.idea/tasks.xml
+**/.idea/libraries/
 build/
 local.properties
 gradle.properties
@@ -181,3 +182,5 @@ out/
 .vs/
 
 cmake-build*/
+
+target/
