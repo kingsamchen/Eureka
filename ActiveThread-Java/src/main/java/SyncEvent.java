@@ -5,19 +5,6 @@
 import java.time.Instant;
 import java.util.Date;
 import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-
-interface AutoCloseableLock extends AutoCloseable {
-    @Override
-    void close();
-}
-
-class AutoReentrantLock extends ReentrantLock {
-    AutoCloseableLock lockAsAuto() {
-        lock();
-        return this::unlock;
-    }
-}
 
 // This SyncEvent is auto-reset, i.e. after being signaled, its state automatically
 // transitions into non-signaled.
