@@ -39,6 +39,11 @@ public class MessageLoop implements MessagePump.Delegate {
         return tls_loopInThread.get();
     }
 
+    // Unbind the MessageLoop to current thread.
+    public static void reset() {
+        tls_loopInThread.remove();
+    }
+
     // Run the message-loop bound with the thread.
     public static void loop() {
         MessageLoop.current().run();
@@ -62,6 +67,7 @@ public class MessageLoop implements MessagePump.Delegate {
         _pump.wakeup();
     }
 
+    // Thread-safe.
     public void enqueueTask(PendingTask task) {
         try (AutoCloseableLock lock = _incomingTaskLock.lockAsAuto()) {
             _incomingTasks.add(task);
