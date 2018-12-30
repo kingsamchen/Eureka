@@ -9,10 +9,6 @@ import (
 	"strings"
 )
 
-func serve(conn net.Conn) {
-
-}
-
 func main() {
 	flag.Parse()
 	ip := flag.Arg(0)
