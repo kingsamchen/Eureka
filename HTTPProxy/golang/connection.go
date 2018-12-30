@@ -145,7 +145,7 @@ func drainConnectRequestHeader(reqConn net.Conn, data []byte) ([]byte, error) {
 		}
 
 		data = append(data, buf[:n]...)
-		if n < BufSize {
+		if n < BufSize || buf[BufSize-1] == byte('\n') {
 			log.Print("Drained https connect request header")
 			break
 		}
