@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+	"regexp"
 	"time"
 )
 
@@ -35,6 +36,18 @@ const (
 	CmdUseName = "USE-NAME"
 )
 
+var (
+	re *regexp.Regexp
+)
+
+func init() {
+	var err error
+	re, err = regexp.Compile("^\\s*\\$([\\w\\-]+)\\$(\\s+([\\w\\d\\-_]+))?\\s*$")
+	if err != nil {
+		panic(err)
+	}
+}
+
 type Packet struct {
 	Type      int8
 	Data      string
@@ -54,6 +67,20 @@ func NewCodec(r io.Reader, w io.Writer) *Codec {
 		decodeBuf: make([]byte, 16),
 		encoder:   bufio.NewWriter(w),
 	}
+}
+
+func MatchCommand(str string, cmd *string) bool {
+	results := re.FindStringSubmatch(str)
+	if len(results) == 0 {
+		return false
+	}
+
+	*cmd = results[1]
+	if len(results[3]) != 0 {
+		*cmd += " " + results[3]
+	}
+
+	return true
 }
 
 func (c *Codec) ensureDecodeBufSize(required int) []byte {
