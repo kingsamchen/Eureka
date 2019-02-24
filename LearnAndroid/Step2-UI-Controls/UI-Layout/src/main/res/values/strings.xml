@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">UI-Layout</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="button_send_text">Send</string>
+    <string name="message_hint">Type something</string>
+    <string name="title_activity_relative_layout">RelativeLayoutActivity</string>
+    <string name="action_settings">Settings</string>
+</resources>

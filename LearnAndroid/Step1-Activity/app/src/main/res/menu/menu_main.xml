@@ -1,0 +1,18 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context=".MainActivity">
+    <item android:id="@+id/view_web_page"
+          android:title="@string/menu_view_web_page"/>
+    <item android:id="@+id/launch_standard"
+          android:title="@string/launch_mode_standard"/>
+    <item android:id="@+id/launch_single_top"
+          android:title="@string/launch_mode_singletop" />
+    <item android:id="@+id/launch_single_task"
+          android:title="@string/launch_mode_single_task" />
+    <item android:id="@+id/launch_single_instance"
+          android:title="@string/launch_mode_single_instance" />
+    <item android:id="@+id/action_settings"
+          android:title="@string/action_settings"
+          android:orderInCategory="100"
+          android:showAsAction="never"/>
+</menu>

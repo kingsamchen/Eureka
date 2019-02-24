@@ -1,0 +1,44 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:text="@string/hello_world"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="20sp"
+        android:textColor="#0000FF"/>
+
+    <Button android:id="@+id/button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_caption"/>
+
+    <EditText android:id="@+id/edit_text"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:maxLines="3"
+              android:hint="@string/edit_hint"/>
+
+    <ImageView android:id="@+id/img_view"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:src="@mipmap/ic_launcher"/>
+
+    <ProgressBar android:id="@+id/progress_bar"
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content"/>
+
+    <Button android:id="@+id/button_alert"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/alert_button_text"/>
+
+    <Button android:id="@+id/button_progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/progress_dialog_button"/>
+</LinearLayout>

@@ -1,0 +1,27 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:baselineAligned="false"
+    tools:context="${relativePackage}.${activityClass}">
+
+    <fragment
+        android:id="@+id/left_fragment"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:name="com.kc.step3_fragments.app.LeftFragment"/>
+
+    <FrameLayout
+            android:id="@+id/right_layout"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+        <fragment
+                android:id="@+id/right_fragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:name="com.kc.step3_fragments.app.RightFragment"/>
+    </FrameLayout>
+</LinearLayout>

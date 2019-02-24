@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+    <LinearLayout
+            android:id="@+id/visibility_layout"
+            android:orientation="vertical"
+            android:visibility="invisible"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <TextView
+                android:id="@+id/news_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="10dp"
+                android:textSize="20sp"/>
+        <ImageView android:layout_width="match_parent"
+                   android:layout_height="1dp"
+                   android:scaleType="fitXY"
+                   android:src="@drawable/spilt_line" />
+        <TextView
+                android:id="@+id/news_content"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:padding="10dp"
+                android:textSize="18sp" />
+    </LinearLayout>
+
+    <ImageView
+            android:scaleType="fitXY"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/spilt_line_vertical"/>
+</RelativeLayout>

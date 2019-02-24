@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Step1-Activity</string>
+    <string name="main_activity_title">MainActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="menu_view_web_page">View Web Page</string>
+    <string name="menu_remove">Remove</string>
+    <string name="title_activity_second">My Second Activity</string>
+    <string name="another_button">Another Button</string>
+    <string name="launch">Launch Second Activity</string>
+    <string name="title_activity_fake_web_view">FakeWebViewActivity</string>
+    <string name="fake_welcome">LoL, I got you!</string>
+    <string name="start_normal">Start Normal Activity</string>
+    <string name="start_dialog">Start Dialog Activity</string>
+    <string name="title_activity_dialog">DialogActivity</string>
+    <string name="title_activity_standard_launch">StandardLaunchActivity</string>
+    <string name="launch_itself">Launch</string>
+    <string name="launch_mode_standard">Standard Launch Mode</string>
+    <string name="title_activity_single_top_launch">SingleTopLaunchActivity</string>
+    <string name="launch_mode_singletop">SingleTop Launch Mode</string>
+    <string name="launch_another">Launch Another Activity</string>
+    <string name="title_activity_single_task_launch">SingleTaskLaunchActivity</string>
+    <string name="launch_mode_single_task">SingleTask Launch Mode</string>
+    <string name="title_activity_single_instance_launch">SingleInstanceLaunchActivity</string>
+    <string name="single_instance_launch_mode_caption">This is SingleInstance Launch Mode Activity</string>
+    <string name="launch_mode_single_instance">SingleInstance Launch Mode</string>
+</resources>

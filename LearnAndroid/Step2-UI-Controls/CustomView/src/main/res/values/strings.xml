@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">CustomView</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_back_text">Back</string>
+    <string name="title_text_text">Title Text</string>
+    <string name="title_edit_text">Edit</string>
+</resources>

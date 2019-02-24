@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Step2-UI-Controls</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="edit_hint">Type any text here</string>
+    <string name="btn_caption">Click Me</string>
+    <string name="alert_button_text">Trigger Alert</string>
+    <string name="progress_dialog_button">Trigger Progress</string>
+</resources>
