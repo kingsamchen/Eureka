@@ -12,8 +12,8 @@ var (
 )
 
 type Packet struct {
-	Cmd  string      `json:"cmd"`
-	Data interface{} `json:"data"`
+	Cmd  string          `json:"cmd"`
+	Data json.RawMessage `json:"data"`
 }
 
 type Control struct {
@@ -26,26 +26,38 @@ type Message struct {
 }
 
 func testSerialization() {
-	cp := &Packet{
-		Cmd: "ctrl",
-		Data: &Control{
-			Code: 0xDEADBEEF,
-			Msg:  "heartbeat",
-		},
+	ctrl := &Control{
+		Code: 0xDEADBEEF,
+		Msg:  "heartbeat",
 	}
 
-	raw, err := json.Marshal(cp)
+	raw, err := json.Marshal(ctrl)
+	if err != nil {
+		panic(err)
+	}
+
+	cp := &Packet{
+		Cmd:  "ctrl",
+		Data: raw,
+	}
+
+	raw, err = json.Marshal(cp)
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println(string(raw))
 
+	raw, err = json.Marshal(&Message{
+		Msg: "Echo",
+	})
+	if err != nil {
+		panic(err)
+	}
+
 	mp := &Packet{
-		Cmd: "msg",
-		Data: &Message{
-			Msg: "Echo",
-		},
+		Cmd:  "msg",
+		Data: raw,
 	}
 
 	raw, err = json.Marshal(mp)
@@ -76,17 +88,16 @@ func testDeserialization() {
 }
 
 func printPacket(packet *Packet) {
-	data := packet.Data.(map[string]interface{})
-
 	switch packet.Cmd {
 	case "ctrl":
-		code := int(data["code"].(float64)) // ???
-		msg := data["msg"].(string)
-		fmt.Printf("Control packet\ncode=%d\nmsg=%s\n", code, msg)
+		ctrl := &Control{}
+		_ = json.Unmarshal(packet.Data, ctrl)
+		fmt.Printf("Control packet\ncode=%d\nmsg=%s\n", ctrl.Code, ctrl.Msg)
 		break
 	case "msg":
-		msg := data["msg"].(string)
-		fmt.Printf("Message packet\nmsg=%s\n", msg)
+		msg := &Message{}
+		_ = json.Unmarshal(packet.Data, msg)
+		fmt.Printf("Message packet\nmsg=%s\n", msg.Msg)
 		break
 	default:
 		panic("unreachable")
