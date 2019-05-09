@@ -1,0 +1,38 @@
+cmake_minimum_required(VERSION 3.11)
+
+# Detect if being bundled via sub-directory.
+if(NOT DEFINED PROJECT_NAME)
+  set(LIGHTMUTEX_NOT_SUBPROJECT ON)
+endif()
+
+project(LightMutex CXX)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+if(LIGHTMUTEX_NOT_SUBPROJECT)
+  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+
+  set(ROOT_DIR ${CMAKE_SOURCE_DIR})
+  set(DEPS_SOURCE_DIR ${ROOT_DIR}/build/deps)
+  set(DEPS_DEPLOY_DIR ${CMAKE_BINARY_DIR})
+endif()
+
+# Add options here.
+
+set(LIGHTMUTEX_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(LIGHTMUTEX_DEPS_DIR ${LIGHTMUTEX_DIR}/deps)
+set(LIGHTMUTEX_CMAKE_DIR ${LIGHTMUTEX_DIR}/cmake)
+
+include(${LIGHTMUTEX_CMAKE_DIR}/dependency_manager.cmake)
+
+#Compiler and output configurations.
+include(${LIGHTMUTEX_CMAKE_DIR}/compiler_msvc.cmake)
+foreach(OUTPUTCONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
+  string(TOUPPER ${OUTPUTCONFIG_TYPE} OUTPUTCONFIG)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${OUTPUTCONFIG_TYPE}/bin)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${OUTPUTCONFIG_TYPE}/lib)
+endforeach()
+
+add_subdirectory(light_mutex)

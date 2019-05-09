@@ -1,0 +1,15 @@
+[msvc-2019]
+    generator = "Visual Studio 16 2019"
+
+    [[msvc-2019.gen]]
+        target = ""
+        out_dir = "build/msvc-2019"
+        args = ""
+
+    [[msvc-2019.build]]
+        mode = "Debug"
+        args = "--target ALL_BUILD --config Debug"
+
+    [[msvc-2019.build]]
+        mode = "Release"
+        args = "--target ALL_BUILD --config Debug"
