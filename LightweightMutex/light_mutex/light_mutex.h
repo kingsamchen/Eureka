@@ -22,6 +22,7 @@ class LightMutex {
 public:
     LightMutex()
         : sem_(MakeBenaphore()),
+          owner_tid_(0),
           use_count_(0)
     {
         assert(!!sem_);
@@ -44,6 +45,8 @@ public:
         if (_InterlockedExchangeAdd(&use_count_, 1) > 0) {
             WaitForSingleObject(sem_.get(), INFINITE);
         }
+
+        owner_tid_ = GetCurrentThreadId();
     }
 
     bool try_lock()
@@ -53,6 +56,8 @@ public:
 
     void unlock()
     {
+        assert(owner_tid_ == GetCurrentThreadId());
+        owner_tid_ = 0;
         if (_InterlockedExchangeAdd(&use_count_, -1) > 1) {
             ReleaseSemaphore(sem_.get(), 1, nullptr);
         }
@@ -60,6 +65,7 @@ public:
 
 private:
     Handle sem_;
+    DWORD owner_tid_;
     long use_count_;
 };
 

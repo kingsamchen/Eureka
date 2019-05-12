@@ -42,10 +42,21 @@ void TestTryLock()
     assert(r);
 }
 
+void BoomUnlockOnNonowningThread()
+{
+    LightMutex mtx;
+    mtx.lock();
+    std::thread th([&] {
+        mtx.unlock();
+    });
+    th.join();
+}
+
 int main()
 {
-    TestMutualExclusive();
-    TestTryLock();
+    // TestMutualExclusive();
+    //TestTryLock();
+    BoomUnlockOnNonowningThread();
 
     return 0;
 }
