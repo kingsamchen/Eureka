@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "light_mutex/light_mutex.h"
+#include "light_mutex/recursive_light_mutex.h"
 
 void TestMutualExclusive()
 {
@@ -52,11 +53,33 @@ void BoomUnlockOnNonowningThread()
     th.join();
 }
 
+void TestRecursive()
+{
+    RecursiveLightMutex mtx;
+    mtx.lock();
+    std::cout << "main gained the lock\n";
+    std::thread th([&] {
+        mtx.lock();
+        std::cout << "worker gained the lock\n";
+        mtx.unlock();
+        std::cout << "worker release the lock\n";
+    });
+    auto r = mtx.try_lock();
+    std::cout << "main gained the lock again\n";
+    assert(r);
+    mtx.unlock();
+    std::cout << "main lose the lock\n";
+    mtx.unlock();
+    std::cout << "main lose the lock again\n";
+
+    th.join();
+}
+
 int main()
 {
     // TestMutualExclusive();
     //TestTryLock();
-    BoomUnlockOnNonowningThread();
-
+    //BoomUnlockOnNonowningThread();
+    TestRecursive();
     return 0;
 }

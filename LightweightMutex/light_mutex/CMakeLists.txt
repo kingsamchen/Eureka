@@ -4,7 +4,9 @@ set(light_mutex_SRCS
 )
 
 set(light_mutex_HEADERS
+  common.h
   light_mutex.h
+  recursive_light_mutex.h
 )
 
 set(light_mutex_FILES ${light_mutex_HEADERS} ${light_mutex_SRCS})

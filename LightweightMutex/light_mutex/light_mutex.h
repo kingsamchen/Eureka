@@ -11,12 +11,7 @@
 #include <Windows.h>
 #include <intrin.h>
 
-using Handle = std::unique_ptr<void, decltype(&CloseHandle)>;
-
-inline Handle MakeBenaphore()
-{
-    return Handle(CreateSemaphoreW(nullptr, 0, 1, nullptr), CloseHandle);
-}
+#include "light_mutex/common.h"
 
 class LightMutex {
 public:
