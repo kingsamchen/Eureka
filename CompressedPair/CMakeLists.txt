@@ -1,0 +1,44 @@
+cmake_minimum_required(VERSION 3.11)
+
+# Detect if being bundled via sub-directory.
+if(NOT DEFINED PROJECT_NAME)
+  set(COMPRESSEDPAIR_NOT_SUBPROJECT ON)
+endif()
+
+project(CompressedPair CXX)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+if(COMPRESSEDPAIR_NOT_SUBPROJECT)
+  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+
+  set(ROOT_DIR ${CMAKE_SOURCE_DIR})
+  set(DEPS_SOURCE_DIR ${ROOT_DIR}/build/deps)
+  set(DEPS_DEPLOY_DIR ${CMAKE_BINARY_DIR})
+endif()
+
+# Add options here.
+
+set(COMPRESSEDPAIR_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(COMPRESSEDPAIR_DEPS_DIR ${COMPRESSEDPAIR_DIR}/deps)
+set(COMPRESSEDPAIR_CMAKE_DIR ${COMPRESSEDPAIR_DIR}/cmake)
+
+include(${COMPRESSEDPAIR_CMAKE_DIR}/dependency_manager.cmake)
+
+#Compiler and output configurations.
+if(MSVC)
+  include(${COMPRESSEDPAIR_CMAKE_DIR}/compiler_msvc.cmake)
+  foreach(OUTPUTCONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER ${OUTPUTCONFIG_TYPE} OUTPUTCONFIG)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${OUTPUTCONFIG_TYPE}/bin)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${OUTPUTCONFIG_TYPE}/lib)
+  endforeach()
+else()
+  include(${COMPRESSEDPAIR_CMAKE_DIR}/compiler_posix.cmake)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+endif()
+
+add_subdirectory(compressed_pair)
