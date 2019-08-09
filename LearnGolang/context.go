@@ -3,45 +3,62 @@ package main
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 )
 
 type key string
 
-func perform(ctx context.Context) error {
-	deadline, _ := ctx.Deadline()
-	fmt.Println("The deadline of perform: ", deadline)
-
-	for {
-		fmt.Println("Bazinga!")
-
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(time.Second):
-			// just wait.
-		}
-	}
-	return nil
-}
-
-func useContextForCancelation() {
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+func doTask(ctx context.Context, fn func()) (err error) {
+	complete := make(chan struct{}, 1)
 
 	go func() {
-		err := perform(ctx)
-		fmt.Println(err)
-		wg.Done()
+		fn()
+		close(complete)
 	}()
 
-	time.Sleep(time.Second * 2)
-	cancel()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-complete:
+		return nil
+	}
+}
 
-	wg.Wait()
+func useContextTimeout() {
+	c, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancel()
+	err := doTask(c, func() {
+		fmt.Println("Task sleeping")
+		time.Sleep(time.Second * 5)
+		fmt.Println("wake up")
+	})
+	if err != nil {
+		fmt.Printf("%+v", err)
+	}
+}
+
+func testContextTimeoutInheritance() {
+	fmt.Printf("now=%v\n", time.Now())
+
+	c, cancel1 := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel1()
+
+	// If timeout of child is larger than the timeout of the parent, it makes child context
+	// equivalent to parent context
+	cc, cancel2 := context.WithTimeout(c, time.Second*2)
+	defer cancel2()
+
+	err := doTask(cc, func() {
+		fmt.Println("Task sleeping")
+		time.Sleep(time.Second * 4)
+		fmt.Println("wake up")
+	})
+
+	// Because child context timeouts in 2s, so the task will be context deadline exceeded.
+	if err != nil {
+		deadTime, deadline := c.Deadline()
+		fmt.Printf("err=%+v\nparent-context err=%+v deadline=%t deadtime=%v", err, c.Err(), deadline, deadTime)
+	}
 }
 
 func useContextWithValues() {
@@ -54,6 +71,7 @@ func useContextWithValues() {
 }
 
 func main() {
-	useContextForCancelation()
+	useContextTimeout()
+	testContextTimeoutInheritance()
 	useContextWithValues()
 }
