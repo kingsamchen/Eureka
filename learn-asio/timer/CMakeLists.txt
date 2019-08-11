@@ -35,6 +35,8 @@ target_link_libraries(sync_timer
   PRIVATE asio
 )
 
+# async-timer
+
 set(async_timer_SRCS
   async_timer.cpp
 )
@@ -70,3 +72,15 @@ target_include_directories(async_timer
 target_link_libraries(async_timer
   PRIVATE asio
 )
+
+# timer-handler
+
+add_executable(timer_handler timer_handler.cpp)
+apply_common_compile_properties_to_target(timer_handler)
+target_link_libraries(timer_handler PRIVATE asio)
+
+# mt-sync-handler
+
+add_executable(mt_sync mt_sync_handler.cpp)
+apply_common_compile_properties_to_target(mt_sync)
+target_link_libraries(mt_sync PRIVATE asio)

@@ -19,7 +19,7 @@ function(apply_common_compile_properties_to_target TARGET)
       -Wextra
       -Werror
       -Wno-unused-parameter
-      -Wold-style-cast
+      #-Wold-style-cast
       -Woverloaded-virtual
       -Wpointer-arith
       -Wshadow
