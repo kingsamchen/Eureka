@@ -16,7 +16,7 @@
 
     [[msvc-2019.build]]
         mode = "Release"
-        args = "--target ALL_BUILD --config Debug"
+        args = "--target ALL_BUILD --config RelWithDebInfo"
 
 [clang-ninja]
     generator = "Ninja"
