@@ -3,7 +3,7 @@ option(MSVC_ENABLE_PARALLEL_BUILD "If enabled, build multiple files in parallel.
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo" CACHE STRING "limited configs" FORCE)
 
-function(apply_common_compile_properties_to_target TARGET)
+function(apply_learn_asio_compile_properties_to_target TARGET)
   target_compile_definitions(${TARGET}
     PUBLIC
       _UNICODE
@@ -43,7 +43,7 @@ function(apply_common_compile_properties_to_target TARGET)
     PUBLIC
       /wd4819 # source characters not in current code page.
   )
-endfunction(apply_common_compile_properties_to_target)
+endfunction()
 
 # Enable static analysis for all targets could result in excessive warnings.
 # Thus we decided to enable it for targets only we explicitly specify.
@@ -60,4 +60,4 @@ function(enable_msvc_static_analysis_for_target TARGET)
     PRIVATE
       ${ARG_WDL}
   )
-endfunction(enable_msvc_static_analysis_for_target)
+endfunction()

@@ -11,7 +11,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 set(CMAKE_EXE_LINKER_FLAGS "-rdynamic")
 
-function(apply_common_compile_properties_to_target TARGET)
+function(apply_learn_asio_compile_properties_to_target TARGET)
   target_compile_options(${TARGET}
     PRIVATE
       -g
@@ -26,4 +26,4 @@ function(apply_common_compile_properties_to_target TARGET)
 
       $<$<STREQUAL:${CMAKE_CXX_COMPILER_ID},"Clang">:-fno-limit-debug-info>
   )
-endfunction(apply_common_compile_properties_to_target)
+endfunction()
