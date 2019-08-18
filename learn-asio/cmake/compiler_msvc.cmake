@@ -17,6 +17,9 @@ function(apply_learn_asio_compile_properties_to_target TARGET)
       $<$<NOT:$<CONFIG:DEBUG>>:
         NDEBUG
       >
+
+      # No big deal for our sample code.
+      _CRT_SECURE_NO_WARNINGS
   )
 
   target_compile_options(${TARGET}
