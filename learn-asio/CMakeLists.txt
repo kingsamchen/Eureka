@@ -55,3 +55,4 @@ declare_dep_module(asio-cmake
 
 add_subdirectory(timer)
 add_subdirectory(daytime)
+add_subdirectory(echo)
