@@ -122,6 +122,15 @@ private:
     asio::signal_set signals_;
 };
 
+void RunServer()
+{
+    auto cmd = kbase::CommandLine::ForCurrentProcess();
+    auto port = cmd.GetSwitchValueAs<unsigned short>("port", 9876);
+
+    EchoServer srv(port);
+    srv.Start();
+}
+
 int main(int argc, const char* argv[])
 {
     try {
@@ -133,11 +142,7 @@ int main(int argc, const char* argv[])
 
         kbase::CommandLine::Init(argc, argv);
 
-        auto cmd = kbase::CommandLine::ForCurrentProcess();
-        auto port = cmd.GetSwitchValueAs<int>("port", 9876);
-
-        EchoServer srv(static_cast<unsigned short>(port));
-        srv.Start();
+        RunServer();
     } catch (std::exception& ex) {
         LOG(ERROR) << "Unhandled exception: " << ex.what();
     }
