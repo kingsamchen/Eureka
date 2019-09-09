@@ -53,6 +53,12 @@ declare_dep_module(asio-cmake
   GIT_TAG         origin/master
 )
 
+declare_dep_module(KBase
+  VERSION         6197a2af0
+  GIT_REPOSITORY  https://github.com/kingsamchen/KBase.git
+  GIT_TAG         6197a2af073107e45395a9ad38afdaf5f6850b93
+)
+
 add_subdirectory(timer)
 add_subdirectory(daytime)
 add_subdirectory(echo)
