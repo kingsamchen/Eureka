@@ -4,5 +4,6 @@
     <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
     <mapping directory="$PROJECT_DIR$/build/deps/asio-cmake-latest-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/build/deps/asio-cmake-latest-src/asio-asio-1-12-2-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/build/deps/kbase-latest-src" vcs="Git" />
   </component>
 </project>

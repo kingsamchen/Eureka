@@ -59,7 +59,7 @@ public:
 
     void Send(std::string msg)
     {
-        asio::post(io_ctx_, [this, msg=std::move(msg)] {
+        asio::post(io_ctx_, [this, msg=std::move(msg)]() mutable {
             DoWrite(std::move(msg));
         });
     }

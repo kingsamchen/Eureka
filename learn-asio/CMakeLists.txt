@@ -62,3 +62,4 @@ declare_dep_module(KBase
 add_subdirectory(timer)
 add_subdirectory(daytime)
 add_subdirectory(echo)
+add_subdirectory(handling_signal)
