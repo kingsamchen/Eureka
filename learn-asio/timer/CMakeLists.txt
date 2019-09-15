@@ -14,19 +14,6 @@ add_executable(sync_timer ${sync_timer_FILES})
 
 apply_learn_asio_compile_properties_to_target(sync_timer)
 
-if(MSVC)
-  enable_msvc_static_analysis_for_target(sync_timer
-    WDL
-      /wd6326
-  )
-endif()
-
-set_target_properties(sync_timer PROPERTIES
-  COTIRE_CXX_PREFIX_HEADER_INIT "${TIMER_PCH_HEADER}"
-)
-
-cotire(sync_timer)
-
 target_include_directories(sync_timer
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../
 )
@@ -51,19 +38,6 @@ source_group("src" FILES ${async_timer_FILES})
 add_executable(async_timer ${async_timer_FILES})
 
 apply_learn_asio_compile_properties_to_target(async_timer)
-
-if(MSVC)
-  enable_msvc_static_analysis_for_target(async_timer
-    WDL
-      /wd6326
-  )
-endif()
-
-set_target_properties(async_timer PROPERTIES
-  COTIRE_CXX_PREFIX_HEADER_INIT "${TIMER_PCH_HEADER}"
-)
-
-cotire(async_timer)
 
 target_include_directories(async_timer
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../
