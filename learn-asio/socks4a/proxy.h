@@ -7,6 +7,9 @@
 
 #include "kbase/basic_macros.h"
 
+#ifndef PROXY_H_
+#define PROXY_H_
+
 using asio::ip::tcp;
 
 class Proxy {
@@ -28,3 +31,5 @@ private:
     asio::io_context& io_ctx_;
     tcp::acceptor acceptor_;
 };
+
+#endif  // PROXY_H_
