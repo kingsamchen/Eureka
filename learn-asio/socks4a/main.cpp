@@ -28,7 +28,9 @@ int main(int argc, const char* argv[])
         std::cout << "Bye-bye" << std::endl;
     });
 
-    asio::ip::tcp::endpoint addr(asio::ip::tcp::v4(), 9876);
+    auto port = kbase::CommandLine::ForCurrentProcess().GetSwitchValueAs<uint16_t>("port", 9876);
+
+    asio::ip::tcp::endpoint addr(asio::ip::tcp::v4(), port);
     Proxy proxy(ioc, addr);
     proxy.Start();
 
