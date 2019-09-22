@@ -15,15 +15,27 @@
 #include "endian_utils.h"
 
 constexpr char kRejectedResp[] = "\x00\x5B\x2B\x2B\x2B\x2B\x2B\x2B";
-constexpr auto kRespSize = _countof(kRejectedResp) - 1;
+constexpr auto kRespSize = 8;
+
+void ShutdownWriteSafe(tcp::socket& sock, bool flag)
+{
+    if (flag) {
+        return;
+    }
+
+    std::error_code ec;
+    sock.shutdown(tcp::socket::shutdown_send, ec);
+    LOG_IF(WARNING, !!ec) << "Failed to shutdown send on sock @ " << sock.remote_endpoint()
+                          << " ec=" << ec;
+}
 
 Tunnel::Tunnel(asio::io_context& ctx, tcp::socket&& client_sock)
     : io_ctx_(ctx),
       client_sock_(std::move(client_sock)),
-      dial_sock_(ctx)
-{
-    UNUSED_VAR(io_ctx_);
-}
+      client_sock_disconnected_(false),
+      dial_sock_(ctx),
+      dial_sock_disconnected_(false)
+{}
 
 void Tunnel::Run()
 {
@@ -63,7 +75,7 @@ void Tunnel::ReadRequestPacket(std::unique_ptr<RequestPacket> packet, RequestPar
             auto self = shared_from_this();
             asio::async_read_until(
                 client_sock_,
-                asio::dynamic_buffer(io_buf_),
+                asio::dynamic_buffer(io_client_buf_),
                 '\0',
                 [self, p=std::move(packet), this](std::error_code ec, size_t bytes) mutable {
                     if (ec) {
@@ -73,10 +85,10 @@ void Tunnel::ReadRequestPacket(std::unique_ptr<RequestPacket> packet, RequestPar
                     }
 
                     if (bytes > 1) {
-                        p->user_id.assign(io_buf_.data(), bytes - 1);
+                        p->user_id.assign(io_client_buf_.data(), bytes - 1);
                     }
 
-                    io_buf_.erase(0, bytes);
+                    io_client_buf_.erase(0, bytes);
 
                     // For socks4a protocol, the domain field is required.
                     auto next_stage = p->dest_ip < 256 ? RequestParseStage::Domain :
@@ -89,7 +101,7 @@ void Tunnel::ReadRequestPacket(std::unique_ptr<RequestPacket> packet, RequestPar
             auto self = shared_from_this();
             asio::async_read_until(
                 client_sock_,
-                asio::dynamic_buffer(io_buf_),
+                asio::dynamic_buffer(io_client_buf_),
                 '\0',
                 [self, p=std::move(packet), this](std::error_code ec, size_t bytes) mutable {
                     if (ec) {
@@ -99,10 +111,10 @@ void Tunnel::ReadRequestPacket(std::unique_ptr<RequestPacket> packet, RequestPar
                     }
 
                     if (bytes > 1) {
-                        p->domain.assign(io_buf_.data(), bytes - 1);
+                        p->domain.assign(io_client_buf_.data(), bytes - 1);
                     }
 
-                    io_buf_.clear();
+                    io_client_buf_.clear();
 
                     ReadRequestPacket(std::move(p), RequestParseStage::Complete);
                 });
@@ -158,7 +170,8 @@ void Tunnel::ConnectRemote(std::unique_ptr<RequestPacket> packet)
                 return;
             }
 
-            LOG(INFO) << "Tunneling to" << endpoint;
+            LOG(INFO) << "Tunneling to "
+                      << client_sock_.remote_endpoint() << " <-> " << dial_sock_.remote_endpoint();
 
             // Send back tunneled ack.
             auto port_in_be = HostToNetwork(endpoint.port());
@@ -168,11 +181,11 @@ void Tunnel::ConnectRemote(std::unique_ptr<RequestPacket> packet)
             memcpy(granted_resp + 2, &port_in_be, sizeof(port_in_be));
             memcpy(granted_resp + 4, &ip_in_be, sizeof(ip_in_be));
 
-            io_buf_.assign(granted_resp, 8);
+            io_client_buf_.assign(granted_resp, 8);
 
             asio::async_write(
                 client_sock_,
-                asio::buffer(io_buf_),
+                asio::buffer(io_client_buf_),
                 [this, self=shared_from_this()](std::error_code aec, size_t /*bytes*/) {
                     if (aec) {
                         LOG(ERROR) << "Failed to write tunneled ack back to client; aec" << aec;
@@ -180,14 +193,96 @@ void Tunnel::ConnectRemote(std::unique_ptr<RequestPacket> packet)
                         return;
                     }
 
-                    TransferData();
+                    ForwardTransmission();
                 });
         });
 }
 
-void Tunnel::TransferData()
+void Tunnel::ForwardTransmission()
 {
-    // TODO:
+    // 16-KB
+    constexpr size_t kIOBufSize = 4 * 1024;
+    io_client_buf_.resize(kIOBufSize);
+    io_remote_buf_.resize(kIOBufSize);
+
+    ForwardRemoteResponse();
+    ForwardClientRequest();
+}
+
+void Tunnel::ForwardClientRequest()
+{
+    client_sock_.async_read_some(
+        asio::buffer(io_client_buf_),
+        [this, self=shared_from_this()](std::error_code rec, size_t bytes_read) {
+            if (rec) {
+                // Client-side disconnected.
+                if (rec == asio::error::eof) {
+                    LOG(INFO) << "Client @ " << client_sock_.remote_endpoint() << " disconnected";
+                    client_sock_disconnected_ = true;
+                    ShutdownWriteSafe(dial_sock_, dial_sock_disconnected_);
+                    return;
+                }
+
+                LOG(ERROR) << "Failed to read request from client @ "
+                           << client_sock_.remote_endpoint() << " ec=" << rec;
+                ForceClose();
+                return;
+            }
+
+            asio::async_write(
+                dial_sock_,
+                asio::buffer(io_client_buf_, bytes_read),
+                [this, self=shared_from_this()](std::error_code wec, size_t /*bytes*/) {
+                    if (wec) {
+                        LOG(ERROR) << "Failed to write client request to remote @ "
+                                   << dial_sock_.remote_endpoint() << " ec=" << wec;
+                        ForceClose();
+                        return;
+                    }
+
+                    ForwardClientRequest();
+                });
+        }
+    );
+}
+
+
+void Tunnel::ForwardRemoteResponse()
+{
+    dial_sock_.async_read_some(
+        asio::buffer(io_remote_buf_),
+        [this, self=shared_from_this()](std::error_code rec, size_t bytse_read) {
+            if (rec) {
+                // Remote-side disconnected.
+                if (rec == asio::error::eof) {
+                    LOG(INFO) << "Remote @ " << dial_sock_.remote_endpoint() << " disconnected";
+                    dial_sock_disconnected_ = true;
+                    ShutdownWriteSafe(client_sock_, client_sock_disconnected_);
+                    return;
+                }
+
+                LOG(ERROR) << "Failed to read request from remote @ "
+                           << dial_sock_.remote_endpoint() << " ec=" << rec;
+                ForceClose();
+                return;
+            }
+
+            asio::async_write(
+                client_sock_,
+                asio::buffer(io_remote_buf_, bytse_read),
+                [this, self=shared_from_this()](std::error_code wec, size_t /*bytes*/) {
+                    if (wec) {
+                        LOG(ERROR) << "Failed to write remote response to client @ "
+                                   << client_sock_.remote_endpoint() << " ec=" << wec;
+                        ForceClose();
+                        return;
+                    }
+
+                    ForwardRemoteResponse();
+                }
+            );
+        }
+    );
 }
 
 void Tunnel::RejectClient()
@@ -200,6 +295,7 @@ void Tunnel::RejectClient()
 
 void Tunnel::ForceClose()
 {
+    LOG(INFO) << "Force closing now...";
     std::error_code ec;
     client_sock_.shutdown(tcp::socket::shutdown_send, ec);
     LOG_IF(WARNING, !!ec) << "Failed to shutdown send on client_sock; ec=" << ec;

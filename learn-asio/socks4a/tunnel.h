@@ -78,7 +78,11 @@ private:
 
     void ConnectRemote(std::unique_ptr<RequestPacket> packet);
 
-    void TransferData();
+    void ForwardTransmission();
+
+    void ForwardClientRequest();
+
+    void ForwardRemoteResponse();
 
     void RejectClient();
 
@@ -87,8 +91,11 @@ private:
 private:
     asio::io_context& io_ctx_;
     tcp::socket client_sock_;
+    bool client_sock_disconnected_;
     tcp::socket dial_sock_;
-    std::string io_buf_;
+    bool dial_sock_disconnected_;
+    std::string io_client_buf_;
+    std::string io_remote_buf_;
 };
 
 #endif  // TUNNEL_H_
