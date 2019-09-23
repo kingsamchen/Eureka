@@ -37,11 +37,7 @@ struct RequestPacket {
             return false;
         }
 
-        if (dest_ip < k4aMask && domain.empty()) {
-            return false;
-        }
-
-        return true;
+        return !(dest_ip < k4aMask && domain.empty());
     }
 };
 
@@ -84,6 +80,8 @@ private:
 
     void ForwardRemoteResponse();
 
+    void SetNoDelay();
+
     void RejectClient();
 
     void ForceClose();
@@ -92,8 +90,10 @@ private:
     asio::io_context& io_ctx_;
     tcp::socket client_sock_;
     bool client_sock_disconnected_;
+    tcp::endpoint client_addr_;
     tcp::socket dial_sock_;
     bool dial_sock_disconnected_;
+    tcp::endpoint remote_addr_;
     std::string io_client_buf_;
     std::string io_remote_buf_;
 };

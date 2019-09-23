@@ -33,6 +33,7 @@ Tunnel::Tunnel(asio::io_context& ctx, tcp::socket&& client_sock)
     : io_ctx_(ctx),
       client_sock_(std::move(client_sock)),
       client_sock_disconnected_(false),
+      client_addr_(client_sock_.remote_endpoint()),
       dial_sock_(ctx),
       dial_sock_disconnected_(false)
 {}
@@ -170,8 +171,8 @@ void Tunnel::ConnectRemote(std::unique_ptr<RequestPacket> packet)
                 return;
             }
 
-            LOG(INFO) << "Tunneling to "
-                      << client_sock_.remote_endpoint() << " <-> " << dial_sock_.remote_endpoint();
+            remote_addr_ = endpoint;
+            LOG(INFO) << "Tunneling to " << client_addr_ << " <-> " << remote_addr_;
 
             // Send back tunneled ack.
             auto port_in_be = HostToNetwork(endpoint.port());
@@ -193,9 +194,17 @@ void Tunnel::ConnectRemote(std::unique_ptr<RequestPacket> packet)
                         return;
                     }
 
+                    SetNoDelay();
                     ForwardTransmission();
                 });
         });
+}
+
+void Tunnel::SetNoDelay()
+{
+    tcp::no_delay no_delay(true);
+    client_sock_.set_option(no_delay);
+    dial_sock_.set_option(no_delay);
 }
 
 void Tunnel::ForwardTransmission()
@@ -217,14 +226,14 @@ void Tunnel::ForwardClientRequest()
             if (rec) {
                 // Client-side disconnected.
                 if (rec == asio::error::eof) {
-                    LOG(INFO) << "Client @ " << client_sock_.remote_endpoint() << " disconnected";
+                    LOG(INFO) << "Client @ " << client_addr_ << " disconnected";
                     client_sock_disconnected_ = true;
                     ShutdownWriteSafe(dial_sock_, dial_sock_disconnected_);
                     return;
                 }
 
                 LOG(ERROR) << "Failed to read request from client @ "
-                           << client_sock_.remote_endpoint() << " ec=" << rec;
+                           << client_addr_ << " ec=" << rec;
                 ForceClose();
                 return;
             }
@@ -235,7 +244,7 @@ void Tunnel::ForwardClientRequest()
                 [this, self=shared_from_this()](std::error_code wec, size_t /*bytes*/) {
                     if (wec) {
                         LOG(ERROR) << "Failed to write client request to remote @ "
-                                   << dial_sock_.remote_endpoint() << " ec=" << wec;
+                                   << remote_addr_ << " ec=" << wec;
                         ForceClose();
                         return;
                     }
@@ -255,14 +264,14 @@ void Tunnel::ForwardRemoteResponse()
             if (rec) {
                 // Remote-side disconnected.
                 if (rec == asio::error::eof) {
-                    LOG(INFO) << "Remote @ " << dial_sock_.remote_endpoint() << " disconnected";
+                    LOG(INFO) << "Remote @ " << remote_addr_ << " disconnected";
                     dial_sock_disconnected_ = true;
                     ShutdownWriteSafe(client_sock_, client_sock_disconnected_);
                     return;
                 }
 
                 LOG(ERROR) << "Failed to read request from remote @ "
-                           << dial_sock_.remote_endpoint() << " ec=" << rec;
+                           << remote_addr_ << " ec=" << rec;
                 ForceClose();
                 return;
             }
@@ -273,7 +282,7 @@ void Tunnel::ForwardRemoteResponse()
                 [this, self=shared_from_this()](std::error_code wec, size_t /*bytes*/) {
                     if (wec) {
                         LOG(ERROR) << "Failed to write remote response to client @ "
-                                   << client_sock_.remote_endpoint() << " ec=" << wec;
+                                   << client_addr_ << " ec=" << wec;
                         ForceClose();
                         return;
                     }
