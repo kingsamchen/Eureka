@@ -10,7 +10,7 @@ import (
 )
 
 /*
- * part1: two operands and one operator
+ * part0: two operands and one operator
  *        an operator can be {+, -}
  *        operand can be multiple digits
  *        automatically skip redundant spaces
