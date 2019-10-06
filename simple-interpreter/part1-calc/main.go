@@ -46,9 +46,13 @@ func (e *expr) peek() byte {
 	return e.text[e.pos]
 }
 
+func (e *expr) advance() {
+	e.pos++
+}
+
 func (e *expr) skipSpace() {
 	for isSpace(e.peek()) {
-		e.pos++
+		e.advance()
 	}
 }
 
@@ -56,7 +60,7 @@ func (e *expr) tokenizeInteger() string {
 	integer := ""
 	for unicode.IsDigit(rune(e.peek())) {
 		integer += string(e.peek())
-		e.pos++
+		e.advance()
 	}
 	return integer
 }
@@ -84,7 +88,7 @@ func (e *expr) nextToken() (tok token) {
 		}
 
 		if ch == '+' {
-			e.pos++
+			e.advance()
 			return token{
 				kind:  tokPlus,
 				value: string(ch),
@@ -92,7 +96,7 @@ func (e *expr) nextToken() (tok token) {
 		}
 
 		if ch == '-' {
-			e.pos++
+			e.advance()
 			return token{
 				kind:  tokMinus,
 				value: string(ch),
@@ -115,7 +119,7 @@ func expectToken(tok token, kind int) (token, error) {
 		return tok, nil
 	}
 
-	return token{}, fmt.Errorf("token type doesn't match; expect=%d actual=%d", kind, tok.kind)
+	return token{}, fmt.Errorf("token type mismatch; expect=%d actual=%d", kind, tok.kind)
 }
 
 func (e *expr) eval() (int, error) {
