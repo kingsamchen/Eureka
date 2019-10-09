@@ -119,7 +119,7 @@ func (e *expr) nextToken() {
 			e.advance()
 			e.tok = token{
 				kind:  tokPlus,
-				value: string(ch),
+				value: "+",
 			}
 			return
 		}
@@ -128,7 +128,7 @@ func (e *expr) nextToken() {
 			e.advance()
 			e.tok = token{
 				kind:  tokMinus,
-				value: string(ch),
+				value: "-",
 			}
 			return
 		}
@@ -137,7 +137,7 @@ func (e *expr) nextToken() {
 			e.advance()
 			e.tok = token{
 				kind:  tokMul,
-				value: string(ch),
+				value: "*",
 			}
 			return
 		}
@@ -146,7 +146,7 @@ func (e *expr) nextToken() {
 			e.advance()
 			e.tok = token{
 				kind:  tokDiv,
-				value: string(ch),
+				value: "/",
 			}
 			return
 		}
@@ -163,7 +163,7 @@ func (e *expr) nextToken() {
 	}
 }
 
-func (e *expr) consumeTerm() (n int, err error) {
+func (e *expr) consumeFactor() (n int, err error) {
 	tok := e.currentToken()
 	if err = expectToken(tok, tokInteger); err != nil {
 		return 0, err
@@ -174,8 +174,8 @@ func (e *expr) consumeTerm() (n int, err error) {
 	return tok.asInt()
 }
 
-func (e *expr) consumeFactor() (result int, err error) {
-	result, err = e.consumeTerm()
+func (e *expr) consumeTerm() (result int, err error) {
+	result, err = e.consumeFactor()
 	if err != nil {
 		return 0, err
 	}
@@ -184,7 +184,7 @@ func (e *expr) consumeFactor() (result int, err error) {
 		opToken := e.currentToken()
 
 		e.nextToken()
-		term, err := e.consumeTerm()
+		term, err := e.consumeFactor()
 		if err != nil {
 			return 0, err
 		}
@@ -203,7 +203,7 @@ func (e *expr) expr() (result int, err error) {
 	// Initiate
 	e.nextToken()
 
-	result, err = e.consumeFactor()
+	result, err = e.consumeTerm()
 	if err != nil {
 		return 0, err
 	}
@@ -212,7 +212,7 @@ func (e *expr) expr() (result int, err error) {
 		opToken := e.currentToken()
 
 		e.nextToken()
-		factor, err := e.consumeFactor()
+		factor, err := e.consumeTerm()
 		if err != nil {
 			return 0, err
 		}
