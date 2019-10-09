@@ -12,7 +12,7 @@ import (
 )
 
 /*
- * part2: supports + - * / arithmatics
+ * part2: supports + - * / arithmetics
  */
 
 const (
