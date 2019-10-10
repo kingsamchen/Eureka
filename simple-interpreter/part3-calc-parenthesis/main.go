@@ -21,8 +21,9 @@ const (
 	tokMinus
 	tokMul
 	tokDiv
-	tokSubExpr
-	tokEOF = -1
+	tokLParen
+	tokRParen
+	tokEOF     = -1
 	tokUnknown = -2
 )
 
@@ -39,13 +40,6 @@ func isSpace(ch byte) bool {
 	return ch == ' ' || ch == '\t'
 }
 
-func expectToken(tok token, kind int) (err error) {
-	if tok.kind != kind {
-		err = errors.Errorf("token type mismatch; expect=%d actual=%d", kind, tok.kind)
-	}
-	return
-}
-
 type expr struct {
 	text string
 	pos  int
@@ -53,13 +47,16 @@ type expr struct {
 }
 
 func newExpr(text string) expr {
-	return expr{
+	e := expr{
 		text: text,
 		pos:  0,
 		tok: token{
 			kind: tokEOF,
 		},
 	}
+	// Initiate
+	e.nextToken()
+	return e
 }
 
 // returns current character or 0 if already past the end.
@@ -87,39 +84,6 @@ func (e *expr) lexInteger() string {
 		e.advance()
 	}
 	return integer
-}
-
-func (e *expr) lexSubExpr() (string, error) {
-	expr := ""
-
-	degree := 1
-	e.advance()
-	for ; degree != 0; e.advance() {
-		ch := e.peek()
-		if ch == 0 {
-			break
-		}
-
-		expr += string(ch)
-
-		if ch == '(' {
-			degree++
-			continue
-		}
-
-		if ch == ')' {
-			degree--
-			continue
-		}
-	}
-
-	if degree != 0 {
-		return "", errors.Errorf("unexpected end; expr=%s", expr)
-	}
-
-	expr = expr[0:len(expr)-1]
-
-	return expr, nil
 }
 
 func (e *expr) currentToken() token {
@@ -186,15 +150,20 @@ func (e *expr) nextToken() {
 		}
 
 		if ch == '(' {
-			expr, err := e.lexSubExpr()
+			e.advance()
 			e.tok = token{
-				kind:  tokSubExpr,
-				value: expr,
-			}
-			if err != nil {
-				e.tok.kind = tokUnknown
+				kind:  tokLParen,
+				value: "(",
 			}
 			return
+		}
+
+		if ch == ')' {
+			e.advance()
+			e.tok = token{
+				kind:  tokRParen,
+				value: ")",
+			}
 		}
 
 		e.tok = token{
@@ -213,14 +182,15 @@ func (e *expr) consumeFactor() (n int, err error) {
 	tok := e.currentToken()
 	if tok.kind == tokInteger {
 		n, err = tok.asInt()
-	} else if tok.kind == tokSubExpr {
-		sub := newExpr(tok.value)
-		n, err = sub.expr()
+		e.nextToken()
+	} else if tok.kind == tokLParen {
+		e.nextToken()
+		// Handle sub-expr recursively
+		n, err = e.expr()
+		e.nextToken()
 	} else {
 		return 0, errors.Errorf("expected tokInteger or tokSubExpr but got %+v", tok)
 	}
-
-	e.nextToken()
 
 	return
 }
@@ -246,17 +216,13 @@ func (e *expr) consumeTerm() (result int, err error) {
 		}
 	}
 
-	lastTok := e.currentToken()
-	if lastTok.kind == tokUnknown {
-		return 0, errors.Errorf("invalid token found %+v", lastTok)
-	}
-
 	return
 }
 
+// expr   := term ((plus|minus) term)*
+// term   := factor ((mul|div) factor)*
+// factor := integer | LPAREN expr RPAREN
 func (e *expr) expr() (result int, err error) {
-	// Initiate
-	e.nextToken()
 	result, err = e.consumeTerm()
 	if err != nil {
 		return 0, err
@@ -277,11 +243,6 @@ func (e *expr) expr() (result int, err error) {
 		}
 	}
 
-	lastTok := e.currentToken()
-	if lastTok.kind == tokUnknown {
-		return 0, errors.Errorf("invalid token found %+v", lastTok)
-	}
-
 	return
 }
 
@@ -300,6 +261,6 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("expr: %s\nresult: %d\n", e.text, result)
+		fmt.Printf("result: %d\n", result)
 	}
 }
