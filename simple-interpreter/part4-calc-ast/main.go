@@ -184,8 +184,13 @@ func (p *lexer) nextToken() {
 
 // -*- parser -*-
 
+type visitor interface {
+	visitNum(*nodeNum) (int, error)
+	visitBinOp(*nodeBinOp) (int, error)
+}
+
 type visitable interface {
-	visit() (int, error)
+	doVisit(visitor) (int, error)
 }
 
 type nodeBinOp struct {
@@ -202,34 +207,8 @@ func newBinOpNode(t token, l, r visitable) *nodeBinOp {
 	}
 }
 
-func (n *nodeBinOp) visit() (result int, err error) {
-	opKind := n.tok.kind
-	if opKind != tokPlus && opKind != tokMinus && opKind != tokMul && opKind != tokDiv {
-		return 0, errors.Errorf("invalid bin-op=%+v", &n.tok)
-	}
-
-	lhs, err := n.left.visit()
-	if err != nil {
-		return 0, errors.Wrapf(err, "visit op=%s left child", n.tok.value)
-	}
-
-	rhs, err := n.right.visit()
-	if err != nil {
-		return 0, errors.Wrapf(err, "visit op=%s right child", n.tok.value)
-	}
-
-	switch opKind {
-	case tokPlus:
-		result = lhs + rhs
-	case tokMinus:
-		result = lhs - rhs
-	case tokMul:
-		result = lhs * rhs
-	case tokDiv:
-		result = lhs / rhs
-	}
-
-	return
+func (n *nodeBinOp) doVisit(v visitor) (int, error) {
+	return v.visitBinOp(n)
 }
 
 type nodeNum struct {
@@ -240,8 +219,8 @@ func newNumNode(t token) *nodeNum {
 	return &nodeNum{tok: t}
 }
 
-func (n *nodeNum) visit() (int, error) {
-	return n.tok.asInt()
+func (n *nodeNum) doVisit(v visitor) (int, error) {
+	return v.visitNum(n)
 }
 
 type parser struct {
@@ -314,6 +293,70 @@ func (p *parser) expr() (node visitable, err error) {
 	return
 }
 
+func (p *parser) parse() (node visitable, err error) {
+	return p.expr()
+}
+
+// -*- interpreter -*-
+
+type evaluator struct {
+}
+
+func (e *evaluator) visitNum(node *nodeNum) (result int, err error) {
+	return node.tok.asInt()
+}
+
+func (e *evaluator) visitBinOp(node *nodeBinOp) (result int, err error) {
+	opKind := node.tok.kind
+	if opKind != tokPlus && opKind != tokMinus && opKind != tokMul && opKind != tokDiv {
+		return 0, errors.Errorf("invalid bin-op=%+v", &node.tok)
+	}
+
+	lhs, err := node.left.doVisit(e)
+	if err != nil {
+		return 0, errors.Wrapf(err, "visit op=%s left child", node.tok.value)
+	}
+
+	rhs, err := node.right.doVisit(e)
+	if err != nil {
+		return 0, errors.Wrapf(err, "visit op=%s right child", node.tok.value)
+	}
+
+	switch opKind {
+	case tokPlus:
+		result = lhs + rhs
+	case tokMinus:
+		result = lhs - rhs
+	case tokMul:
+		result = lhs * rhs
+	case tokDiv:
+		result = lhs / rhs
+	}
+
+	return
+}
+
+type interpreter struct {
+	parser parser
+	eval   evaluator
+}
+
+func newInterpretor(text string) interpreter {
+	return interpreter{
+		parser: newParser(text),
+	}
+}
+
+func (i *interpreter) interprete() (int, error) {
+	ast, err := i.parser.parse()
+	if err != nil {
+		return 0, err
+	}
+	return ast.doVisit(&i.eval)
+}
+
+// -*- run -*-
+
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
@@ -322,14 +365,13 @@ func main() {
 			break
 		}
 
-		e := newParser(scanner.Text())
-		result, err := e.expr()
+		vm := newInterpretor(scanner.Text())
+		result, err := vm.interprete()
 		if err != nil {
 			log.Printf("Error: %+v", err)
 			continue
 		}
 
-		n, err := result.visit()
-		fmt.Printf("result: %d, %+v\n", n, err)
+		fmt.Printf("result: %d\n", result)
 	}
 }
