@@ -191,6 +191,7 @@ type visitor interface {
 
 type visitable interface {
 	doVisit(visitor) (int, error)
+	dump(visitor)
 }
 
 type nodeBinOp struct {
@@ -211,6 +212,10 @@ func (n *nodeBinOp) doVisit(v visitor) (int, error) {
 	return v.visitBinOp(n)
 }
 
+func (n *nodeBinOp) dump(v visitor) {
+	v.visitBinOp(n)
+}
+
 type nodeNum struct {
 	tok token
 }
@@ -221,6 +226,10 @@ func newNumNode(t token) *nodeNum {
 
 func (n *nodeNum) doVisit(v visitor) (int, error) {
 	return v.visitNum(n)
+}
+
+func (n *nodeNum) dump(v visitor) {
+	v.visitNum(n)
 }
 
 type parser struct {
@@ -352,7 +361,28 @@ func (i *interpreter) interprete() (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	var lsp lispfy
+	ast.doVisit(&lsp)
+	fmt.Println(lsp.log)
 	return ast.doVisit(&i.eval)
+}
+
+type lispfy struct {
+	log string
+}
+
+func (l *lispfy) visitBinOp(node *nodeBinOp) (_ int, _ error) {
+	node.left.dump(l)
+	lhs := l.log
+	node.right.dump(l)
+	rhs := l.log
+	l.log = fmt.Sprintf("(%s %s %s)", node.tok.value, lhs, rhs)
+	return
+}
+
+func (l *lispfy) visitNum(node *nodeNum) (_ int, _ error) {
+	l.log = node.tok.value
+	return
 }
 
 // -*- run -*-
@@ -360,7 +390,7 @@ func (i *interpreter) interprete() (int, error) {
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
-		fmt.Print("calc> ")
+		fmt.Print("expr> ")
 		if !scanner.Scan() {
 			break
 		}
