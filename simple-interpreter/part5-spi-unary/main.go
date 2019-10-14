@@ -12,9 +12,7 @@ import (
 )
 
 /*
- * part4: abstract lexer, parser, and interpreter.
- *               token           ast
- *        lexer ------- parser ------- interpreter
+ * part5: add support of unary operators.
  */
 
 // -*- Lexer -*-
@@ -188,11 +186,11 @@ func (p *lexer) nextToken() {
 type visitor interface {
 	visitNum(*nodeNum) (int, error)
 	visitBinOp(*nodeBinOp) (int, error)
+	visitUnary(*nodeUnary) (int, error)
 }
 
 type visitable interface {
 	doVisit(visitor) (int, error)
-	dump(visitor)
 }
 
 type nodeBinOp struct {
@@ -213,10 +211,6 @@ func (n *nodeBinOp) doVisit(v visitor) (int, error) {
 	return v.visitBinOp(n)
 }
 
-func (n *nodeBinOp) dump(v visitor) {
-	v.visitBinOp(n)
-}
-
 type nodeNum struct {
 	tok token
 }
@@ -229,8 +223,20 @@ func (n *nodeNum) doVisit(v visitor) (int, error) {
 	return v.visitNum(n)
 }
 
-func (n *nodeNum) dump(v visitor) {
-	v.visitNum(n)
+type nodeUnary struct {
+	tok token
+	sub visitable
+}
+
+func newUnaryNode(t token, sub visitable) *nodeUnary {
+	return &nodeUnary{
+		tok: t,
+		sub: sub,
+	}
+}
+
+func (n *nodeUnary) doVisit(v visitor) (int, error) {
+	return v.visitUnary(n)
 }
 
 type parser struct {
@@ -246,12 +252,25 @@ func newParser(text string) parser {
 func (p *parser) consumeFactor() (node visitable, err error) {
 	tok := p.lexer.currentToken()
 	if tok.kind == tokInteger {
-		node = newNumNode(tok)
 		p.lexer.nextToken()
+		node = newNumNode(tok)
+	} else if tok.kind == tokPlus || tok.kind == tokMinus {
+		p.lexer.nextToken()
+		sub, err := p.consumeFactor()
+		if err != nil {
+			return nil, errors.Wrap(err, "consume factor for unary op")
+		}
+		node = newUnaryNode(tok, sub)
 	} else if tok.kind == tokLParen {
 		p.lexer.nextToken()
 		// Handle sub-lexer recursively
 		node, err = p.expr()
+		if err != nil {
+			return nil, errors.Wrap(err, "consume as expr")
+		}
+		if p.lexer.currentToken().kind != tokRParen {
+			return nil, errors.Errorf("expected RPAREN but got %+v", p.lexer.currentToken())
+		}
 		p.lexer.nextToken()
 	} else {
 		return nil, errors.Errorf("expected tokInteger or tokSubExpr but got %+v", tok)
@@ -280,9 +299,9 @@ func (p *parser) consumeTerm() (node visitable, err error) {
 	return
 }
 
-// lexer   := term ((plus|minus) term)*
+// lexer  := term ((plus|minus) term)*
 // term   := factor ((mul|div) factor)*
-// factor := integer | LPAREN lexer RPAREN
+// factor := integer | (plus|minus) factor | LPAREN lexer RPAREN
 func (p *parser) expr() (node visitable, err error) {
 	node, err = p.consumeTerm()
 	if err != nil {
@@ -346,44 +365,33 @@ func (e *evaluator) visitBinOp(node *nodeBinOp) (result int, err error) {
 	return
 }
 
+func (e *evaluator) visitUnary(node *nodeUnary) (result int, err error) {
+	n, err := node.sub.doVisit(e)
+	if node.tok.kind == tokPlus {
+		result = n
+	} else if node.tok.kind == tokMinus {
+		result = -n
+	}
+	return
+}
+
 type interpreter struct {
 	parser parser
 	eval   evaluator
 }
 
-func newInterpretor(text string) interpreter {
+func newInterpreter(text string) interpreter {
 	return interpreter{
 		parser: newParser(text),
 	}
 }
 
-func (i *interpreter) interprete() (int, error) {
+func (i *interpreter) interpret() (int, error) {
 	ast, err := i.parser.parse()
 	if err != nil {
 		return 0, err
 	}
-	var lsp lispfy
-	ast.doVisit(&lsp)
-	fmt.Println(lsp.log)
 	return ast.doVisit(&i.eval)
-}
-
-type lispfy struct {
-	log string
-}
-
-func (l *lispfy) visitBinOp(node *nodeBinOp) (_ int, _ error) {
-	node.left.dump(l)
-	lhs := l.log
-	node.right.dump(l)
-	rhs := l.log
-	l.log = fmt.Sprintf("(%s %s %s)", node.tok.value, lhs, rhs)
-	return
-}
-
-func (l *lispfy) visitNum(node *nodeNum) (_ int, _ error) {
-	l.log = node.tok.value
-	return
 }
 
 // -*- run -*-
@@ -396,8 +404,8 @@ func main() {
 			break
 		}
 
-		vm := newInterpretor(scanner.Text())
-		result, err := vm.interprete()
+		vm := newInterpreter(scanner.Text())
+		result, err := vm.interpret()
 		if err != nil {
 			log.Printf("Error: %+v", err)
 			continue

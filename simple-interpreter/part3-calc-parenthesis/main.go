@@ -164,6 +164,7 @@ func (e *expr) nextToken() {
 				kind:  tokRParen,
 				value: ")",
 			}
+			return
 		}
 
 		e.tok = token{
