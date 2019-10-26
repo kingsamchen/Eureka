@@ -52,6 +52,22 @@ func TestLexer_PascalDefinitions(t *testing.T) {
 		lex.nextToken()
 		c.So(lex.currentToken().kind, convey.ShouldEqual, tokEOF)
 	})
+
+	convey.Convey("Identifiers can start with _", t, func(c convey.C) {
+		lex := newLexer("BEGIN _foo_bar := 2; END")
+		var tok token
+
+		tok = lex.currentToken()
+		c.So(tok, convey.ShouldResemble, *_Reserved["BEGIN"])
+
+		lex.nextToken()
+		tok = lex.currentToken()
+		c.So(tok, convey.ShouldResemble, token{kind: tokVar, value:"_foo_bar"})
+
+		lex.nextToken()
+		tok = lex.currentToken()
+		c.So(tok, convey.ShouldResemble, token{kind: tokAssign, value:":="})
+	})
 }
 
 func TestParser_PascalDefinitions(t *testing.T) {

@@ -117,9 +117,10 @@ func (l *lexer) lexInteger() string {
 
 func (l *lexer) lexIdentifier() string {
 	id := ""
-	for unicode.IsLetter(rune(l.peek())) {
-		id += string(l.peek())
+	for ch := l.peek(); ch == '_' || unicode.IsLetter(rune(ch)); {
+		id += string(ch)
 		l.advance()
+		ch = l.peek()
 	}
 	return id
 }
@@ -208,7 +209,7 @@ func (l *lexer) nextToken() {
 			return
 		}
 
-		if unicode.IsLetter(rune(ch)) {
+		if ch == '_' || unicode.IsLetter(rune(ch)) {
 			id := l.lexIdentifier()
 			keyword, in := _Reserved[id]
 			if in {
