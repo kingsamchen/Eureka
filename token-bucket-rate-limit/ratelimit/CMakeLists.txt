@@ -1,6 +1,7 @@
 
 set(ratelimit_SRCS
   main.cpp
+  bucket_limiter.cpp
 )
 
 if(WIN32)
@@ -12,6 +13,7 @@ elseif(UNIX)
 endif()
 
 set(ratelimit_HEADERS
+  bucket_limiter.h
 )
 
 if(WIN32)
