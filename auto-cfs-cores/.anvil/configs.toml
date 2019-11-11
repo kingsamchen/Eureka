@@ -1,0 +1,51 @@
+
+# This file contains a configuration set for anvil gen and build commands.
+# The general structure of set is following:
+
+# Defines a configuration
+[conf]
+    generator = "{generator}"
+    # Defines generate-target collection
+    [[conf.gen]]
+        target = "{target-name}"    # can be empty, but must be unique if multiple generate-target is possible.
+        out_dir = "{where to save generated files}" # relative project root
+        args = "{generation args}"
+
+    [[conf.build]]
+        mode = "{build mode}"   # can be empty, but must be unique if multiple build-mode is possible
+        args = "{build args}"
+
+# Examples:
+#
+# [msvc-2019]
+#     generator = "Visual Studio 16 2019"
+#
+#     [[msvc-2019.gen]]
+#         target = ""
+#         out_dir = "build/msvc-2019"
+#         args = ""
+#
+#     [[msvc-2019.build]]
+#         mode = "Debug"
+#         args = "--target ALL_BUILD --config Debug"
+#
+#     [[msvc-2019.build]]
+#         mode = "Release"
+#         args = "--target ALL_BUILD --config Debug"
+#
+# [clang-ninja]
+#     generator = "Ninja"
+#
+#     [[clang-ninja.gen]]
+#         target = "Debug"
+#         out_dir = "build/Debug"
+#         args = "-DCMAKE_BUILD_TYPE=Debug"
+#
+#     [[clang-ninja.gen]]
+#         target = "Release"
+#         out_dir = "build/Release"
+#         args = "-DCMAKE_BUILD_TYPE=Release"
+#
+#     [[clang-ninja.build]]
+#         mode = ""
+#         args = "-- -j 8"
