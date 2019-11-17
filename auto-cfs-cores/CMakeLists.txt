@@ -10,7 +10,7 @@ project(auto-cfs-cores CXX)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 if(AUTO-CFS-CORES_NOT_SUBPROJECT)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -33,3 +33,4 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 add_subdirectory(auto_cfs_cores)
+add_subdirectory(tests)

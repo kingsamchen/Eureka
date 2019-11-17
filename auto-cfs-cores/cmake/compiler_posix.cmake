@@ -11,7 +11,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 set(CMAKE_EXE_LINKER_FLAGS "-rdynamic")
 
-function(apply_auto-cfs-cores_compile_properties_to_target TARGET)
+function(apply_auto_cfs_cores_compile_properties_to_target TARGET)
   target_compile_options(${TARGET}
     PRIVATE
       -g
