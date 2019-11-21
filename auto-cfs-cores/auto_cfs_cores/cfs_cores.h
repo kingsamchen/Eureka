@@ -8,7 +8,7 @@
 #include <optional>
 #include <string>
 
-// For tests
+// For tests [
 std::optional<std::string> QueryCGroupCPUPathForProc(const std::string& proc_path);
 
 struct MountInfo {
@@ -17,6 +17,8 @@ struct MountInfo {
 };
 
 std::optional<MountInfo> QueryMountInfoForProc(const std::string& proc_path);
+
+// ]
 
 int ReadConfiguredCores();
 

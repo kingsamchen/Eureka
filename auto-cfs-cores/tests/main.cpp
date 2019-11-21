@@ -30,3 +30,9 @@ TEST_CASE("Query mount-point info", "[cfs_cores]")
         REQUIRE_FALSE(info.has_value());
     }
 }
+
+TEST_CASE("Query cfs cores", "[cfs_cores]")
+{
+    auto cores = ReadConfiguredCores();
+    std::cout << "configured cfs cores = " << cores << std::endl;
+}
