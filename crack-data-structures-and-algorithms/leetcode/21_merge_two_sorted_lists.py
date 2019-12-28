@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # 0xCCCCCCCC
 
+
 # Definition for singly-linked list.
 class ListNode(object):
     def __init__(self, x):
@@ -8,7 +9,7 @@ class ListNode(object):
         self.next = None
 
 
-def mergeTwoLists(l1, l2):
+def merge_two_lists(l1, l2):
     """
     :type l1: ListNode
     :type l2: ListNode
@@ -30,6 +31,5 @@ def mergeTwoLists(l1, l2):
         p.next = l1
     else:
         p.next = l2
-
 
     return dummy.next
