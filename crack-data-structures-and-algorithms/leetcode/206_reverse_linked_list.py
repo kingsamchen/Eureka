@@ -20,3 +20,20 @@ def reverse_list(head):
         prev = cur
         cur = nxt
     return prev
+
+
+def reverse_list_ex(head):
+    if not head:
+        return None
+
+    dummy = ListNode(0)
+    dummy.next = head
+    pp = dummy
+    p = head
+    while p.next:
+        pn = p.next
+        p.next = pn.next
+        pn.next = pp.next
+        pp.next = pn
+
+    return dummy.next

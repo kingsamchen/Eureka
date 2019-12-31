@@ -24,7 +24,7 @@ def swap_pairs(head):
     while p and p.next:
         pn = p.next
         p.next = pn.next
-        pn.next = p
+        pn.next = pp.next
         pp.next = pn
 
         pp = p

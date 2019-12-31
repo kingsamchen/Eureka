@@ -21,17 +21,17 @@ def remove_nth_from_end(head, n):
     dummy = ListNode(0)
     dummy.next = head
     prev = dummy
-    fast = slow = head
+    probe = cur = head
     i = 0
     while i < n:
-        fast = fast.next
+        probe = probe.next
         i += 1
 
-    while fast:
-        fast = fast.next
-        slow = slow.next
+    while probe:
+        probe = probe.next
+        cur = cur.next
         prev = prev.next
 
-    prev.next = slow.next
+    prev.next = cur.next
 
     return dummy.next
