@@ -9,25 +9,28 @@ class ListNode(object):
         self.next = None
 
 
-def swap_pairs(head):
-    """
-    :type head: ListNode
-    :rtype: ListNode
-    """
-    if not head:
-        return None
+class Solution(object):
+    def swapPairs(self, head):
+        """
+        :type head: ListNode
+        :rtype: ListNode
+        """
+        if not head:
+            return None
 
-    dummy = ListNode(0)
-    dummy.next = head
-    pp = dummy
-    p = head
-    while p and p.next:
-        pn = p.next
-        p.next = pn.next
-        pn.next = pp.next
-        pp.next = pn
+        dummy = ListNode(0)
+        dummy.next = head
+        pp = dummy
+        p = head
+        # even length, p would finally point to nil
+        # odd length, p would finally point to the last node.
+        while p and p.next:
+            pn = p.next
+            p.next = pn.next
+            pn.next = pp.next
+            pp.next = pn
+            # calibrate pp & p
+            pp = p
+            p = p.next
 
-        pp = p
-        p = p.next
-
-    return dummy.next
+        return dummy.next
