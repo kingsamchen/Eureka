@@ -9,47 +9,34 @@ class ListNode(object):
         self.next = None
 
 
-def add_two_numbers(l1, l2):
-    """
-    :type l1: ListNode
-    :type l2: ListNode
-    :rtype: ListNode
-    """
-    if not l1 or not l2:
-        return None
+class Solution(object):
+    def addTwoNumbers(self, l1, l2):
+        """
+        :type l1: ListNode
+        :type l2: ListNode
+        :rtype: ListNode
+        """
+        dummy = ListNode(0)
+        p = dummy
+        cf = 0
+        while l1 or l2:
+            v1 = l1.val if l1 else 0
+            v2 = l2.val if l2 else 0
+            val = v1 + v2 + cf
 
-    # 1 <- 2 <- 4           l1
-    # 0 <- 3 <- 7           l2
-    # prepend imaginary 0 to make two lists of equal length.
-    # p always points to the current result digit.
-    dummy = ListNode(0)
-    p = dummy
-    cf = 0
-    while l1 or l2:
-        val1 = l1.val if l1 else 0
-        val2 = l2.val if l2 else 0
-        val = cf + val1 + val2
-        cf = val // 10
-        if cf:
-            val -= 10
-        p.next = ListNode(val)
-        p = p.next
+            cf = val // 10
+            val = val % 10
 
-        if l1:
-            l1 = l1.next
+            p.next = ListNode(val)
+            p = p.next
 
-        if l2:
-            l2 = l2.next
-
-        # prune: splice the remaining part directly.
-        if not(l1 and l2) and cf == 0:
             if l1:
-                p.next = l1
-                break
-            elif l2:
-                p.next = l2
-                break
-    if cf != 0:
-        p.next = ListNode(1)
+                l1 = l1.next
 
-    return dummy.next
+            if l2:
+                l2 = l2.next
+
+        if cf != 0:
+            p.next = ListNode(1)
+
+        return dummy.next

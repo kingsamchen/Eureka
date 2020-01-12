@@ -18,20 +18,23 @@ def remove_nth_from_end(head, n):
     if not head:
         return None
 
+    # Head node is also possible, thus dummy node is required.
     dummy = ListNode(0)
     dummy.next = head
-    prev = dummy
-    probe = cur = head
-    i = 0
-    while i < n:
+    pp = dummy
+
+    probe = p = head
+
+    # locate the probe node
+    # n -> distance between probe and p
+    for _ in range(n):
         probe = probe.next
-        i += 1
 
     while probe:
         probe = probe.next
-        cur = cur.next
-        prev = prev.next
+        pp = p
+        p = p.next
 
-    prev.next = cur.next
+    pp.next = p.next
 
     return dummy.next
