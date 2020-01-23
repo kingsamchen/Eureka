@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-# 0xCCCCCCCC
-
-
 # Definition for singly-linked list.
 class ListNode(object):
     def __init__(self, x):
@@ -9,69 +5,34 @@ class ListNode(object):
         self.next = None
 
 
-def rotate_right(head, k):
-    """
-    :type head: ListNode
-    :type k: int
-    :rtype: ListNode
-    """
-    if not head:
-        return None
+class Solution(object):
+    def rotateRight(self, head, k):
+        """
+        :type head: ListNode
+        :type k: int
+        :rtype: ListNode
+        """
+        if not head or not head.next:
+            return head
 
-    cnt = 0
-    p = head
-    while p:
-        p = p.next
-        cnt += 1
-
-    dist = k % cnt
-    if dist == 0:
-        return head
-
-    ps = probe = head
-    i = 0
-    while i < dist:
-        probe = probe.next
-        i += 1
-
-    prev = None
-    while probe:
-        probe = probe.next
-        prev = ps
-        ps = ps.next
-
-    pe = ps
-    while pe.next:
-        pe = pe.next
-
-    pe.next = head
-    prev.next = None
-
-    return ps
+        # make it a circle and count nodes
+        cnt = 1
+        p = head
+        while p.next:
+            p = p.next
+            cnt += 1
+        p.next = head
 
 
-def rotate_right2(head, k):
-    if not head:
-        return None
+        # p now points to the original tail
+        # now make it point to new tail
+        # NOTE: if we move cnt steps, we will stop at the same position.
+        # thus rotate right k % cnt means k % cnt nodes before the original tail.
+        move = cnt - k % cnt
+        for _ in range(move):
+            p = p.next
 
-    cnt = 1
-    p = head
-    while p.next:
-        cnt += 1
-        p = p.next
+        new_head = p.next
+        p.next = None
 
-    p.next = head
-
-    lcnt = cnt - k % cnt
-
-    # p currently points to the tail node.
-    # thus move lcnt steps to locate the new last node.
-    i = 0
-    while i < lcnt:
-        p = p.next
-        i += 1
-
-    nhead = p.next
-    p.next = None
-
-    return nhead
+        return new_head
