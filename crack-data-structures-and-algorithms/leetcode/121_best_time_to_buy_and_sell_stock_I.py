@@ -11,7 +11,8 @@ class Solution(object):
         # avoid using INT_MAX
         buy_price = prices[0]
         # for each price we update our buy_price if necessary, and calculate profit so far.
-        for p in prices:
+        # start from 2nd day, because buying and selling at same day is meaningless.
+        for p in prices[1:]:
             if p < buy_price:
                 buy_price = p
             profit = max(profit, p - buy_price)
