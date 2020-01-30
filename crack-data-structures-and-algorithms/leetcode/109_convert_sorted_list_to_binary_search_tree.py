@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-# 0xCCCCCCCC
-
-
 # Definition for singly-linked list.
 class ListNode(object):
     def __init__(self, x):
@@ -17,43 +13,34 @@ class TreeNode(object):
         self.right = None
 
 
-def sorted_list_2_bst(head):
-    """
-    :type head: ListNode
-    :rtype: TreeNode
-    """
-    if not head:
+class Solution(object):
+    def sortedListToBST(self, head):
+        """
+        :type head: ListNode
+        :rtype: TreeNode
+        """
+        return build_bst(head, None)
+
+
+# Range works like [begin, end)
+def build_bst(begin, end):
+    if begin == end:
         return None
 
-    cnt = 0
-    p = head
-    while p:
-        cnt += 1
-        p = p.next
+    # begin cannot be None as here.
+    if begin.next == end:
+        return TreeNode(begin.val)
 
-    return gen_bst(head, cnt)
+    # we use fast & slow pointers to locate mid.
+    slow = fast = begin
+    while fast.next != end and fast.next.next != end:
+        fast = fast.next.next
+        slow = slow.next
 
+    # slow is at mid
+    root = TreeNode(slow.val)
+    root.left = build_bst(begin, slow)
+    root.right = build_bst(slow.next, end)
 
-def gen_bst(head, cnt):
-    if cnt == 0:
-        return None
+    return root
 
-    if cnt == 1:
-        return TreeNode(head.val)
-
-    left = cnt // 2
-    right = cnt - left - 1
-
-    i = 0
-    pm = head
-    while i < left:
-        pm = pm.next
-        i += 1
-
-    right_head = pm.next
-
-    parent = TreeNode(pm.val)
-    parent.left = gen_bst(head, left)
-    parent.right = gen_bst(right_head, right)
-
-    return parent
