@@ -1,39 +1,46 @@
-# -*- coding: utf-8 -*-
-# 0xCCCCCCCC
-
-
 # Definition for singly-linked list.
 class ListNode(object):
     def __init__(self, x):
         self.val = x
         self.next = None
 
+class Solution(object):
+    def reverseList(self, head):
+        """
+        :type head: ListNode
+        :rtype: ListNode
+        """
+        # Special traits:
+        # This question is whole-list reverse, thus
+        # * No need for dummy node, since the final value of pp is our new head.
+        # * No need to handle special cases like head == None or only a single node,
+        #   because our loop invariant takes care of it well.
+        pp = None
+        p = head
+        while p:
+            pn = p.next
+            p.next = pp
+            pp = p
+            p = pn
 
-def reverse_list(head):
-    if not head:
-        return None
-    prev = None
-    cur = head
-    while cur:
-        nxt = cur.next
-        cur.next = prev
-        prev = cur
-        cur = nxt
-    return prev
+        return pp
 
+# Use recursion
 
-def reverse_list_ex(head):
-    if not head:
-        return None
+class SolutionRecursion(object):
+    def reverseList(self, head):
+        """
+        :type head: ListNode
+        :rtype: ListNode
+        """
+        tail, root = reverse(head)
+        return root
 
-    dummy = ListNode(0)
-    dummy.next = head
-    pp = dummy
-    p = head
-    while p.next:
-        pn = p.next
-        p.next = pn.next
-        pn.next = pp.next
-        pp.next = pn
+def reverse(head):
+    if not head or not head.next:
+        return head, head
 
-    return dummy.next
+    pp, root = reverse(head.next)
+    pp.next = head
+    head.next = None
+    return head, root
