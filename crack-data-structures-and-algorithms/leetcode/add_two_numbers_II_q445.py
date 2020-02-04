@@ -35,15 +35,18 @@ class Solution(object):
                 pnc = p
             l1 = l1.next
 
-        # No carry-flag needed.
+        # No carry-flag needed because we handle cf in-place.
         while l1:
             val = l1.val + l2.val
             if val > 9:
+                # increment pnc's value, consuming the carry.
                 pnc.val += 1
+                # zero subsequent nodes whose value is 9
                 while pnc.next:
                     pnc = pnc.next
                     pnc.val = 0
-                val -= 10
+                # The new node must cannot be 9, so make pnc point to it.
+                val %= 10
                 p.next = ListNode(val)
                 p = p.next
                 pnc = p
