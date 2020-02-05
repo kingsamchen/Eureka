@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-# 0xCCCCCCCC
-
-
 # Definition for a Node.
 class Node:
     def __init__(self, x, next=None, random=None):
@@ -9,6 +5,52 @@ class Node:
         self.next = next
         self.random = random
 
+# 核心思路：
+# 1. 遍历链表，对原链表每个结点都做一次duplicate，并且副本紧挨着原始结点
+#    即 1->2->NUL => 1->1->2->2->NUL
+#    并且不设置副本节点的random，因此此时某些副本节点尚未就绪，无法设置
+# 2. 再遍历一次链表，设置副本的random；副本的random在原结点的random结点的next
+#    不过需要注意可能原结点的random指向NUL
+# 3. 第三次遍历链表，断开分离得到副本链表
+class Solution(object):
+    def copyRandomList(self, head):
+        """
+        :type head: Node
+        :rtype: Node
+        """
+        if not head:
+            return None
+
+        # Duplicate nodes, and leave random of duplicates unset.
+        p = head
+        while p:
+            pn = Node(p.val, p.next)
+            p.next = pn
+            p = pn.next
+
+        # Set random of duplicates.
+        p = head
+        while p:
+            if p.random:
+                p.next.random = p.random.next
+            p = p.next.next
+
+        new_head = head.next
+
+        # Separation.
+        p = head
+        while p:
+            pn = p.next
+            p.next = pn.next
+            p = p.next
+            if pn.next:
+                pn.next = pn.next.next
+            pn = pn.next
+
+        return new_head
+
+
+# Methods requires extra space for bookkeeping.
 
 def copy_random_list(head):
     """
@@ -45,34 +87,3 @@ def copy_random_list(head):
         pold = pold.next
 
     return dummy.next
-
-'''
-without extra space
-class Solution {
-public:
-    Node* copyRandomList(Node* head) {
-        if (!head) return nullptr;
-        Node *cur = head;
-        while (cur) {
-            Node *t = new Node(cur->val, nullptr, nullptr);
-            t->next = cur->next;
-            cur->next = t;
-            cur = t->next;
-        }
-        cur = head;
-        while (cur) {
-            if (cur->random) cur->next->random = cur->random->next;
-            cur = cur->next->next;
-        }
-        cur = head;
-        Node *res = head->next;
-        while (cur) {
-            Node *t = cur->next;
-            cur->next = t->next;
-            if (t->next) t->next = t->next->next;
-            cur = cur->next;
-        }
-        return res;
-    }
-}; 
-'''
