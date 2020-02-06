@@ -1,22 +1,19 @@
-# -*- coding: utf-8 -*-
-# 0xCCCCCCCC
-
-
 # Definition for singly-linked list.
 class ListNode(object):
     def __init__(self, x):
         self.val = x
         self.next = None
 
-
+# 核心思想
+# 用 extract-then-insert 调整一个pair，然后前进
 class Solution(object):
     def swapPairs(self, head):
         """
         :type head: ListNode
         :rtype: ListNode
         """
-        if not head:
-            return None
+        if not head or not head.next:
+            return head
 
         dummy = ListNode(0)
         dummy.next = head

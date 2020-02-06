@@ -4,7 +4,12 @@ class ListNode(object):
         self.val = x
         self.next = None
 
-
+# 核心思路
+# 1. 遍历链表并将链表形成环，同时得到链表长度 cnt；注意此时指针p应该指向尾结点
+# 2. 因为题目要往右转k个节点，等价于往左转 cnt - k % cnt个结点；如果题目直接说往左，那么省掉这一步转换
+# 3. 往左转L个结点，等于从头节点head开始往右跳L次的结点为新头结点，而为了断开链表，则从head跳L-1次的结点
+#    为尾结点
+# 4. 因为我们指针p现在处于尾结点，因此直接往右跳L次刚好在新尾结点；从此处断开即可
 class Solution(object):
     def rotateRight(self, head, k):
         """
