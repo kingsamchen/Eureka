@@ -1,6 +1,11 @@
+#include <vector>
+
+using namespace std;
+
 // 核心思路
-// 简单的DP应用
-// dp[n] = dp[n-1] + dp[n-2]
+// 令 dp[i] 为爬到阶梯 i 的不同种方式，则我们有
+// dp[i] = dp[i-1] + dp[i-2]，i >= 3
+// dp[1] = 1, dp[2] = 2
 class Solution {
 public:
     int climbStairs(int n) {
@@ -12,13 +17,13 @@ public:
             return 2;
         }
 
-        int base1 = 1, base2 = 2;
-        for (auto i = 3; i <= n; ++i) {
-            auto new_base = base1 + base2;
-            base1 = base2;
-            base2 = new_base;
+        vector<int> dp(n + 1);
+        dp[1] = 1;
+        dp[2] = 2;
+        for (int i = 3; i <= n; ++i) {
+            dp[i] = dp[i-1] + dp[i-2];
         }
 
-        return base2;
+        return dp[n];
     }
 };
