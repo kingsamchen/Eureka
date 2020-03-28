@@ -33,3 +33,21 @@ public:
         return sum - 2 * dp.back().back();
     }
 };
+
+// 在 Solution1 的基础上状态方程压缩一个维度
+// 状态方程反方向迁移
+class Solution2 {
+public:
+    int lastStoneWeightII(vector<int>& stones) {
+        auto sum = accumulate(stones.begin(), stones.end(), 0);
+        int vol = sum / 2;
+        vector<int> dp(vol + 1);
+        for (auto weight : stones) {
+            for (int v = vol; v >= weight; --v) {
+                dp[v] = max(dp[v], dp[v-weight] + weight);
+            }
+        }
+
+        return sum - 2 * dp.back();
+    }
+};
