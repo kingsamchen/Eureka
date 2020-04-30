@@ -4,39 +4,45 @@
 using namespace std;
 
 // 核心思路
-// 先把两个数都求int64_t下的绝对值，分别为 m 和 n
-// 1) 如果 m < n，那么最后结果是0
-// 2) 因为不能用乘除法，所以这里用另外一种方式实现逼近
-//    因为 m >= n，所以我们可以用方法 m = 2^t * n + k的方式来快速逼近。
-//    我们令 factor = 2^t * n，round 来计数 2^t；初始条件下，t=0，即 round=1 factor=n
-//    只要 m > factor * 2就可以继续操作；否则继续对 m - factor, n 递归处理
+// 需要一个核心递归处理函数 do_div 输入输出都为 uint64_t 保证后面位运算不会出问题
+// 1) 如果 m < n，那么结果是0
+// 2) 因为题目对操作限定，这里只能用位移来快速逼近
+//    因为 m = kn + c, 0 <= c < n；而位移只能进行二次幂运算，所以这里对 k 进行拆分，转换得到
+//    => m = (2^t + z)n + c
+//         = 2^t * n + zn + c
+// 3) 令 round = 2^t, f = 2^t * n，初始 t' = 0 => round = 1 && f = n
+//    每轮迭代通过位移增加t，即*2增大round和f
+// 4) 找到最大的t之后，通过 m - f = m - 2^t * n => zn + c 然后继续递归处理就可以最终得到k
 class Solution {
 public:
     int divide(int dividend, int divisor) {
-        // Cast to int64_t to avoid handling INT_MIN & INT_MAX
-        auto result = do_div(abs(static_cast<int64_t>(dividend)), abs(static_cast<int64_t>(divisor)));
-        if ((dividend >= 0) ^ (divisor >= 0)) {
-            result = -result;
+        auto m = static_cast<uint64_t>(abs(dividend));
+        auto n = static_cast<uint64_t>(abs(divisor));
+        auto quo = static_cast<int64_t>(do_div(m, n));
+
+        if ((dividend < 0) ^ (divisor < 0)) {
+            quo = -quo;
         }
 
-        if (result > INT_MAX || result < INT_MIN) {
-            result = INT_MAX;
+        if (quo < INT_MIN || quo > INT_MAX) {
+            quo = INT_MAX;
         }
 
-        return static_cast<int>(result);
+        return static_cast<int>(quo);
     }
 
-    int64_t do_div(int64_t m, int64_t n) {
+    uint64_t do_div(uint64_t m, uint64_t n) {
         if (m < n) {
             return 0;
         }
 
-        int64_t factor = n, round = 1;
-        while (m > (factor << 1)) {
-            factor <<= 1;
+        uint64_t round = 1;
+        uint64_t f = n;
+        while (m >= (f << 1)) {
+            f <<= 1;
             round <<= 1;
         }
 
-        return round + do_div(m - factor, n);
+        return round + do_div(m - f, n);
     }
 };
