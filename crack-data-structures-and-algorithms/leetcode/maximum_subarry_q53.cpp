@@ -31,3 +31,48 @@ public:
         return max_sum;
     }
 };
+
+// O(nlogn) 分治法
+// 将数组划分为 arr[l...m...r)
+// ma为arr[l...m)的最大子数组和；mb为arr[m...r)最大子数组和
+// 如果原数组的最大子数组和出现在连接左右两个数组的中间，即包含arr[m]，则这部分记为 mc
+// 所以mc是以m为起点，往左右两边扩张的最大子数组和
+// 原数组解为 max(ma, mb, mc)
+class Solution2 {
+public:
+    int maxSubArray(vector<int>& nums) {
+        return max_sub(nums, 0, nums.size());
+    }
+
+    int max_sub(const vector<int>& nums, int first, int last) {
+        if (first >= last) {
+            return 0;
+        }
+
+        if (first + 1 == last) {
+            return nums[first];
+        }
+
+        auto mid = first + (last - first) / 2;
+
+        int tmp_max = nums[mid];
+        int left_max = tmp_max;
+        for (int i = mid - 1; i >= first; --i) {
+            tmp_max += nums[i];
+            left_max = max(left_max, tmp_max);
+        }
+
+        tmp_max = nums[mid];
+        int right_max = tmp_max;
+        for (int i = mid + 1; i < last; ++i) {
+            tmp_max += nums[i];
+            right_max = max(right_max, tmp_max);
+        }
+
+        auto mc = left_max + right_max - nums[mid];
+        auto ma = max_sub(nums, first, mid);
+        auto mb = max_sub(nums, mid, last);
+
+        return max({mc, ma, mb});
+    }
+};
