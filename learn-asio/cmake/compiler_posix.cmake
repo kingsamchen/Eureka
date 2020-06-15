@@ -1,29 +1,33 @@
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Release")
+# Force generating debugging symbols in Release build.
+# Also keep STL debugging symbols for clang builds.
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g")
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-limit-debug-info")
 endif()
 
-string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
-message(STATUS "BUILD_TYPE = " ${BUILD_TYPE})
+function(apply_learn_asio_compile_conf TARGET)
+  target_compile_definitions(${TARGET}
+    PUBLIC
+      $<$<CONFIG:DEBUG>:
+        _DEBUG
+      >
+  )
 
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -D_DEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
-
-set(CMAKE_EXE_LINKER_FLAGS "-rdynamic")
-
-function(apply_learn_asio_compile_properties_to_target TARGET)
   target_compile_options(${TARGET}
     PRIVATE
-      -g
       -Wall
       -Wextra
-      -Werror
+      #-Werror
       -Wno-unused-parameter
-      #-Wold-style-cast
+      -Wold-style-cast
       -Woverloaded-virtual
       -Wpointer-arith
       -Wshadow
-
-      $<$<STREQUAL:${CMAKE_CXX_COMPILER_ID},"Clang">:-fno-limit-debug-info>
   )
+
+  set_target_properties(${TARGET} PROPERTIES
+    LINK_FLAGS "-rdynamic" # Currently required by backtrace_symbols(2)
+  )
+
 endfunction()

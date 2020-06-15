@@ -1,12 +1,12 @@
 
 add_executable(tcp_daytime_srv tcp_daytime_server.cpp)
-apply_learn_asio_compile_properties_to_target(tcp_daytime_srv)
+apply_learn_asio_compile_conf(tcp_daytime_srv)
 target_link_libraries(tcp_daytime_srv PRIVATE kbase asio)
 
 add_executable(tcp_daytime_cli tcp_daytime_client.cpp)
-apply_learn_asio_compile_properties_to_target(tcp_daytime_cli)
+apply_learn_asio_compile_conf(tcp_daytime_cli)
 target_link_libraries(tcp_daytime_cli PRIVATE asio kbase)
 
 add_executable(tcp_daytime_async_srv tcp_daytime_async_server.cpp)
-apply_learn_asio_compile_properties_to_target(tcp_daytime_async_srv)
+apply_learn_asio_compile_conf(tcp_daytime_async_srv)
 target_link_libraries(tcp_daytime_async_srv PRIVATE kbase asio)

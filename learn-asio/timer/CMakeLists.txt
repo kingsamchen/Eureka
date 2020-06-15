@@ -12,7 +12,7 @@ source_group("src" FILES ${sync_timer_FILES})
 
 add_executable(sync_timer ${sync_timer_FILES})
 
-apply_learn_asio_compile_properties_to_target(sync_timer)
+apply_learn_asio_compile_conf(sync_timer)
 
 target_include_directories(sync_timer
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../
@@ -37,7 +37,7 @@ source_group("src" FILES ${async_timer_FILES})
 
 add_executable(async_timer ${async_timer_FILES})
 
-apply_learn_asio_compile_properties_to_target(async_timer)
+apply_learn_asio_compile_conf(async_timer)
 
 target_include_directories(async_timer
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../
@@ -50,11 +50,11 @@ target_link_libraries(async_timer
 # timer-handler
 
 add_executable(timer_handler timer_handler.cpp)
-apply_learn_asio_compile_properties_to_target(timer_handler)
+apply_learn_asio_compile_conf(timer_handler)
 target_link_libraries(timer_handler PRIVATE asio)
 
 # mt-sync-handler
 
 add_executable(mt_sync mt_sync_handler.cpp)
-apply_learn_asio_compile_properties_to_target(mt_sync)
+apply_learn_asio_compile_conf(mt_sync)
 target_link_libraries(mt_sync PRIVATE asio)
