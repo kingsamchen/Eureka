@@ -10,7 +10,7 @@ project(learn-asio CXX)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 if(LEARN_ASIO_NOT_SUBPROJECT)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -47,8 +47,7 @@ endif()
 CPMAddPackage(
   NAME KBase
   GITHUB_REPOSITORY kingsamchen/KBase
-  VERSION 0.1.5
-  GIT_SHALLOW TRUE
+  VERSION 0.1.6
 )
 
 find_package(Threads REQUIRED)
@@ -57,7 +56,6 @@ CPMAddPackage(
   NAME asio
   GITHUB_REPOSITORY chriskohlhoff/asio
   GIT_TAG asio-1-16-1
-  GIT_SHALLOW TRUE
 )
 
 if(asio_ADDED)

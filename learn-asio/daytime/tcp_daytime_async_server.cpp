@@ -54,7 +54,8 @@ private:
 class Server {
 public:
     Server(asio::io_context& ctx, uint16_t port)
-        : acceptor_(ctx, tcp::endpoint(tcp::v4(), port))
+        : ctx_(ctx),
+          acceptor_(ctx, tcp::endpoint(tcp::v4(), port))
     {}
 
     DISALLOW_COPY(Server);
@@ -67,7 +68,7 @@ public:
 private:
     void NewAccept()
     {
-        auto conn = std::make_shared<Connection>(acceptor_.get_executor().context());
+        auto conn = std::make_shared<Connection>(ctx_);
         acceptor_.async_accept(
             conn->socket(),
             std::bind(&Server::HandleNewConnection, this, conn, std::placeholders::_1));
@@ -83,6 +84,7 @@ private:
     }
 
 private:
+    asio::io_context& ctx_;
     tcp::acceptor acceptor_;
 };
 
