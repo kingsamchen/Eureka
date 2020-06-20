@@ -54,6 +54,7 @@ find_package(Threads REQUIRED)
 
 CPMAddPackage(
   NAME asio
+  VERSION 1.16.1
   GITHUB_REPOSITORY chriskohlhoff/asio
   GIT_TAG asio-1-16-1
 )
