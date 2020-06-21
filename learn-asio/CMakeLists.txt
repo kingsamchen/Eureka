@@ -123,3 +123,5 @@ if(UNIX)
 endif()
 
 add_subdirectory(socks4a)
+
+add_subdirectory(socks5)
