@@ -6,10 +6,11 @@
 #include "argparse.hpp"
 
 #include "asio/io_context.hpp"
-#include "asio/ip/tcp.hpp"
 #include "asio/signal_set.hpp"
 
 #include "kbase/logging.h"
+
+#include "proxy.h"
 
 int main(int argc, const char* argv[])
 {
@@ -36,16 +37,14 @@ int main(int argc, const char* argv[])
     try {
         asio::io_context io_ctx;
 
+        Proxy proxy(io_ctx, port);
+        proxy.Start();
+
         asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
-        signals.async_wait([&io_ctx](std::error_code, int) {
-            io_ctx.stop();
+        signals.async_wait([&proxy](std::error_code, int) {
+            proxy.Stop();
             LOG(INFO) << "Bye-bye";
         });
-
-        asio::ip::tcp::endpoint addr(asio::ip::tcp::v4(), port);
-        LOG(INFO) << "Listening at " << addr;
-
-        // TODO: Make proxy instance and run
 
         io_ctx.run();
     } catch (const std::exception& ex) {

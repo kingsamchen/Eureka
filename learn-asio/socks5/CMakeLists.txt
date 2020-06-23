@@ -10,6 +10,8 @@ add_executable(socks5)
 target_sources(socks5
   PRIVATE
     main.cpp
+    proxy.h
+    proxy.cpp
 )
 
 apply_learn_asio_compile_conf(socks5)
