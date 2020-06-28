@@ -12,6 +12,8 @@ target_sources(socks5
     main.cpp
     proxy.h
     proxy.cpp
+    event_thread.h
+    event_thread.cpp
 )
 
 apply_learn_asio_compile_conf(socks5)
