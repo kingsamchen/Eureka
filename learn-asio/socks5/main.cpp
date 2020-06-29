@@ -43,10 +43,11 @@ int main(int argc, const char* argv[])
         asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
         signals.async_wait([&proxy](std::error_code, int) {
             proxy.Stop();
-            LOG(INFO) << "Bye-bye";
         });
 
         io_ctx.run();
+
+        LOG(INFO) << "Bye-bye";
     } catch (const std::exception& ex) {
         LOG(ERROR) << "Critical failure: " << ex.what();
         return EXIT_FAILURE;

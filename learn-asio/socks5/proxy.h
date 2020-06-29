@@ -35,6 +35,8 @@ public:
 private:
     asio::io_context::executor_type PickExecutor() noexcept;
 
+    void DoAccept();
+
 private:
     asio::io_context& io_ctx_;
     tcp::endpoint listen_addr_;
