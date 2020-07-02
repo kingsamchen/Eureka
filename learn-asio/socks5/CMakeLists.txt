@@ -16,6 +16,7 @@ target_sources(socks5
     event_thread.cpp
     tunnel.h
     tunnel.cpp
+    packets.h
 )
 
 apply_learn_asio_compile_conf(socks5)

@@ -31,16 +31,22 @@ void Proxy::Start()
 
 void Proxy::Stop()
 {
-    worker_pool_.clear();
-    io_ctx_.stop();
-    LOG(INFO) << "socks5 proxy stopped";
+    acceptor_.cancel();
+    asio::post(io_ctx_, [this]() {
+        worker_pool_.clear();
+        LOG(INFO) << "socks5 proxy stopped";
+    });
 }
 
 void Proxy::DoAccept()
 {
     auto executor = PickExecutor();
-    acceptor_.async_accept(executor, [executor, this](std::error_code ec, tcp::socket sock) {
+    acceptor_.async_accept(executor, [this, executor](std::error_code ec, tcp::socket sock) {
         if (ec) {
+            if (ec == asio::error::operation_aborted) {
+                return;
+            }
+
             LOG(ERROR) << "Failed to accept new connection; ec=" << ec;
         } else {
             ENSURE(CHECK, executor == sock.get_executor()).Require();
