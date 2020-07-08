@@ -4,6 +4,7 @@
 
 #include "tunnel.h"
 
+#include <cstddef>
 #include <functional>
 #include <string_view>
 
@@ -19,11 +20,11 @@ using namespace std::placeholders;
 
 namespace {
 
-constexpr uint8_t kSocks5Ver = 0x05;
-constexpr uint8_t kCmdConnect = 0x01;
-constexpr uint8_t kAddrIPv4 = 0x01;
-constexpr uint8_t kAddrDomain = 0x03;
-constexpr uint8_t kAddrIPv6 = 0x04;
+constexpr std::byte kSocks5Ver {0x05};
+constexpr std::byte kCmdConnect {0x01};
+constexpr std::byte kAddrIPv4 {0x01};
+constexpr std::byte kAddrDomain {0x03};
+constexpr std::byte kAddrIPv6 {0x04};
 
 void ShutdownWriteSafe(tcp::socket& sock, bool flag)
 {
@@ -86,7 +87,7 @@ void Tunnel::ReadGreetingPacket(std::unique_ptr<GreetingPacket> packet, Greeting
                     return;
                 }
 
-                if (pkt->ver != kSocks5Ver || pkt->num_methods == 0) {
+                if (pkt->ver != kSocks5Ver || pkt->num_methods == std::byte(0)) {
                     LOG(WARNING) << "Failed to parse greeting preamble; incorrect data received.";
                     ShutdownClient();
                     return;
@@ -95,7 +96,7 @@ void Tunnel::ReadGreetingPacket(std::unique_ptr<GreetingPacket> packet, Greeting
                 ReadGreetingPacket(std::move(pkt), GreetingParseStage::Methods);
             });
     } else {
-        auto buf = asio::buffer(packet->methods.data(), packet->num_methods);
+        auto buf = asio::buffer(packet->methods.data(), std::to_integer<size_t>(packet->num_methods));
         asio::async_read(
             client_sock_,
             buf,
@@ -408,10 +409,11 @@ void Tunnel::ShutdownClient()
 
 void Tunnel::RejectClient(RejectReason reason)
 {
-    std::initializer_list<uint8_t> args {
-        kSocks5Ver, static_cast<uint8_t>(reason), 0x00, kAddrIPv4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    std::initializer_list<std::byte> args {
+        kSocks5Ver, std::byte(reason), std::byte(0x00), kAddrIPv4, std::byte(0x00), std::byte(0x00),
+        std::byte(0x00), std::byte(0x00), std::byte(0x00), std::byte(0x00)
     };
-    auto reply = std::make_shared<std::vector<uint8_t>>(args);
+    auto reply = std::make_shared<std::vector<std::byte>>(args);
 
     asio::async_write(
         client_sock_,

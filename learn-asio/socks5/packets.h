@@ -6,6 +6,7 @@
 #define LEARN_ASIO_SOCKS5_PACKETS_H_
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <string>
 
@@ -15,9 +16,9 @@ enum class GreetingParseStage {
 };
 
 struct GreetingPacket {
-    uint8_t ver {};
-    uint8_t num_methods {};
-    std::array<uint8_t, 255> methods {};
+    std::byte ver {};
+    std::byte num_methods {};
+    std::array<std::byte, 255> methods {};
 };
 
 enum class RequestParseStage {
@@ -28,10 +29,10 @@ enum class RequestParseStage {
 };
 
 struct RequestPacket {
-    uint8_t ver {};
-    uint8_t cmd {};
-    uint8_t reserved {};
-    uint8_t addr_type {};
+    std::byte ver {};
+    std::byte cmd {};
+    std::byte reserved {};
+    std::byte addr_type {};
     std::string dest_addr;
     uint16_t dest_port {};
 };
