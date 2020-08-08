@@ -125,3 +125,5 @@ endif()
 add_subdirectory(socks4a)
 
 add_subdirectory(socks5)
+
+add_subdirectory(endpoints)
