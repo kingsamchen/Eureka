@@ -1,9 +1,16 @@
 
+CPMAddPackage(
+  NAME KBase
+  GITHUB_REPOSITORY kingsamchen/KBase
+  VERSION 0.1.6
+)
+
 add_executable(conn_pool)
 
 target_sources(conn_pool
   PRIVATE
     main.cpp
+    pool.h
 
   $<$<BOOL:${WIN32}>:
   >
@@ -17,6 +24,7 @@ target_include_directories(conn_pool
 )
 
 target_link_libraries(conn_pool
+  PRIVATE kbase
 )
 
 apply_connpool_compile_conf(conn_pool)
