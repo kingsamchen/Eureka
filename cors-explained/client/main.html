@@ -1,0 +1,33 @@
+
+<html>
+<body>
+    <button onclick="simple()">简单请求</button>
+    <button onclick="preflight()">预检请求</button>
+    <p id="result"></p>
+    <script>
+        function simple() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.status == 200) {
+                    document.getElementById("result").innerHTML = this.responseText;
+                }
+            };
+            xhttp.open("GET", "http://cors-explained.com:8080/simple", true);
+            xhttp.send();
+        }
+
+        function preflight() {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (this.status == 200) {
+                    document.getElementById("result").innerHTML = this.responseText;
+                }
+            };
+            xhr.open("POST", "http://cors-explained.com:8080/preflight", true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            var payload = '{"value": "preflight client request"}';
+            xhr.send(payload);
+        }
+    </script>
+</body>
+</html>
