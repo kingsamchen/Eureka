@@ -20,7 +20,7 @@ struct RedisConnTraits {
 
 int main()
 {
-    auto redis_pool = ConnPool<RedisConnTraits>::Make(100, 10);
+    auto redis_pool = ConnPool<RedisConnTraits>::Make(100, 10, std::chrono::seconds(10));
 
     {
         auto conn = redis_pool->Get();
