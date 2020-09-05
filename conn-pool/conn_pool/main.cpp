@@ -1,4 +1,6 @@
-#include <iostream>
+/*
+ @ 0xCCCCCCCC
+*/
 
 #include "kbase/basic_macros.h"
 #include "kbase/logging.h"
@@ -8,10 +10,11 @@
 struct RedisConn {
     RedisConn()
     {
-        std::cout << "RedisConn ctor\n";
+        LOG(INFO) << "RedisConn ctor";
     }
 
     DISALLOW_COPY(RedisConn);
+
     DEFAULT_MOVE(RedisConn);
 
     void Set(const std::string& key, const std::string& value)
@@ -34,6 +37,12 @@ struct RedisConnTraits {
     static ConnType NewConn()
     {
         return RedisConn();
+    }
+
+    static void BeforeReturnToPool(ConnType& conn)
+    {
+        UNUSED_VAR(conn);
+        // Handle unfinished/pending pipeline...
     }
 };
 

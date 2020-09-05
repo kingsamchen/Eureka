@@ -28,14 +28,29 @@ public:
     {}
 };
 
+namespace internal {
+
+template<typename Traits, typename=void>
+struct is_pool_traits_valid : std::false_type {};
+
+// Our pool traits requirements.
+template<typename Traits>
+struct is_pool_traits_valid<Traits, std::void_t<
+    typename Traits::ConnType,
+    std::enable_if_t<std::is_move_constructible_v<typename Traits::ConnType> &&
+                     std::is_move_assignable_v<typename Traits::ConnType>>,
+    std::enable_if_t<std::is_same_v<decltype(Traits::NewConn()), typename Traits::ConnType>>,
+    decltype(Traits::BeforeReturnToPool(std::declval<typename Traits::ConnType &>()))
+>> : std::true_type {};
+
+}   // namespace internal
+
 template<typename Traits>
 class ConnPool : public std::enable_shared_from_this<ConnPool<Traits>> {
 public:
-    using RawConnType = typename Traits::ConnType;
+    static_assert(internal::is_pool_traits_valid<Traits>::value, "illegal pool traits");
 
-    static_assert(std::is_move_constructible_v<RawConnType> &&
-                  std::is_move_assignable_v<RawConnType>,
-                  "Traits::ConnType must be move-constructible");
+    using RawConnType = typename Traits::ConnType;
 
 private:
     using clock = chrono::system_clock;
@@ -46,6 +61,7 @@ private:
         friend ConnPool;
     };
 
+    // Represents a connection that resides in idle list and wait for reuse
     struct IdleConn {
         RawConnType conn;
         clock::time_point created;
@@ -85,10 +101,16 @@ public:
 
         ~Conn()
         {
-            // TODO: before putting back, must resolve its state like in pipelining
-            auto pool = bound_pool_.lock();
-            if (pool) {
-                pool->Put(std::move(raw_conn_), raw_conn_creation_);
+            try {
+                //Traits::BeforeReturnToPool(raw_conn_);
+
+                // The pool may have long gone...
+                auto pool = bound_pool_.lock();
+                if (pool) {
+                    pool->Put(std::move(raw_conn_), raw_conn_creation_);
+                }
+            } catch (const std::exception& ex) {
+                LOG(ERROR) << "Failed to return connection to pool; ex=" << ex.what();
             }
         }
 
