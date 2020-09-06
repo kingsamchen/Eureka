@@ -4,6 +4,7 @@ add_executable(alias)
 target_sources(alias
   PRIVATE
     main.cpp
+    tagged_bool.h
 
   $<$<BOOL:${WIN32}>:
   >
