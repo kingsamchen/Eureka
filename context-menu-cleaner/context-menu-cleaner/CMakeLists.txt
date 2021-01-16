@@ -20,12 +20,9 @@ add_executable(context-menu-cleaner)
 target_sources(context-menu-cleaner
   PRIVATE
     main.cpp
-
-  $<$<BOOL:${WIN32}>:
-  >
-
-  $<$<NOT:$<BOOL:${WIN32}>>:
-  >
+    main_window.h
+    shell_menu.h
+    shell_menu.cpp
 )
 
 target_include_directories(context-menu-cleaner
