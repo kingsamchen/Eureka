@@ -59,6 +59,8 @@ void ScanEntriesAt(HKEY root, const wchar_t* sub, std::vector<MenuEntry>& entrie
         std::wstring value, cmd_value;
         if (key.HasValue(L"")) {
             key.ReadValue(L"", value);
+        } else {
+            value = key.subkey_name();
         }
 
         command.ReadValue(L"", cmd_value);

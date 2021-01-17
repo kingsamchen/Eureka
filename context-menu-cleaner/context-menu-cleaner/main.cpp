@@ -1,4 +1,4 @@
-#include <winuser.h>
+#include <Windows.h>
 
 #include "main_window.h"
 
@@ -6,9 +6,7 @@ int main()
 {
     SetProcessDPIAware();
 
-    MainWindow window;
-    window.show();
+    auto main_window = MainWindow::Make();
     nana::exec();
-
     return 0;
 }
