@@ -17,6 +17,7 @@ struct MenuEntry {
 };
 
 void ScanEntriesAt(HKEY root, const wchar_t* sub, std::vector<MenuEntry>& entries);
+void DeleteEntry(std::wstring key_path);
 
 }   // namespace cmc
 

@@ -7,6 +7,9 @@
 
 #include "nana/gui.hpp"
 #include "nana/gui/widgets/listbox.hpp"
+#include "nana/gui/widgets/menu.hpp"
+
+#include "kbase/basic_macros.h"
 
 #include "shell_menu.h"
 
@@ -71,6 +74,12 @@ public:
         listbox_.append_header("Path", len1);
         listbox_.append_header("Command", len2);
 
+        listbox_.events().mouse_down(nana::menu_popuper(popup_menu_, nana::mouse::right_button));
+
+        popup_menu_.append("Delete selected",
+                           std::bind(&MainWindow::OnDeleteItem, this, std::placeholders::_1));
+        popup_menu_.append_splitter();
+
         place_.div("<list>");
         place_["list"] << listbox_;
         place_.collocate();
@@ -93,6 +102,7 @@ public:
             shell_ext::ScanEntriesAt(root, subkey, menu_entries);
         }
 
+        listbox_.clear();
         for (const auto& item : menu_entries) {
             listbox_.at(0).append(item);
         }
@@ -107,6 +117,20 @@ private:
         listbox_.column_at(2).width(col2_len);
     }
 
+    void OnDeleteItem([[maybe_unused]] const nana::menu::item_proxy& ip)
+    {
+        auto pos = listbox_.selected().data()->item;
+        shell_ext::MenuEntry entry;
+        listbox_.at(0).at(pos).resolve_to(entry);
+        try {
+            shell_ext::DeleteEntry(entry.path);
+        } catch (const std::exception& ex) {
+            nana::msgbox mb(*this, ex.what());
+            IGNORE_RESULT(mb.show());
+        }
+        LoadMenuItems();
+    }
+
     static std::tuple<uint32_t, uint32_t, uint32_t> CalcColumnLength(unsigned int window_width)
     {
         return {window_width / 5, window_width / 3, window_width / 2};
@@ -114,6 +138,7 @@ private:
 
 private:
     nana::listbox listbox_ {*this, nana::rectangle(this->size())};
+    nana::menu popup_menu_;
     nana::place place_ {*this};
 };
 
