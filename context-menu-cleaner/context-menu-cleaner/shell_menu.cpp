@@ -1,28 +1,27 @@
 #include "shell_menu.h"
 
-#include "kbase/logging.h"
 #include "kbase/registry.h"
 #include "kbase/string_format.h"
 #include "kbase/string_util.h"
 
 namespace shell_ext {
 
-std::wstring StringifyRootKey(HKEY root)
+std::wstring stringify_root_key(HKEY root)
 {
     // Workaround for switch on pointers.
-    constexpr auto kClassRoot = reinterpret_cast<ULONG_PTR>(HKEY_CLASSES_ROOT);
-    constexpr auto kCurrentUser = reinterpret_cast<ULONG_PTR>(HKEY_CURRENT_USER);
-    constexpr auto kLocalMachine = reinterpret_cast<ULONG_PTR>(HKEY_LOCAL_MACHINE);
-    constexpr auto kUsers = reinterpret_cast<ULONG_PTR>(HKEY_USERS);
+    constexpr auto k_class_root = reinterpret_cast<ULONG_PTR>(HKEY_CLASSES_ROOT);
+    constexpr auto k_current_user = reinterpret_cast<ULONG_PTR>(HKEY_CURRENT_USER);
+    constexpr auto k_local_machine = reinterpret_cast<ULONG_PTR>(HKEY_LOCAL_MACHINE);
+    constexpr auto k_users = reinterpret_cast<ULONG_PTR>(HKEY_USERS);
 
     switch (reinterpret_cast<ULONG_PTR>(root)) {
-    case kClassRoot:
+    case k_class_root:
         return L"HKEY_CLASSES_ROOT";
-    case kCurrentUser:
+    case k_current_user:
         return L"HKEY_CURRENT_USER";
-    case kLocalMachine:
+    case k_local_machine:
         return L"HKEY_LOCAL_MACHINE";
-    case kUsers:
+    case k_users:
         return L"HKEY_USERS";
     default:
         throw std::invalid_argument(kbase::StringPrintf(
@@ -30,7 +29,7 @@ std::wstring StringifyRootKey(HKEY root)
     }
 }
 
-HKEY RootKeyFromString(std::wstring_view root)
+HKEY root_key_from_string(std::wstring_view root)
 {
     if (root == L"HKEY_CLASSES_ROOT") {
         return HKEY_CLASSES_ROOT;
@@ -53,7 +52,7 @@ HKEY RootKeyFromString(std::wstring_view root)
         kbase::StringPrintf("unknown root key string; key=%s", key.c_str()));
 }
 
-std::wstring AppendRegPath(const std::wstring& base, const std::wstring& key)
+std::wstring append_reg_path(const std::wstring& base, const std::wstring& key)
 {
     std::wstring result(base);
     if (!kbase::EndsWith(result, L"\\")) {
@@ -64,9 +63,9 @@ std::wstring AppendRegPath(const std::wstring& base, const std::wstring& key)
     return result;
 }
 
-void ScanEntriesAt(HKEY root, const wchar_t* sub, std::vector<MenuEntry>& entries)
+void scan_entry_at(HKEY root, const wchar_t* sub, std::vector<menu_entry>& entries)
 {
-    auto prefix = AppendRegPath(StringifyRootKey(root), sub);
+    auto prefix = append_reg_path(stringify_root_key(root), sub);
 
     kbase::RegKeyIterator key_it(root, sub);
     for (const auto& key : key_it) {
@@ -88,12 +87,12 @@ void ScanEntriesAt(HKEY root, const wchar_t* sub, std::vector<MenuEntry>& entrie
         }
 
         command.ReadValue(L"", cmd_value);
-        auto ent = MenuEntry{AppendRegPath(prefix, key.subkey_name()), value, cmd_value};
+        auto ent = menu_entry{append_reg_path(prefix, key.subkey_name()), value, cmd_value};
         entries.push_back(std::move(ent));
     }
 }
 
-void DeleteEntry(std::wstring key_path)
+void delete_entry(const std::wstring& key_path)
 {
     auto slash_pos = key_path.find(L"\\");
     if (slash_pos == std::wstring::npos) {
@@ -101,7 +100,7 @@ void DeleteEntry(std::wstring key_path)
         throw std::invalid_argument(kbase::StringPrintf("invalid key path; path=%s", path.c_str()));
     }
 
-    auto root = RootKeyFromString(key_path.substr(0, slash_pos));
+    auto root = root_key_from_string(key_path.substr(0, slash_pos));
     auto subkey = key_path.substr(slash_pos + 1);
     kbase::RegKey key;
     key.Open(root, subkey.c_str(), KEY_ALL_ACCESS);

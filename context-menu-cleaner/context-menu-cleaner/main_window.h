@@ -15,19 +15,19 @@
 
 namespace internal {
 
-inline nana::size CalcInitialMainWindowSize()
+inline nana::size calc_initial_window_size()
 {
-    constexpr auto kRatio = 0.618;
+    constexpr auto k_ratio = 0.618;
     auto monitor = nana::screen::primary_monitor_size();
-    auto init_width = static_cast<nana::size::value_type>(monitor.width * kRatio + 0.5);
-    auto init_height = static_cast<nana::size::value_type>(monitor.height * kRatio + 0.5);
+    auto init_width = static_cast<nana::size::value_type>(monitor.width * k_ratio + 0.5);
+    auto init_height = static_cast<nana::size::value_type>(monitor.height * k_ratio + 0.5);
     return {init_width, init_height};
 }
 
 }   // namespace internal
 
 inline nana::listbox::oresolver& operator<<(nana::listbox::oresolver& out,
-                                            const shell_ext::MenuEntry& e)
+                                            const shell_ext::menu_entry& e)
 {
     out << e.value
         << e.path
@@ -35,7 +35,7 @@ inline nana::listbox::oresolver& operator<<(nana::listbox::oresolver& out,
     return out;
 }
 
-inline std::ostream& operator<< (std::ostream& out, const shell_ext::MenuEntry& e)
+inline std::ostream& operator<< (std::ostream& out, const shell_ext::menu_entry& e)
 {
     out << nana::charset(e.value).to_bytes(nana::unicode::utf8)
         << nana::charset(e.path).to_bytes(nana::unicode::utf8)
@@ -43,7 +43,7 @@ inline std::ostream& operator<< (std::ostream& out, const shell_ext::MenuEntry& 
     return out;
 }
 
-inline nana::listbox::iresolver& operator>>(nana::listbox::iresolver& in, shell_ext::MenuEntry& e)
+inline nana::listbox::iresolver& operator>>(nana::listbox::iresolver& in, shell_ext::menu_entry& e)
 {
     in >> e.value
        >> e.path
@@ -51,25 +51,25 @@ inline nana::listbox::iresolver& operator>>(nana::listbox::iresolver& in, shell_
     return in;
 }
 
-class MainWindow : public nana::form {
-    struct PassKey {
-        explicit PassKey() = default;
+class main_window : public nana::form {
+    struct passkey {
+        explicit passkey() = default;
     };
 
 public:
-    static std::unique_ptr<MainWindow> Make()
+    static std::unique_ptr<main_window> make()
     {
-        auto initial = internal::CalcInitialMainWindowSize();
-        auto window = std::make_unique<MainWindow>(PassKey{}, initial.width, initial.height);
+        auto initial = internal::calc_initial_window_size();
+        auto window = std::make_unique<main_window>(passkey{}, initial.width, initial.height);
         window->show();
-        window->LoadMenuItems();
+        window->load_menu_entries();
         return window;
     }
 
-    MainWindow(PassKey, unsigned int width, unsigned int height)
+    main_window(passkey, unsigned int width, unsigned int height)
         : nana::form(nana::API::make_center(width, height))
     {
-        auto [len0, len1, len2] = CalcColumnLength(width);
+        auto [len0, len1, len2] = calc_column_length(width);
         listbox_.append_header("Menu", len0);
         listbox_.append_header("Path", len1);
         listbox_.append_header("Command", len2);
@@ -77,7 +77,7 @@ public:
         listbox_.events().mouse_down(nana::menu_popuper(popup_menu_, nana::mouse::right_button));
 
         popup_menu_.append("Delete selected",
-                           std::bind(&MainWindow::OnDeleteItem, this, std::placeholders::_1));
+                           std::bind(&main_window::on_delete_item, this, std::placeholders::_1));
         popup_menu_.append_splitter();
 
         place_.div("<list>");
@@ -86,10 +86,10 @@ public:
 
         this->caption("The Stupid Context-Menu Cleaner");
 
-        events().resized(std::bind(&MainWindow::OnResized, this, std::placeholders::_1));
+        events().resized(std::bind(&main_window::on_resized, this, std::placeholders::_1));
     }
 
-    void LoadMenuItems()
+    void load_menu_entries()
     {
         const std::tuple<HKEY, const wchar_t*> locations[] {
             {HKEY_CLASSES_ROOT, L"*\\shell"},
@@ -97,9 +97,9 @@ public:
             {HKEY_CLASSES_ROOT, L"Directory\\Background\\shell"}
         };
 
-        std::vector<shell_ext::MenuEntry> menu_entries;
+        std::vector<shell_ext::menu_entry> menu_entries;
         for (const auto& [root, subkey] : locations) {
-            shell_ext::ScanEntriesAt(root, subkey, menu_entries);
+            shell_ext::scan_entry_at(root, subkey, menu_entries);
         }
 
         listbox_.clear();
@@ -109,29 +109,29 @@ public:
     }
 
 private:
-    void OnResized(const nana::arg_resized& arg)
+    void on_resized(const nana::arg_resized& arg)
     {
-        auto [col0_len, col1_len, col2_len] = CalcColumnLength(arg.width);
+        auto [col0_len, col1_len, col2_len] = calc_column_length(arg.width);
         listbox_.column_at(0).width(col0_len);
         listbox_.column_at(1).width(col1_len);
         listbox_.column_at(2).width(col2_len);
     }
 
-    void OnDeleteItem([[maybe_unused]] const nana::menu::item_proxy& ip)
+    void on_delete_item([[maybe_unused]] const nana::menu::item_proxy& ip)
     {
         auto pos = listbox_.selected().data()->item;
-        shell_ext::MenuEntry entry;
+        shell_ext::menu_entry entry;
         listbox_.at(0).at(pos).resolve_to(entry);
         try {
-            shell_ext::DeleteEntry(entry.path);
+            shell_ext::delete_entry(entry.path);
         } catch (const std::exception& ex) {
             nana::msgbox mb(*this, ex.what());
             IGNORE_RESULT(mb.show());
         }
-        LoadMenuItems();
+        load_menu_entries();
     }
 
-    static std::tuple<uint32_t, uint32_t, uint32_t> CalcColumnLength(unsigned int window_width)
+    static std::tuple<uint32_t, uint32_t, uint32_t> calc_column_length(unsigned int window_width)
     {
         return {window_width / 5, window_width / 3, window_width / 2};
     }

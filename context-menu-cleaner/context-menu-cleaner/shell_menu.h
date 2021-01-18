@@ -8,7 +8,7 @@
 
 namespace shell_ext {
 
-struct MenuEntry {
+struct menu_entry {
     using string_type = std::wstring;
 
     string_type path;
@@ -16,9 +16,9 @@ struct MenuEntry {
     string_type command;
 };
 
-void ScanEntriesAt(HKEY root, const wchar_t* sub, std::vector<MenuEntry>& entries);
-void DeleteEntry(std::wstring key_path);
+void scan_entry_at(HKEY root, const wchar_t* sub, std::vector<menu_entry>& entries);
+void delete_entry(const std::wstring& key_path);
 
-}   // namespace cmc
+}   // namespace shell_ext
 
 #endif  // CONTEXT_MENU_CLEANER_SHELL_MENU_H_
