@@ -94,21 +94,25 @@ void scan_entry_at(HKEY root, const wchar_t* sub, std::vector<menu_entry>& entri
 
 void delete_entry(const std::wstring& key_path)
 {
-    auto slash_pos = key_path.find(L"\\");
+    auto slash_pos = key_path.find(L'\\');
     if (slash_pos == std::wstring::npos) {
         auto path = kbase::WideToUTF8(kbase::WStringView(key_path));
         throw std::invalid_argument(kbase::StringPrintf("invalid key path; path=%s", path.c_str()));
     }
 
     auto root = root_key_from_string(key_path.substr(0, slash_pos));
-    auto subkey = key_path.substr(slash_pos + 1);
+
+    auto last_slash_pos = key_path.rfind(L'\\');
+    auto subpath = key_path.substr(slash_pos + 1, last_slash_pos - slash_pos - 1);
+    auto entry = key_path.substr(last_slash_pos + 1);
+
     kbase::RegKey key;
-    key.Open(root, subkey.c_str(), KEY_ALL_ACCESS);
+    key.Open(root, subpath.c_str(), KEY_WRITE);
     if (!key) {
         throw std::runtime_error("cannot open the key");
     }
 
-    key.DeleteKey(nullptr);
+    key.DeleteKey(entry.c_str());
 }
 
 }   // namespace shell_ext
