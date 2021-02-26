@@ -1,9 +1,11 @@
 
-add_library(uuid)
+add_executable(uuid)
 
 target_sources(uuid
   PRIVATE
     main.cpp
+    uuid.h
+    uuid.cpp
 
   $<$<BOOL:${WIN32}>:
   >
@@ -30,4 +32,3 @@ if(MSVC AND UUID_ENABLE_CODE_ANALYSIS)
       /wd6011 # Dereferencing potentially NULL pointer.
   )
 endif()
-
