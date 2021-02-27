@@ -1,12 +1,14 @@
 #ifndef UUID_UUID_H_
 #define UUID_UUID_H_
 
+#include <array>
 #include <cstdint>
 #include <mutex>
 #include <random>
 
 namespace uuid {
 
+// Guaranteed to be thread-safe.
 class default_random_generator {
 public:
     ~default_random_generator() = default;
@@ -32,23 +34,27 @@ private:
 };
 
 class uuid {
+private:
+    enum class version : unsigned {
+        v1 = 1,
+        v2,
+        v3,
+        v4,
+        v5
+    };
+
 public:
     ~uuid() = default;
 
-    // TODO: make default_random_generator as default parameter.
-    template<typename RandomGenerator>
-    static uuid make_v4(RandomGenerator& generator)
+    template<typename RandomGenerator=default_random_generator>
+    static uuid make_v4(RandomGenerator& generator=default_random_generator::instance())
     {
         uuid uuid;
-        auto ptr = reinterpret_cast<uint64_t*>(&uuid.data_);
-        static_assert(alignof(uuid::data) == sizeof(*ptr));
-        // TODO: auto calc
-        for (int i = 0; i < 2; ++i) {
-            *ptr++ = generator();
-        }
+        uuid.data_[0] = generator();
+        uuid.data_[1] = generator();
 
         uuid.set_variant();
-        uuid.set_version();
+        uuid.set_version(version::v4);
 
         return uuid;
     }
@@ -58,20 +64,14 @@ public:
 private:
     uuid() = default ;
 
-    void set_version() noexcept;
+    void set_version(version ver) noexcept;
 
     void set_variant() noexcept;
 
 private:
-    struct data {
-        // 1st 8-byte
-        uint64_t field_1 : 32;
-        uint64_t field_2 : 16;
-        uint64_t field_3 : 16;
-        // 2nd 8-byte
-        uint64_t field_4 : 16;
-        uint64_t field_5 : 48;
-    };
+    // data[0] -> 8-4-4
+    // data[1] -> 4-12
+    using data = std::array<uint64_t, 2>;
 
     static_assert(sizeof(data) == 16);
     static_assert(alignof(data) == 8);
