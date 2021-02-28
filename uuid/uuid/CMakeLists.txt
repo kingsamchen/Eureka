@@ -6,6 +6,7 @@ target_sources(uuid
     main.cpp
     uuid.h
     uuid.cpp
+    mac_address.cpp
 
   $<$<BOOL:${WIN32}>:
   >
