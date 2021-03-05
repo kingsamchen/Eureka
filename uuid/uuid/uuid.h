@@ -2,11 +2,14 @@
 #define UUID_UUID_H_
 
 #include <array>
-#include <iostream>
+#include <cassert>
 #include <chrono>
 #include <cstdint>
 #include <mutex>
 #include <random>
+
+#include "uuid/endian_utils.h"
+#include "uuid/md5.h"
 
 namespace uuid {
 
@@ -116,6 +119,30 @@ public:
         return uuid;
     }
 
+    static uuid make_v3(const uuid& ns, std::string_view name)
+    {
+        auto part1 = HostToNetwork(ns.data_[0]);
+        auto part2 = HostToNetwork(ns.data_[1]);
+
+        MD5Context ctx;
+        MD5Digest digest;
+        MD5Init(ctx);
+        MD5Update(ctx, &part1, 8);
+        MD5Update(ctx, &part2, 8);
+        MD5Update(ctx, name.data(), name.size());
+        MD5Final(ctx, digest);
+
+        uuid uuid{};
+        memcpy(uuid.data_.data(), digest.data(), digest.size());
+        uuid.data_[0] = NetworkToHost(uuid.data_[0]);
+        uuid.data_[1] = NetworkToHost(uuid.data_[1]);
+
+        uuid.set_variant();
+        uuid.set_version(version::v3);
+
+        return uuid;
+    }
+
     template<typename RandomGenerator=default_random_generator>
     static uuid make_v4(RandomGenerator& generator=default_random_generator::instance())
     {
@@ -125,6 +152,33 @@ public:
 
         uuid.set_variant();
         uuid.set_version(version::v4);
+
+        return uuid;
+    }
+
+    static uuid make_from(std::string_view src)
+    {
+        // omit validation
+
+        std::vector<uint64_t> parts;
+
+        for (size_t start = 0; start != src.npos;) {
+            auto pos = src.find('-', start);
+            auto cnt = pos == src.npos ? src.npos : pos - start;
+            auto part = src.substr(start, cnt);
+            parts.push_back(std::stoull(std::string(part), nullptr, 16));
+            start = pos == src.npos ? src.npos : pos + 1;
+        }
+
+        assert(parts.size() == 5);
+        uuid uuid{};
+
+        uuid.data_[0] |= parts[0] << 32;
+        uuid.data_[0] |= parts[1] << 16;
+        uuid.data_[0] |= parts[2];
+
+        uuid.data_[1] |= parts[3] << 48;
+        uuid.data_[1] |= parts[4];
 
         return uuid;
     }

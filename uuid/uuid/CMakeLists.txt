@@ -7,6 +7,9 @@ target_sources(uuid
     uuid.h
     uuid.cpp
     mac_address.cpp
+    md5.cpp
+    md5.h
+    endian_utils.h
 
   $<$<BOOL:${WIN32}>:
   >
