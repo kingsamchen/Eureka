@@ -13,6 +13,12 @@
 
 namespace uuid {
 
+enum class local_domain : unsigned {
+    person,
+    group,
+    org
+};
+
 using node_id = std::array<uint8_t, 6>;
 
 void fetch_node_id(node_id& id);
@@ -115,6 +121,21 @@ public:
 
         uuid.set_variant();
         uuid.set_version(version::v1);
+
+        return uuid;
+    }
+
+    static uuid make_v2(local_domain domain, uint32_t id)
+    {
+        auto uuid = make_v1();
+
+        uuid.data_[1] &= 0xff00'ffff'ffff'ffffull;
+        uuid.data_[1] |= static_cast<uint64_t>(domain) << 48;
+
+        uuid.data_[0] &= 0x0000'0000'ffff'ffffull;
+        uuid.data_[0] |= static_cast<uint64_t>(id) << 32;
+
+        uuid.set_version(version::v2);
 
         return uuid;
     }
