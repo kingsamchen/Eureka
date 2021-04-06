@@ -71,24 +71,29 @@ void HandleRead(int client_fd)
     const int kBufSize = 255;
     char buf[kBufSize];
 
-    while (true) {
-        auto bytes_read = read(client_fd, buf, kBufSize);
-        if (bytes_read == -1) {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                std::cout << "No more data on client fd " << client_fd << std::endl;
-                break;
-            } else {
-                std::cerr << "read on client fd failure: " << client_fd << std::endl;
-                _exit(1);
-            }
-        } else if (bytes_read == 0) {
-            std::cout << "finished with client fd: " << client_fd << std::endl;
-            close(client_fd);
+    std::cout << "fd " << client_fd << " is readable\n";
+
+    static size_t read_size = 2;
+    std::cout << "read fd for " << read_size << " bytes\n";
+
+    auto bytes_read = read(client_fd, buf, read_size);
+    if (bytes_read == -1) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            std::cout << "No more data on client fd " << client_fd << std::endl;
         } else {
-            std::cout << "-> ";
-            std::cout.write(buf, bytes_read);
+            std::cerr << "read on client fd failure: " << client_fd << std::endl;
+            _exit(1);
         }
+    } else if (bytes_read == 0) {
+        std::cout << "finished with client fd: " << client_fd << std::endl;
+        close(client_fd);
+    } else {
+        std::cout << "-> ";
+        std::cout.write(buf, bytes_read);
+        std::cout << "\n";
     }
+
+    read_size *= 2;
 }
 
 int main()
