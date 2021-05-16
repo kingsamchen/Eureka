@@ -3,6 +3,7 @@
 <body>
     <button onclick="simple()">简单请求</button>
     <button onclick="preflight()">预检请求</button>
+    <button onclick="unsupportedmethod()">不支持的预检请求方法</button>
     <p id="result"></p>
     <script>
         function simple() {
@@ -26,6 +27,21 @@
             xhr.open("POST", "http://cors-explained.com:8080/preflight", true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             var payload = '{"value": "preflight client request"}';
+            xhr.send(payload);
+        }
+
+        function unsupportedmethod() {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (this.status == 200) {
+                    document.getElementById("result").innerHTML = this.responseText;
+                }
+            };
+
+            // NOTE: we use PUT here, but the server supports only GET, POST and OPTIONS
+            xhr.open("PUT", "http://cors-explained.com:8080/preflight", true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            var payload = '{"value": "PUT METHOD for preflight client request"}';
             xhr.send(payload);
         }
     </script>
