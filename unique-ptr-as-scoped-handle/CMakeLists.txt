@@ -26,6 +26,7 @@ endif()
 set(SCOPED_HANDLE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(SCOPED_HANDLE_CMAKE_DIR ${SCOPED_HANDLE_DIR}/cmake)
 
+include(CTest)
 include(${SCOPED_HANDLE_CMAKE_DIR}/CPM.cmake)
 
 message(STATUS "GENERATOR = " ${CMAKE_GENERATOR})
@@ -56,3 +57,7 @@ else()
 endif()
 
 add_subdirectory(scopedhandle)
+
+if (SCOPED_HANDLE_NOT_SUBPROJECT AND BUILD_TESTING)
+  add_subdirectory(test)
+endif()

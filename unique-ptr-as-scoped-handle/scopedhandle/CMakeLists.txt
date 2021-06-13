@@ -46,4 +46,3 @@ set_target_properties(scopedhandle PROPERTIES
     VS_GLOBAL_EnableClangTidyCodeAnalysis true
     # VS_GLOBAL_ClangTidyChecks -checks=-*,modernize-*,-modernize-use-trailing-return-type
 )
-
