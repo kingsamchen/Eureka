@@ -29,6 +29,7 @@ static_assert(std::is_empty_v<c_file_deleter>);
 using scoped_file = std::unique_ptr<FILE, c_file_deleter>;
 
 // -*- For Win32 HANDLE -*-
+#if defined(_WIN32) || defined(_WIN64)
 
 class win_handle {
 public:
@@ -73,6 +74,8 @@ struct win_handle_deleter {
 static_assert(std::is_empty_v<win_handle_deleter>);
 
 using scoped_win_handle = std::unique_ptr<win_handle, win_handle_deleter>;
+
+#endif
 
 } // namespace scoped
 

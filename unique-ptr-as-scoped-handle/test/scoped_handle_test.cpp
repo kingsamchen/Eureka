@@ -22,6 +22,8 @@ TEST_CASE("For C FILE", "[FILE]") {
     REQUIRE(!file);
 }
 
+#if defined(_WIN32) || defined(_WIN64)
+
 TEST_CASE("For Windows Handle", "[windows-handle]") {
     scoped_win_handle handle;
     REQUIRE(!handle);
@@ -45,5 +47,7 @@ TEST_CASE("For Windows Handle", "[windows-handle]") {
     CHECK(!handle);
     CHECK(GetLastError() == ERROR_FILE_NOT_FOUND);
 }
+
+#endif
 
 } // namespace scoped
