@@ -8,6 +8,8 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <Windows.h>
+#else
+#include <unistd.h>
 #endif
 
 namespace scoped {
@@ -74,6 +76,54 @@ struct win_handle_deleter {
 static_assert(std::is_empty_v<win_handle_deleter>);
 
 using scoped_win_handle = std::unique_ptr<win_handle, win_handle_deleter>;
+
+#else
+
+class fd_handle {
+public:
+    using handle_type = int;
+
+    fd_handle() noexcept = default;
+
+    // implicit
+    fd_handle(std::nullptr_t) noexcept {}
+
+    // implicit
+    fd_handle(handle_type fd) noexcept
+        : fd_(fd) {}
+
+    explicit operator bool() const noexcept {
+        return fd_ != 0;
+    }
+
+    // implicit
+    operator handle_type() const noexcept {
+        return fd_;
+    }
+
+    friend bool operator==(fd_handle lhs, fd_handle rhs) noexcept {
+        return lhs.fd_ == rhs.fd_;
+    }
+
+    friend bool operator!=(fd_handle lhs, fd_handle rhs) noexcept {
+        return !(lhs == rhs);
+    }
+
+private:
+    handle_type fd_{};
+};
+
+struct fd_handle_deleter {
+    using pointer = fd_handle;
+
+    void operator()(pointer fd) const {
+        close(fd);
+    }
+};
+
+static_assert(std::is_empty_v<fd_handle_deleter>);
+
+using scoped_fd = std::unique_ptr<fd_handle, fd_handle_deleter>;
 
 #endif
 
