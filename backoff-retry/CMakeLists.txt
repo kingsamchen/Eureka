@@ -26,6 +26,7 @@ endif()
 set(BACKOFF_RETRY_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(BACKOFF_RETRY_CMAKE_DIR ${BACKOFF_RETRY_DIR}/cmake)
 
+include(CTest)
 include(${BACKOFF_RETRY_CMAKE_DIR}/CPM.cmake)
 
 message(STATUS "GENERATOR = " ${CMAKE_GENERATOR})
@@ -56,3 +57,7 @@ else()
 endif()
 
 add_subdirectory(backoff)
+
+if(BACKOFF_RETRY_NOT_SUBPROJECT AND BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
