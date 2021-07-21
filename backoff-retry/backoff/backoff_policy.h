@@ -7,8 +7,7 @@
 namespace backoff {
 
 struct constant_policy {
-    template<typename Rep, typename Period>
-    auto apply(const std::chrono::duration<Rep, Period>& base, uint32_t /*done_retries*/) const {
+    auto apply(const std::chrono::milliseconds& base, uint32_t /*done_retries*/) const {
         return base;
     }
 };
@@ -19,15 +18,13 @@ struct linear_policy {
     explicit linear_policy(std::chrono::milliseconds incr)
         : increment(incr) {}
 
-    template<typename Rep, typename Period>
-    auto apply(const std::chrono::duration<Rep, Period>& base, uint32_t done_retries) const {
+    auto apply(const std::chrono::milliseconds& base, uint32_t done_retries) const {
         return base + done_retries * increment;
     }
 };
 
 struct exponential_policy {
-    template<typename Rep, typename Period>
-    auto apply(const std::chrono::duration<Rep, Period>& base, uint32_t done_retries) const {
+    auto apply(const std::chrono::milliseconds& base, uint32_t done_retries) const {
         return base * (1 << done_retries);
     }
 };

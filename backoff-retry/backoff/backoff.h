@@ -4,21 +4,36 @@
 #include <chrono>
 #include <cstdint>
 #include <optional>
+#include <type_traits>
 
 namespace backoff {
+
+using duration_type = std::chrono::milliseconds;
+
+template<typename Policy, typename = void>
+struct is_valid_policy : std::false_type {};
+
+template<typename Policy>
+struct is_valid_policy<
+    Policy,
+    std::void_t<
+        std::enable_if_t<
+            std::is_convertible_v<
+                decltype(std::declval<Policy>().apply(duration_type{}, uint32_t{})),
+                duration_type>>>>
+    : std::true_type {};
 
 template<typename Policy>
 class backoff : Policy {
 public:
-    // TODO: Add static_assert that Policy has a method apply().
+    static_assert(is_valid_policy<Policy>::value,
+                  "Policy should have a method apply whose signature meets requirements");
 
-    using duration = std::chrono::milliseconds;
-
-    backoff(duration base, uint32_t max_retries)
+    backoff(duration_type base, uint32_t max_retries)
         : base_(base),
           max_retries_(max_retries) {}
 
-    backoff(duration base, uint32_t max_retries, const Policy& policy)
+    backoff(duration_type base, uint32_t max_retries, const Policy& policy)
         : Policy(policy),
           base_(base),
           max_retries_(max_retries) {}
@@ -33,18 +48,20 @@ public:
 
     ~backoff() = default;
 
-    std::optional<duration> next_delay() {
+    std::optional<duration_type> next_delay() {
         if (done_retries_ == max_retries_) {
             return std::nullopt;
         }
 
-        return std::optional<duration>(this->apply(base_, done_retries_++));
+        return std::optional<duration_type>(this->apply(base_, done_retries_++));
     }
 
-    // TODO: void reset()
+    void reset() noexcept {
+        done_retries_ = 0;
+    }
 
 private:
-    duration base_;
+    duration_type base_;
     uint32_t max_retries_;
     uint32_t done_retries_ = 0u;
 };
