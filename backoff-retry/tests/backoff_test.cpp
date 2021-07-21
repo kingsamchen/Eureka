@@ -3,6 +3,7 @@
 #include "catch2/catch.hpp"
 
 #include "backoff/backoff.h"
+#include "backoff/backoff_policy.h"
 
 using constant_backoff = backoff::backoff<backoff::constant_policy>;
 using namespace std::chrono_literals;

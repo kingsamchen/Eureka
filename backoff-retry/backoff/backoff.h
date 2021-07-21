@@ -7,20 +7,6 @@
 
 namespace backoff {
 
-struct constant_policy {
-    template<typename Rep, typename Period>
-    auto apply(const std::chrono::duration<Rep, Period>& base, uint32_t /*done_retries*/) {
-        return base;
-    }
-};
-
-struct exponential_policy {
-    template<typename Rep, typename Period>
-    auto apply(const std::chrono::duration<Rep, Period>& base, uint32_t done_retries) {
-        return base * (1 << done_retries);
-    }
-};
-
 template<typename Policy>
 class backoff : Policy {
 public:
@@ -30,6 +16,11 @@ public:
 
     backoff(duration base, uint32_t max_retries)
         : base_(base),
+          max_retries_(max_retries) {}
+
+    backoff(duration base, uint32_t max_retries, const Policy& policy)
+        : Policy(policy),
+          base_(base),
           max_retries_(max_retries) {}
 
     backoff(const backoff&) = default;

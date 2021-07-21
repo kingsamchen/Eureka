@@ -5,6 +5,7 @@ add_executable(backoff_retry_test)
 target_sources(backoff_retry_test
   PRIVATE
     main.cpp
+    backoff_policy_test.cpp
     backoff_test.cpp
 )
 
