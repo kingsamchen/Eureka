@@ -6,9 +6,16 @@
 #include <optional>
 #include <type_traits>
 
-namespace backoff {
+#include "backoff/backoff_jitter.h"
+#include "backoff/backoff_policy.h"
 
-using duration_type = std::chrono::milliseconds;
+#if defined(_WIN32) || defined(_WIN64)
+#define EMPTY_BASES __declspec(empty_bases)
+#else
+#define EMPTY_BASES
+#endif
+
+namespace backoff {
 
 template<typename Policy, typename = void>
 struct is_valid_policy : std::false_type {};
@@ -23,18 +30,31 @@ struct is_valid_policy<
                 duration_type>>>>
     : std::true_type {};
 
-template<typename Policy>
-class backoff : Policy {
+template<typename Policy, typename Jitter = no_jitter>
+class EMPTY_BASES backoff : Policy, Jitter {
 public:
     static_assert(is_valid_policy<Policy>::value,
                   "Policy should have a method apply whose signature meets requirements");
+
+    // TODO: static_assert on Jitter traits
 
     backoff(duration_type base, uint32_t max_retries)
         : base_(base),
           max_retries_(max_retries) {}
 
+    backoff(duration_type base, uint32_t max_retries, const Jitter& jitter)
+        : Jitter(jitter),
+          base_(base),
+          max_retries_(max_retries) {}
+
     backoff(duration_type base, uint32_t max_retries, const Policy& policy)
         : Policy(policy),
+          base_(base),
+          max_retries_(max_retries) {}
+
+    backoff(duration_type base, uint32_t max_retries, const Policy& policy, const Jitter& jitter)
+        : Policy(policy),
+          Jitter(jitter),
           base_(base),
           max_retries_(max_retries) {}
 
@@ -53,7 +73,12 @@ public:
             return std::nullopt;
         }
 
-        return std::optional<duration_type>(this->apply(base_, done_retries_++));
+        auto delay = this->apply(base_, done_retries_++);
+        if constexpr (!std::is_same_v<Jitter, no_jitter>) {
+            delay = this->jitter(delay);
+        }
+
+        return std::optional<duration_type>(delay);
     }
 
     void reset() noexcept {
@@ -65,6 +90,31 @@ private:
     uint32_t max_retries_;
     uint32_t done_retries_ = 0u;
 };
+
+template<typename Jitter>
+auto make_constant(duration_type delay, uint32_t max_retries, Jitter&& jitter)
+    -> backoff<constant_policy, Jitter> {
+    return backoff<constant_policy, Jitter>(delay, max_retries, std::forward<Jitter>(jitter));
+}
+
+inline auto make_constant(duration_type delay, uint32_t max_retries) -> backoff<constant_policy> {
+    return backoff<constant_policy>(delay, max_retries);
+}
+
+template<typename Jitter>
+auto make_linear(duration_type base, uint32_t max_retries, linear_policy::options opts,
+                 Jitter&& jitter) -> backoff<linear_policy, Jitter> {
+    return backoff<linear_policy, Jitter>(base,
+                                          max_retries,
+                                          linear_policy(opts),
+                                          std::forward<Jitter>(jitter));
+}
+
+inline auto make_linear(duration_type base, uint32_t max_retries, duration_type increment)
+    -> backoff<linear_policy> {
+    linear_policy::options opts(increment);
+    return backoff<linear_policy>(base, max_retries, linear_policy(opts));
+}
 
 } // namespace backoff
 
