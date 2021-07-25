@@ -6,14 +6,7 @@
 #include <optional>
 #include <type_traits>
 
-#include "backoff/backoff_jitter.h"
 #include "backoff/backoff_policy.h"
-
-#if defined(_WIN32) || defined(_WIN64)
-#define EMPTY_BASES __declspec(empty_bases)
-#else
-#define EMPTY_BASES
-#endif
 
 namespace backoff {
 
@@ -30,31 +23,18 @@ struct is_valid_policy<
                 duration_type>>>>
     : std::true_type {};
 
-template<typename Policy, typename Jitter = no_jitter>
-class EMPTY_BASES backoff : Policy, Jitter {
+template<typename Policy>
+class backoff : Policy {
 public:
     static_assert(is_valid_policy<Policy>::value,
                   "Policy should have a method apply whose signature meets requirements");
-
-    // TODO: static_assert on Jitter traits
 
     backoff(duration_type base, uint32_t max_retries)
         : base_(base),
           max_retries_(max_retries) {}
 
-    backoff(duration_type base, uint32_t max_retries, const Jitter& jitter)
-        : Jitter(jitter),
-          base_(base),
-          max_retries_(max_retries) {}
-
     backoff(duration_type base, uint32_t max_retries, const Policy& policy)
         : Policy(policy),
-          base_(base),
-          max_retries_(max_retries) {}
-
-    backoff(duration_type base, uint32_t max_retries, const Policy& policy, const Jitter& jitter)
-        : Policy(policy),
-          Jitter(jitter),
           base_(base),
           max_retries_(max_retries) {}
 
@@ -73,12 +53,7 @@ public:
             return std::nullopt;
         }
 
-        auto delay = this->apply(base_, done_retries_++);
-        if constexpr (!std::is_same_v<Jitter, no_jitter>) {
-            delay = this->jitter(delay);
-        }
-
-        return std::optional<duration_type>(delay);
+        return std::optional<duration_type>(this->apply(base_, done_retries_++));
     }
 
     void reset() noexcept {
@@ -91,29 +66,53 @@ private:
     uint32_t done_retries_ = 0u;
 };
 
-template<typename Jitter>
-auto make_constant(duration_type delay, uint32_t max_retries, Jitter&& jitter)
-    -> backoff<constant_policy, Jitter> {
-    return backoff<constant_policy, Jitter>(delay, max_retries, std::forward<Jitter>(jitter));
+inline auto make_constant(const duration_type& delay, uint32_t max_retries) {
+    return backoff<constant>(delay, max_retries);
 }
 
-inline auto make_constant(duration_type delay, uint32_t max_retries) -> backoff<constant_policy> {
-    return backoff<constant_policy>(delay, max_retries);
+inline auto make_linear(const duration_type& base,
+                        uint32_t max_retries,
+                        const duration_type& increment) {
+    return backoff<linear>(base, max_retries, linear(increment));
 }
 
-template<typename Jitter>
-auto make_linear(duration_type base, uint32_t max_retries, linear_policy::options opts,
-                 Jitter&& jitter) -> backoff<linear_policy, Jitter> {
-    return backoff<linear_policy, Jitter>(base,
-                                          max_retries,
-                                          linear_policy(opts),
-                                          std::forward<Jitter>(jitter));
+inline auto make_linear(const duration_type& base,
+                        uint32_t max_retires,
+                        const duration_type& increment,
+                        const duration_type& max_delay) {
+    return backoff<linear>(base, max_retires, linear(increment, max_delay));
 }
 
-inline auto make_linear(duration_type base, uint32_t max_retries, duration_type increment)
-    -> backoff<linear_policy> {
-    linear_policy::options opts(increment);
-    return backoff<linear_policy>(base, max_retries, linear_policy(opts));
+inline auto make_exponential(const duration_type& base, uint32_t max_retries) {
+    return backoff<exponential>(base, max_retries);
+}
+
+inline auto make_exponential(const duration_type& base,
+                             uint32_t max_retries,
+                             const duration_type& max_delay) {
+    return backoff<exponential>(base, max_retries, exponential(max_delay));
+}
+
+inline auto make_exponential_full_jitter(const duration_type& base, uint32_t max_retries) {
+    return backoff<exponential_full_jitter>(base, max_retries);
+}
+
+inline auto make_exponential_full_jitter(const duration_type& base,
+                                         uint32_t max_retries,
+                                         const duration_type& max_delay) {
+    return backoff<exponential_full_jitter>(base, max_retries, exponential_full_jitter(max_delay));
+}
+
+inline auto make_exponential_decorrelated_jitter(const duration_type& base, uint32_t max_retries) {
+    return backoff<exponential_decorrelated_jitter>(base, max_retries);
+}
+
+inline auto make_exponential_decorrelated_jitter(const duration_type& base,
+                                                 uint32_t max_retries,
+                                                 const duration_type& max_delay) {
+    return backoff<exponential_decorrelated_jitter>(base,
+                                                    max_retries,
+                                                    exponential_decorrelated_jitter(max_delay));
 }
 
 } // namespace backoff
