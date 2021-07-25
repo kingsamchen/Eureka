@@ -44,7 +44,6 @@ TEST_CASE("Linear backoff policy", "[policy]") {
         backoff::linear policy(increment, max_delay);
 
         constexpr auto base_delay = 10s;
-        constexpr auto max_retries = std::numeric_limits<uint32_t>::max();
         std::vector<std::chrono::milliseconds> delay_seq;
         std::generate_n(std::back_inserter(delay_seq), 7, [&]() {
             return policy.apply(base_delay, static_cast<uint32_t>(delay_seq.size()));
