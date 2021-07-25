@@ -5,6 +5,7 @@ target_sources(backoff
   PRIVATE
     backoff.cpp
     backoff.h
+    backoff_attempt.h
     backoff_policy.h
 
   $<$<BOOL:${WIN32}>:
