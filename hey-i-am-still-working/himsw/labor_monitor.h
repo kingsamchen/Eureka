@@ -74,7 +74,7 @@ private:
     void tick_on_active();
 
     // May throw win_last_error
-    void tick_on_simulating() const;
+    void tick_on_simulating();
 
     static LRESULT keyboard_hook_proc(int code, WPARAM wparam, LPARAM lparam);
 
@@ -84,6 +84,8 @@ private:
 
 private:
     state state_;
+    std::chrono::system_clock::time_point last_simulation_;
+    static constexpr std::chrono::seconds k_simul_interval{30};
     monitor_config cfg_;
     HHOOK keyboard_hook_;
     HHOOK mouse_hook_;

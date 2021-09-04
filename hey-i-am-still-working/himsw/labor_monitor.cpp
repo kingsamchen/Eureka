@@ -87,8 +87,13 @@ void labor_monitor::tick_on_active() {
     }
 }
 
-void labor_monitor::tick_on_simulating() const {
+void labor_monitor::tick_on_simulating() {
     assert(state_ == state::simulating);
+
+    auto now = std::chrono::system_clock::now();
+    if ((now - last_simulation_) < labor_monitor::k_simul_interval) {
+        return;
+    }
 
     INPUT key_inputs[2]{};
     // Key press
@@ -106,6 +111,8 @@ void labor_monitor::tick_on_simulating() const {
     if (sent_cnt != input_size) {
         throw win_last_error("call SendInput()");
     }
+
+    last_simulation_ = now;
 
     info_handler_("simulation key events emitted");
 }
