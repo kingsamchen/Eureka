@@ -35,6 +35,7 @@ labor_monitor::~labor_monitor() {
 
 void labor_monitor::prepare() {
     auto module = ::GetModuleHandleW(nullptr);
+
     keyboard_hook_ = ::SetWindowsHookExW(WH_KEYBOARD_LL, &labor_monitor::keyboard_hook_proc,
                                          module, 0);
     if (!keyboard_hook_) {
@@ -42,12 +43,24 @@ void labor_monitor::prepare() {
     }
 
     spdlog::info("Prepare: low-level keyboard hook has been installed");
+
+    mouse_hook_ = ::SetWindowsHookExW(WH_MOUSE_LL, &labor_monitor::mouse_hook_proc, module, 0);
+    if (!mouse_hook_) {
+        throw win_last_error("install mouse hook");
+    }
+
+    spdlog::info("Prepare: low-level mouse hook has been installed");
 }
 
 void labor_monitor::cleanup() noexcept {
     if (keyboard_hook_) {
         ::UnhookWindowsHookEx(keyboard_hook_);
         keyboard_hook_ = nullptr;
+    }
+
+    if (mouse_hook_) {
+        ::UnhookWindowsHookEx(mouse_hook_);
+        mouse_hook_ = nullptr;
     }
 }
 
@@ -119,11 +132,24 @@ LRESULT labor_monitor::keyboard_hook_proc(int code, WPARAM wparam, LPARAM lparam
         if (key_event->vkCode != monitor.cfg_.simulation_key ||
             key_event->dwExtraInfo != k_simulation_mask) {
             monitor.state_ = state::active;
-            spdlog::info("Monitor state changed; simulating -> active");
+            spdlog::info("Monitor state changed due to keyboard activity; simulating -> active");
             monitor.info_handler_("User keyboard activities detected");
         }
     }
+
     return ::CallNextHookEx(monitor.keyboard_hook_, code, wparam, lparam);
+}
+
+// static
+LRESULT labor_monitor::mouse_hook_proc(int code, WPARAM wparam, LPARAM lparam) {
+    auto& monitor = labor_monitor::instance();
+    if (code >= 0 && monitor.is_simulating()) {
+        monitor.state_ = state::active;
+        spdlog::info("Monitor state changed due to mouse activity; simulating -> active");
+        monitor.info_handler_("User mouse activities detected");
+    }
+
+    return ::CallNextHookEx(monitor.mouse_hook_, code, wparam, lparam);
 }
 
 } // namespace himsw

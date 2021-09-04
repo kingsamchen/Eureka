@@ -1,3 +1,6 @@
+// Copyright (c) 2021 Kingsley Chen <kingsamchen at gmail dot com>
+// This file is subject to the terms of license that can be found
+// in the LICENSE file.
 
 #include <memory>
 #include <string>

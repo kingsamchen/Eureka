@@ -58,6 +58,7 @@ private:
     labor_monitor()
         : state_(state::active),
           keyboard_hook_(nullptr),
+          mouse_hook_(nullptr),
           info_handler_(noop) {}
 
     void cleanup() noexcept;
@@ -77,12 +78,15 @@ private:
 
     static LRESULT keyboard_hook_proc(int code, WPARAM wparam, LPARAM lparam);
 
+    static LRESULT mouse_hook_proc(int code, WPARAM wparam, LPARAM lparam);
+
     static void noop(const std::string&) {}
 
 private:
     state state_;
     monitor_config cfg_;
     HHOOK keyboard_hook_;
+    HHOOK mouse_hook_;
     std::function<void(const std::string&)> info_handler_;
 };
 
