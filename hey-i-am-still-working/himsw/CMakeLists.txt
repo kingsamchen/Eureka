@@ -1,5 +1,14 @@
+CPMAddPackage(
+  NAME nana
+  GITHUB_REPOSITORY cnjinhao/nana
+  VERSION 1.7.4
+  OPTIONS
+    "MSVC_USE_STATIC_RUNTIME OFF"
+)
 
-add_executable(himsw)
+CPMAddPackage("gh:gabime/spdlog@1.9.2")
+
+add_executable(himsw WIN32)
 
 target_sources(himsw
   PRIVATE
@@ -19,7 +28,15 @@ target_include_directories(himsw
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../
 )
 
+target_compile_definitions(himsw
+  PRIVATE
+    NOMINMAX
+)
+
 target_link_libraries(himsw
+  PRIVATE
+    nana
+    spdlog
 )
 
 apply_hey_i_am_still_working_compile_conf(himsw)
