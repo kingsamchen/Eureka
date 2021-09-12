@@ -1,4 +1,14 @@
-CPMAddPackage("gh:gabime/spdlog@1.9.2")
+CPMAddPackage(
+  NAME spdlog
+  GITHUB_REPOSITORY gabime/spdlog
+  VERSION 1.9.2
+)
+
+if(spdlog_ADDED)
+  set_target_properties(spdlog PROPERTIES
+    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+  )
+endif()
 
 add_executable(himsw WIN32)
 
@@ -43,18 +53,20 @@ if(MSVC AND HEY_I_AM_STILL_WORKING_ENABLE_CODE_ANALYSIS)
 endif()
 
 set_target_properties(himsw PROPERTIES
-    VS_GLOBAL_RunCodeAnalysis true
+  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
 
-    # Use visual studio core guidelines
-    # Tweak as your wish.
-    VS_GLOBAL_EnableMicrosoftCodeAnalysis true
-    # VS_GLOBAL_CodeAnalysisRuleSet ${CMAKE_CURRENT_SOURCE_DIR}/foo.ruleset
-    # VS_GLOBAL_CodeAnalysisRuleSet ${CMAKE_CURRENT_SOURCE_DIR}/foo.ruleset
+  VS_GLOBAL_RunCodeAnalysis true
 
-    # Use clangtidy
-    # Tweak as your wish.
-    VS_GLOBAL_EnableClangTidyCodeAnalysis true
-    # VS_GLOBAL_ClangTidyChecks -checks=-*,modernize-*,-modernize-use-trailing-return-type
+  # Use visual studio core guidelines
+  # Tweak as your wish.
+  VS_GLOBAL_EnableMicrosoftCodeAnalysis true
+  # VS_GLOBAL_CodeAnalysisRuleSet ${CMAKE_CURRENT_SOURCE_DIR}/foo.ruleset
+  # VS_GLOBAL_CodeAnalysisRuleSet ${CMAKE_CURRENT_SOURCE_DIR}/foo.ruleset
+
+  # Use clangtidy
+  # Tweak as your wish.
+  VS_GLOBAL_EnableClangTidyCodeAnalysis true
+  # VS_GLOBAL_ClangTidyChecks -checks=-*,modernize-*,-modernize-use-trailing-return-type
 )
 
 target_precompile_headers(himsw
