@@ -2,22 +2,23 @@
 // This file is subject to the terms of license that can be found
 // in the LICENSE file.
 
+#include <algorithm>
 #include <deque>
+#include <functional>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <thread>
+#include <unordered_map>
 
 #include <Windows.h>
 
-#include "nana/gui.hpp"
-#include "nana/gui/timer.hpp"
-#include "nana/gui/widgets/label.hpp"
 #include "spdlog/fmt/fmt.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/spdlog.h"
 
 #include "himsw/labor_monitor.h"
+#include "himsw/resource.h"
 #include "himsw/win_last_error.h"
 
 namespace {
@@ -48,50 +49,116 @@ std::string now_in_date() {
     return oss.str();
 }
 
-nana::size calc_initial_window_size() {
-    constexpr auto k_ratio = 0.618;
-    auto monitor = nana::screen::primary_monitor_size();
-    auto init_width = static_cast<nana::size::value_type>(monitor.width * k_ratio + 0.5);
-    auto init_height = static_cast<nana::size::value_type>(monitor.height * k_ratio + 0.5);
-    return {init_width / 2, init_height / 2};
-}
+class dialog_window;
 
-class main_window : public nana::form {
+class dialog_window_manager {
+public:
+    ~dialog_window_manager() = default;
+
+    dialog_window_manager(const dialog_window_manager&) = delete;
+
+    dialog_window_manager(dialog_window_manager&&) = delete;
+
+    dialog_window_manager& operator=(const dialog_window_manager&) = delete;
+
+    dialog_window_manager& operator=(dialog_window_manager&&) = delete;
+
+    static dialog_window_manager& instance() {
+        static dialog_window_manager instance;
+        return instance;
+    }
+
+    void enroll(HWND hwnd, dialog_window* ptr) {
+        dlg_table_[hwnd] = ptr;
+    }
+
+    void unroll(HWND hwnd) {
+        dlg_table_.erase(hwnd);
+        if (dlg_table_.empty()) {
+            PostQuitMessage(0);
+        }
+    }
+
+    bool any_dialog_message_processed(MSG* msg) {
+        return std::any_of(dlg_table_.begin(), dlg_table_.end(), [msg](auto& entry) {
+            return ::IsDialogMessageW(entry.first, msg) == TRUE;
+        });
+    }
+
+    static INT_PTR dialog_proc(HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam);
+
+private:
+    dialog_window_manager() = default;
+
+private:
+    std::unordered_map<HWND, dialog_window*> dlg_table_;
+};
+
+class dialog_window {
     struct passkey {
         explicit passkey() = default;
     };
 
 public:
-    main_window(const main_window&) = delete;
+    ~dialog_window() = default;
 
-    main_window(main_window&&) = delete;
+    dialog_window(const dialog_window&) = delete;
 
-    main_window& operator=(const main_window&) = delete;
+    dialog_window(dialog_window&&) = delete;
 
-    main_window& operator=(main_window&&) = delete;
+    dialog_window& operator=(const dialog_window&) = delete;
 
-    static std::shared_ptr<main_window> make() {
-        auto main = std::make_shared<main_window>(passkey{}, calc_initial_window_size());
-        main->show();
-        return main;
+    dialog_window& operator=(dialog_window&&) = delete;
+
+    static std::shared_ptr<dialog_window> make() {
+        auto window = std::make_shared<dialog_window>(passkey{});
+        dialog_window_manager::instance().enroll(window->dlg_, window.get());
+        window->show();
+        return window;
     }
 
-    explicit main_window(passkey, nana::size size)
-        : nana::form(nana::API::make_center(size.width, size.height)) {
-        this->caption("Hey I AM Still Working");
+    explicit dialog_window(passkey) {
+        auto instance = ::GetModuleHandleW(nullptr);
+        dlg_ = ::CreateDialogParamW(instance,
+                                    MAKEINTRESOURCE(IDD_DLGMAIN),
+                                    nullptr,
+                                    &dialog_window_manager::dialog_proc,
+                                    0);
+        if (!dlg_) {
+            throw himsw::win_last_error("Failed to create dialog window");
+        }
 
-        lbl_info_.size(this->size());
-        lbl_info_.caption("monitoring...");
+        ::SetTimer(dlg_, IDT_TIMER, 1000 * 10, nullptr);
 
-        place_.div("<msg>");
-        place_["msg"] << lbl_info_;
-        place_.collocate();
+        events_[WM_CLOSE] = [this](WPARAM, LPARAM) {
+            on_close();
+        };
 
-        timer_.elapse([] {
-            himsw::labor_monitor::instance().tick();
-        });
-        timer_.interval(std::chrono::seconds(10));
-        timer_.start();
+        events_[WM_TIMER] = [this](WPARAM, LPARAM) {
+            // currently only one timer.
+            on_timer();
+        };
+    }
+
+    void show(bool visible = true) {
+        auto cmd = visible ? SW_SHOWNORMAL : SW_HIDE;
+        ::ShowWindow(dlg_, cmd);
+        visible_ = visible;
+    }
+
+    bool visible() const noexcept {
+        return visible_;
+    }
+
+    bool try_process_event(int event_id, WPARAM wparam, LPARAM lparam) {
+        auto entry = events_.find(event_id);
+        if (entry == events_.end()) {
+            return false;
+        }
+
+        entry->second(wparam, lparam);
+
+        return true;
     }
 
     void update_info(const std::string& msg) {
@@ -100,15 +167,61 @@ public:
             msgs_.pop_back();
         }
 
-        lbl_info_.caption(join_string(msgs_.begin(), msgs_.end(), "\r\n"));
+        auto text = join_string(msgs_.begin(), msgs_.end(), "\r\n");
+        ::SetDlgItemTextA(dlg_, IDC_MSG, text.c_str());
     }
 
 private:
-    nana::label lbl_info_{*this, true};
-    nana::place place_{*this};
-    nana::timer timer_;
+    void on_close() {
+        ::KillTimer(dlg_, IDT_TIMER);
+        ::DestroyWindow(dlg_);
+        dialog_window_manager::instance().unroll(dlg_);
+    }
+
+    void on_timer() {
+        himsw::labor_monitor::instance().tick();
+    }
+
+private:
+    HWND dlg_{nullptr};
+    bool visible_{false};
+    std::unordered_map<int, std::function<void(WPARAM, LPARAM)>> events_;
     std::deque<std::string> msgs_;
     static constexpr size_t k_max_kept_msgs{10};
+};
+
+INT_PTR dialog_window_manager::dialog_proc(HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam) {
+    auto& mgr = dialog_window_manager::instance();
+    auto it = mgr.dlg_table_.find(dlg);
+    if (it != mgr.dlg_table_.end() && it->second->try_process_event(msg, wparam, lparam)) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+class main_loop {
+public:
+    main_loop() = default;
+
+    ~main_loop() = default;
+
+    main_loop(const main_loop&) = delete;
+
+    main_loop(main_loop&&) = delete;
+
+    main_loop& operator=(const main_loop&) = delete;
+
+    main_loop& operator=(main_loop&&) = delete;
+
+    void run() {
+        MSG msg;
+        while (::GetMessageW(&msg, nullptr, 0, 0) != 0) {
+            if (!dialog_window_manager::instance().any_dialog_message_processed(&msg)) {
+                ::TranslateMessage(&msg);
+                ::DispatchMessageW(&msg);
+            }
+        }
+    }
 };
 
 } // namespace
@@ -116,33 +229,32 @@ private:
 int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
     constexpr int critical_failure = 1;
 
+    ::SetProcessDPIAware();
+
     try {
         spdlog::set_default_logger(spdlog::basic_logger_mt("main_logger", "himsw.log", true));
         himsw::labor_monitor::instance().prepare();
+
+        auto main_window = dialog_window::make();
+        himsw::labor_monitor::instance().set_info_update_handler(
+            [ptr = std::weak_ptr(main_window)](const std::string& msg) {
+                if (auto wnd = ptr.lock(); wnd) {
+                    wnd->update_info(msg);
+                }
+            });
+
+        main_loop loop;
+        loop.run();
     } catch (const spdlog::spdlog_ex& ex) {
         auto reason = fmt::format("Failed to initialize logging component; ex={}", ex.what());
-        nana::msgbox mb(reason);
-        ignore_result(mb.show());
+        ::MessageBoxA(nullptr, reason.c_str(), "Error", MB_ICONERROR);
         return critical_failure;
     } catch (const himsw::win_last_error& ex) {
         const std::string cause = "Failed to prepare the labor monitor";
         spdlog::error("{}; ex={} ec={}", cause, ex.what(), ex.error_code());
-        nana::msgbox mb(cause);
-        ignore_result(mb.show());
+        ::MessageBoxA(nullptr, cause.c_str(), "Error", MB_ICONERROR);
         return critical_failure;
     }
-
-    ::SetProcessDPIAware();
-
-    auto window = main_window::make();
-    himsw::labor_monitor::instance().set_info_update_handler(
-        [ptr = std::weak_ptr(window)](const std::string& msg) {
-            if (auto wnd = ptr.lock(); wnd) {
-                wnd->update_info(msg);
-            }
-        });
-
-    nana::exec();
 
     return 0;
 }

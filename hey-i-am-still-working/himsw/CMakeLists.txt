@@ -1,11 +1,3 @@
-CPMAddPackage(
-  NAME nana
-  GITHUB_REPOSITORY cnjinhao/nana
-  VERSION 1.7.4
-  OPTIONS
-    "MSVC_USE_STATIC_RUNTIME OFF"
-)
-
 CPMAddPackage("gh:gabime/spdlog@1.9.2")
 
 add_executable(himsw WIN32)
@@ -15,13 +7,12 @@ target_sources(himsw
     main.cpp
     labor_monitor.cpp
     labor_monitor.h
+    tray.cpp
+    tray.h
     win_last_error.h
 
-  $<$<BOOL:${WIN32}>:
-  >
-
-  $<$<NOT:$<BOOL:${WIN32}>>:
-  >
+    resource.h
+    himsw.rc
 )
 
 target_include_directories(himsw
@@ -31,11 +22,11 @@ target_include_directories(himsw
 target_compile_definitions(himsw
   PRIVATE
     NOMINMAX
+    WIN32_LEAN_AND_MEAN
 )
 
 target_link_libraries(himsw
   PRIVATE
-    nana
     spdlog
 )
 
