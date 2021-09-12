@@ -19,6 +19,7 @@
 
 #include "himsw/labor_monitor.h"
 #include "himsw/resource.h"
+#include "himsw/tray.h"
 #include "himsw/win_last_error.h"
 
 namespace {
@@ -130,6 +131,14 @@ public:
 
         ::SetTimer(dlg_, IDT_TIMER, 1000 * 10, nullptr);
 
+        // Leak on purpose
+        auto hicon = ::LoadIconW(instance, MAKEINTRESOURCE(IDI_ICON));
+        if (!hicon) {
+            throw himsw::win_last_error("Failed to load application icon");
+        }
+
+        tray_ = std::make_unique<himsw::tray>(dlg_, IDI_ICON, hicon, k_tray_msgid, L"himsw");
+
         events_[WM_CLOSE] = [this](WPARAM, LPARAM) {
             on_close();
         };
@@ -137,6 +146,14 @@ public:
         events_[WM_TIMER] = [this](WPARAM, LPARAM) {
             // currently only one timer.
             on_timer();
+        };
+
+        events_[k_tray_msgid] = [this](WPARAM wparam, LPARAM lparam) {
+            auto icon_id = static_cast<UINT>(wparam);
+            auto mouse_msg = static_cast<UINT>(lparam);
+            if (icon_id == IDI_ICON) {
+                on_tray_icon(mouse_msg);
+            }
         };
     }
 
@@ -173,6 +190,7 @@ public:
 
 private:
     void on_close() {
+        tray_ = nullptr;
         ::KillTimer(dlg_, IDT_TIMER);
         ::DestroyWindow(dlg_);
         dialog_window_manager::instance().unroll(dlg_);
@@ -182,12 +200,24 @@ private:
         himsw::labor_monitor::instance().tick();
     }
 
+    void on_tray_icon(UINT mouse_msg) {
+        switch (mouse_msg) {
+        case WM_LBUTTONDBLCLK:
+            show(!visible());
+            break;
+        default:
+            break;
+        }
+    }
+
 private:
     HWND dlg_{nullptr};
     bool visible_{false};
     std::unordered_map<int, std::function<void(WPARAM, LPARAM)>> events_;
+    std::unique_ptr<himsw::tray> tray_;
     std::deque<std::string> msgs_;
     static constexpr size_t k_max_kept_msgs{10};
+    static constexpr int k_tray_msgid{WM_USER + 10};
 };
 
 INT_PTR dialog_window_manager::dialog_proc(HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam) {
