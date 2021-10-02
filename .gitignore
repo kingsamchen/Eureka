@@ -187,3 +187,5 @@ cmake-build*/
 target/
 
 .idea/
+
+.cache/
