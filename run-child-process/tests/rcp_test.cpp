@@ -44,7 +44,7 @@ std::string raw_read_line(rcp::pipe::native_handle_t fd) {
     constexpr size_t buf_size = 256;
     char buf[buf_size]{};
     std::string line;
-    for (long bytes_read = 0;;) {
+    for (long bytes_read;;) {
 #if defined(OS_WIN)
         if (!::ReadFile(fd, buf, buf_size, reinterpret_cast<LPDWORD>(&bytes_read), nullptr)) {
             throw std::system_error(std::error_code(::GetLastError(), std::system_category()),
@@ -84,10 +84,11 @@ TEST_CASE("run rcp_app as child process and communicate via stdin/stdout") {
     static constexpr std::string_view stmts[]{"hello, world",
                                               "HELLO, WORLD",
                                               "hElLo, WOrlD"};
-    for (auto i = 0u; i < std::size(stmts); ++i) {
-        raw_write_line(rcp_app.std_in(), stmts[i]);
+    for (auto stmt : stmts) {
+        raw_write_line(rcp_app.std_in(), stmt);
         auto data = raw_read_line(rcp_app.std_out());
-        CHECK_EQ(data, strupper(stmts[i]));
+        INFO("stmt=", stmt, "\ndata=", data);
+        CHECK_EQ(data, strupper(stmt));
     }
 
     rcp_app.shutdown();

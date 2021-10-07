@@ -53,9 +53,9 @@ child_process run_child_process(const std::string& pathname, const std::vector<s
     return {};
 }
 
-void child_process::join() {
+void child_process::wait() const noexcept {
     [[maybe_unused]] int status;
-    ::waitpid(cpid, &status, 0);
+    ::waitpid(cpid_, &status, 0);
 }
 
 } // namespace rcp
