@@ -8,6 +8,7 @@ target_sources(rcp
     unique_handle.h
 
   $<$<BOOL:${WIN32}>:
+    rcp_win.cpp
   >
 
   $<$<NOT:$<BOOL:${WIN32}>>:
@@ -42,10 +43,5 @@ set_target_properties(rcp PROPERTIES
     VS_GLOBAL_EnableMicrosoftCodeAnalysis true
     # VS_GLOBAL_CodeAnalysisRuleSet ${CMAKE_CURRENT_SOURCE_DIR}/foo.ruleset
     # VS_GLOBAL_CodeAnalysisRuleSet ${CMAKE_CURRENT_SOURCE_DIR}/foo.ruleset
-
-    # Use clangtidy
-    # Tweak as your wish.
-    VS_GLOBAL_EnableClangTidyCodeAnalysis true
-    # VS_GLOBAL_ClangTidyChecks -checks=-*,modernize-*,-modernize-use-trailing-return-type
 )
 

@@ -6,8 +6,11 @@
 
 int main() {
     for (std::string line; std::getline(std::cin, line);) {
-        std::transform(line.begin(), line.end(), line.begin(), toupper);
-        std::cout << line << std::endl;
+        std::transform(line.begin(), line.end(), line.begin(), [](unsigned char c) {
+            return static_cast<char>(std::toupper(c));
+        });
+        std::cout << line;
+        std::cout.flush();
     }
     return 0;
 }

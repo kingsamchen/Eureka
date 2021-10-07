@@ -9,6 +9,7 @@
 #include "rcp/macros.h"
 
 #if defined(OS_WIN)
+#include <Windows.h>
 #else
 #include <unistd.h>
 #endif
@@ -65,7 +66,7 @@ struct unique_handle_deleter {
     }
 };
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(OS_WIN)
 
 struct win_handle_traits {
     using handle_type = HANDLE;
@@ -75,7 +76,7 @@ struct win_handle_traits {
     }
 
     static void close(handle_type handle) noexcept {
-        CloseHandle(handle);
+        ::CloseHandle(handle);
     }
 
     static constexpr handle_type null_handle{nullptr};
@@ -83,6 +84,10 @@ struct win_handle_traits {
 
 using win_handle_deleter = unique_handle_deleter<win_handle_traits>;
 using unique_win_handle = std::unique_ptr<win_handle_traits::handle_type, win_handle_deleter>;
+
+inline unique_win_handle wrap_unique_win_handle(win_handle_traits::handle_type raw_handle) {
+    return unique_win_handle(raw_handle);
+}
 
 #else
 

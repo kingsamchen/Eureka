@@ -19,6 +19,7 @@ namespace rcp {
 class pipe {
 public:
 #if defined(OS_WIN)
+    using unique_handle_t = unique_win_handle;
 #else
     using unique_handle_t = unique_fd;
 #endif
@@ -69,6 +70,17 @@ private:
 
 inline pipe make_pipe() {
 #if defined(OS_WIN)
+    SECURITY_ATTRIBUTES sa{};
+    sa.nLength = sizeof(sa);
+    sa.bInheritHandle = TRUE;
+
+    HANDLE fds[2]{};
+    // use default buffer size.
+    if (::CreatePipe(&fds[0], &fds[1], &sa, 0) == 0) {
+        throw std::system_error(std::error_code(::GetLastError(), std::system_category()),
+                                "CreatePipe() failure");
+    }
+    return pipe(wrap_unique_win_handle(fds[0]), wrap_unique_win_handle(fds[1]));
 #else
     int fds[2]{};
     if (::pipe(fds) != 0) {
