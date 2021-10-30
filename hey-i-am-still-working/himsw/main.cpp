@@ -143,6 +143,12 @@ public:
             on_close();
         };
 
+        events_[WM_SIZE] = [this](WPARAM wparam, LPARAM) {
+            if (wparam == SIZE_MINIMIZED) {
+                on_minimized();
+            }
+        };
+
         events_[WM_TIMER] = [this](WPARAM, LPARAM) {
             // currently only one timer.
             on_timer();
@@ -194,6 +200,10 @@ private:
         ::KillTimer(dlg_, IDT_TIMER);
         ::DestroyWindow(dlg_);
         dialog_window_manager::instance().unroll(dlg_);
+    }
+
+    void on_minimized() {
+        show(!visible());
     }
 
     void on_timer() {
