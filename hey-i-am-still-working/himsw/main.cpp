@@ -272,7 +272,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
     ::SetProcessDPIAware();
 
     try {
-        spdlog::set_default_logger(spdlog::basic_logger_mt("main_logger", "himsw.log", true));
+        spdlog::set_default_logger(spdlog::basic_logger_mt("main_logger", "himsw.log"));
         himsw::labor_monitor::instance().prepare();
 
         auto main_window = dialog_window::make();
