@@ -8,10 +8,10 @@
 #include <memory>
 #include <string>
 #include <string_view>
-#include <thread>
 #include <unordered_map>
 
 #include <Windows.h>
+#include <windowsx.h>
 
 #include "spdlog/fmt/fmt.h"
 #include "spdlog/sinks/basic_file_sink.h"
@@ -115,6 +115,11 @@ public:
         auto window = std::make_shared<dialog_window>(passkey{});
         dialog_window_manager::instance().enroll(window->dlg_, window.get());
         window->show();
+
+        auto chk_hwnd = ::GetDlgItem(window->dlg_, IDC_CHKSTATUS);
+        Button_SetCheck(chk_hwnd, BST_CHECKED);
+        ::SendMessageW(window->dlg_, WM_COMMAND, IDC_CHKSTATUS, reinterpret_cast<LPARAM>(chk_hwnd));
+
         return window;
     }
 
@@ -128,8 +133,6 @@ public:
         if (!dlg_) {
             throw himsw::win_last_error("Failed to create dialog window");
         }
-
-        ::SetTimer(dlg_, IDT_TIMER, 1000 * 10, nullptr);
 
         // Leak on purpose
         auto hicon = ::LoadIconW(instance, MAKEINTRESOURCE(IDI_ICON));
@@ -159,6 +162,14 @@ public:
             auto mouse_msg = static_cast<UINT>(lparam);
             if (icon_id == IDI_ICON) {
                 on_tray_icon(mouse_msg);
+            }
+        };
+
+        events_[WM_COMMAND] = [this](WPARAM wparam, LPARAM lparam) {
+            auto ctrl_id = LOWORD(wparam);
+            if (ctrl_id == IDC_CHKSTATUS) {
+                auto state = Button_GetCheck(reinterpret_cast<HWND>(lparam));
+                on_monitor_state_changed(state == BST_CHECKED);
             }
         };
     }
@@ -217,6 +228,16 @@ private:
             break;
         default:
             break;
+        }
+    }
+
+    void on_monitor_state_changed(bool enabled) {
+        if (enabled) {
+            ::SetTimer(dlg_, IDT_TIMER, 1000 * 10, nullptr);
+            update_info("monitoring is on");
+        } else {
+            ::KillTimer(dlg_, IDT_TIMER);
+            update_info("monitoring is off");
         }
     }
 
