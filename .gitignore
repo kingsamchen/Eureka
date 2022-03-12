@@ -189,3 +189,5 @@ target/
 .idea/
 
 .cache/
+
+.vscode/
