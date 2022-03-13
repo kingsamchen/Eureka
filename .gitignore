@@ -176,8 +176,6 @@ gradlew.bat
 *.dmp
 .ycm*
 
-out/
-
 *.out
 
 .vs/
