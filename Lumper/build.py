@@ -177,7 +177,7 @@ def main():
                         default=False, help='clean up the build (will be '
                         'ignored if --no-build is specified)')
     parser.add_argument('--clang-tidy', dest='clang_tidy',
-                        type=lambda opt: bool(strtobool(opt)), default=True,
+                        type=lambda opt: bool(strtobool(opt)), default=False,
                         help='enable clang-tidy on build')
     parser.add_argument('--sanitizer', dest='sanitizer',
                         type=lambda opt: bool(strtobool(opt)), default=True,

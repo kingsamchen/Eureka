@@ -1,16 +1,14 @@
+CPMAddPackage("gh:fmtlib/fmt#8.1.1")
 CPMAddPackage("gh:kingsamchen/esl#9a1f02cbea4902ab110ce7e9457f226a2c2c3375")
+CPMAddPackage("gh:p-ranav/argparse#v2.2")
 
 add_executable(lumper)
 
 target_sources(lumper
   PRIVATE
     main.cpp
-
-  $<$<BOOL:${WIN32}>:
-  >
-
-  $<$<NOT:$<BOOL:${WIN32}>>:
-  >
+    cli.cpp
+    cli.h
 )
 
 target_include_directories(lumper
@@ -18,6 +16,10 @@ target_include_directories(lumper
 )
 
 target_link_libraries(lumper
+  PRIVATE
+    argparse
+    esl
+    fmt
 )
 
 lumper_apply_common_compile_options(lumper)
