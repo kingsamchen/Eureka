@@ -61,6 +61,7 @@ include(${LUMPER_CMAKE_DIR}/compiler_posix.cmake)
 
 include(${LUMPER_CMAKE_DIR}/clang_tidy.cmake)
 
+add_subdirectory(base)
 add_subdirectory(lumper)
 
 if(LUMPER_NOT_SUBPROJECT AND BUILD_TESTING)
