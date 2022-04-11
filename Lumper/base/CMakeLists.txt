@@ -1,4 +1,11 @@
 CPMAddPackage("gh:kingsamchen/esl#9a1f02cbea4902ab110ce7e9457f226a2c2c3375")
+CPMAddPackage("gh:fmtlib/fmt#8.1.1")
+CPMAddPackage(
+  NAME spdlog
+  GITHUB_REPOSITORY gabime/spdlog
+  GIT_TAG v1.10.0
+  OPTIONS "SPDLOG_FMT_EXTERNAL ON"
+)
 
 add_library(base)
 
@@ -13,8 +20,10 @@ target_include_directories(base
 )
 
 target_link_libraries(base
-  PRIVATE
+  PUBLIC
     esl
+    fmt
+    spdlog
 )
 
 lumper_apply_common_compile_options(base)

@@ -5,20 +5,76 @@
 #include "base/subprocess.h"
 
 #include <cstddef>
+#include <cstdlib>
 #include <stdexcept>
 #include <system_error>
+#include <utility>
 
 #include <sys/syscall.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "fmt/core.h"
+#include "fmt/os.h"
+#include "spdlog/spdlog.h"
+
+#define FORCE_AS_MEMBER_FUNCTION() \
+    ::base::ignore_unused(this)
+
 namespace base {
 namespace {
+
+template<typename E>
+auto enum_cast(E e) noexcept -> std::underlying_type_t<E> {
+    return static_cast<std::underlying_type_t<E>>(e);
+}
+
+template<typename T>
+void ignore_unused(T&&) {}
+
+enum class child_errc : std::int32_t {
+    success = 0,
+    prepare_stdio,
+    exec_call_failure
+};
+
+struct child_error_info {
+    std::underlying_type_t<child_errc> err_code;
+    int32_t errno_value;
+};
+
+static_assert(sizeof(child_error_info) == 8);
 
 void check_system_error(int ret, const char* what) {
     if (ret == -1) {
         throw std::system_error(errno, std::system_category(), what);
     }
+}
+
+std::pair<esl::unique_fd, esl::unique_fd> make_pipe() {
+    int fds[2]{};
+    auto rv = ::pipe2(fds, O_CLOEXEC);
+    check_system_error(rv, "failed to pipe2()");
+    return {esl::wrap_unique_fd(fds[0]), esl::wrap_unique_fd(fds[1])};
+}
+
+// The function returns only if an error has occurred.
+int run_child_executable(const char* file, const char* argv[]) {
+    ::execvp(file, const_cast<char**>(argv)); // NOLINT(cppcoreguidelines-pro-type-const-cast)
+    return errno;
+}
+
+[[noreturn]] void notify_child_error(int err_fd, child_errc err_code, int errno_value) {
+    child_error_info err{enum_cast(err_code), errno_value};
+
+    // Since we are writing 8-byte into a blocking pipe, the write may block,
+    // but once it completes successfully, no short write will ever happen.
+    ssize_t wc = 0;
+    do {
+        wc = ::write(err_fd, &err, sizeof(err));
+    } while (wc == -1 && errno == EINTR);
+
+    std::_Exit(static_cast<int>(err_code));
 }
 
 } // namespace
@@ -34,32 +90,121 @@ subprocess::subprocess(const std::vector<std::string>& argv, const options& opts
     }
     argvp[argv.size()] = nullptr;
 
-    spawn(std::move(argvp), opts);
+    options clone_opts(opts);
+
+    spawn(std::move(argvp), clone_opts);
 }
 
-void subprocess::spawn(std::unique_ptr<const char*[]> argvp, const options& opts) {
-    // pre-clone process
+void subprocess::spawn(std::unique_ptr<const char*[]> argvp, options& opts) {
+    // Retain lifetime of pipe fd for the child process.
+    std::vector<esl::unique_fd> child_pipe_fds;
+    child_pipe_fds.reserve(3);
 
-    auto pid = static_cast<pid_t>(::syscall(SYS_clone, opts.clone_flags_, 0, nullptr, nullptr));
-    check_system_error(pid, "failed to clone");
-
-    if (pid == 0) {
-        // within child process now.
-
-        auto executable = argvp[0];
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-        auto argv = const_cast<char**>(argvp.get());
-        auto ret = ::execvp(executable, argv);
-        if (ret == -1) {
-            std::fprintf(stderr, "Failed to execl; errno=%d executable=%s", errno, executable);
-            ::exit(EXIT_FAILURE);
+    for (auto& [sfd, action] : opts.action_table_) {
+        auto ptr = std::get_if<use_pipe_t>(&action);
+        if (ptr) {
+            auto pipe_fds = make_pipe();
+            if (ptr->mode == use_pipe_t::mode::in) {
+                stdio_pipes_[sfd] = std::move(pipe_fds.second);
+                child_pipe_fds.emplace_back(std::move(pipe_fds.first));
+            } else {
+                stdio_pipes_[sfd] = std::move(pipe_fds.first);
+                child_pipe_fds.emplace_back(std::move(pipe_fds.second));
+            }
+            ptr->pfd = child_pipe_fds.back().get();
         }
     }
 
-    // when we are done.
+    auto [err_pipe_rd, err_pipe_wr] = make_pipe();
+
+    spawn_impl(std::move(argvp), opts, err_pipe_wr.get());
+
+    // Child's error pipe write end will be closed on exec(), and we must close parent's
+    // write end as well before read. Because if child process executed successfully, no
+    // data will be sent, and read in parent will block.
+    err_pipe_wr.reset();
+    read_child_error_pipe(err_pipe_rd.get(), argvp[0]);
+}
+
+void subprocess::spawn_impl(std::unique_ptr<const char*[]> argvp, const options& opts, int err_fd) {
+    auto pid = static_cast<pid_t>(::syscall(SYS_clone, opts.clone_flags_, 0, nullptr, nullptr));
+    check_system_error(pid, "failed to clone");
+
+    // Within child process.
+    if (pid == 0) {
+        try {
+            for (const auto& action : opts.action_table_) {
+                std::visit(
+                        [this, sfd = action.first](const auto& act) {
+                            handle_stdio_action(sfd, act);
+                        },
+                        action.second);
+            }
+        } catch (const std::system_error& ex) {
+            SPDLOG_ERROR("Failed to prepare stdio fd for child process; ec={} what={}",
+                         ex.code(), ex.what());
+            notify_child_error(err_fd, child_errc::prepare_stdio, ex.code().value());
+        }
+
+        auto errno_value = run_child_executable(argvp[0], argvp.get());
+        notify_child_error(err_fd, child_errc::exec_call_failure, errno_value);
+    }
+
+    // Now we are done.
     pid_ = pid;
 }
 
+void subprocess::read_child_error_pipe(int err_fd, const char* executable) {
+    child_error_info err_info{};
+
+    ssize_t rc = 0;
+    do {
+        rc = ::read(err_fd, &err_info, sizeof(err_info));
+    } while(rc == -1 && errno == EINTR);
+
+    // Child executed successfully.
+    if (rc == 0) {
+        return;
+    }
+
+    // Read pipe failure or partial read.
+    // We can do nothing in this case and we don't know what exactly happened, just
+    // pretend the child has succeeded and return normally.
+    if (rc != sizeof(err_info)) {
+        SPDLOG_ERROR("Failed to read from child error pipe; rc={} errno={}", rc, errno);
+        return;
+    }
+
+    // We now are sure that child has failed.
+    // Wait it to exit.
+    wait();
+
+    // TODO(KC): throw exception to signal failure.
+    (void)executable;
+}
+
+void subprocess::handle_stdio_action(int stdio_fd, const use_pipe_t& action) {
+    FORCE_AS_MEMBER_FUNCTION();
+
+    int rv = ::dup2(action.pfd, stdio_fd);
+    check_system_error(rv, "failed to dup pipe fd");
+}
+
+void subprocess::handle_stdio_action(int stdio_fd, const use_null_t& action) {
+    FORCE_AS_MEMBER_FUNCTION();
+
+    constexpr char dev_null_path[] = "/dev/null";
+
+    int flags = O_CLOEXEC;
+    flags |= action.mode == use_null_t::mode::in ? O_RDONLY : O_WRONLY;
+    auto fd = esl::wrap_unique_fd(::open(dev_null_path, flags));
+    check_system_error(fd.get(), "failed to open /dev/null");
+
+    int rv = ::dup2(fd.get(), stdio_fd);
+    check_system_error(rv, "failed to dup null dev fd");
+}
+
+// TODO(KC): Enhance it.
 void subprocess::wait() {
     [[maybe_unused]] int status{};
     ::waitpid(pid_, &status, 0);
