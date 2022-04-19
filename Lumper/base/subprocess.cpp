@@ -4,6 +4,7 @@
 
 #include "base/subprocess.h"
 
+#include <cassert>
 #include <cstddef>
 #include <cstdlib>
 #include <stdexcept>
@@ -43,6 +44,15 @@ struct child_error_info {
     int32_t errno_value;
 };
 
+std::string stringify_child_error_info(const char* exe, child_error_info info) {
+    constexpr const char* errc_msgs[] = {"success",
+                                         "failed to prepare stdio fd",
+                                         "failed to call exec"};
+    assert(0 <= info.err_code && info.err_code < std::size(errc_msgs));
+    return fmt::format("cannot spawn {}: {}; errno={}",
+                       exe, errc_msgs[info.err_code], info.errno_value);
+}
+
 static_assert(sizeof(child_error_info) == 8);
 
 void check_system_error(int ret, const char* what) {
@@ -78,6 +88,11 @@ int run_child_executable(const char* file, const char* argv[]) {
 }
 
 } // namespace
+
+spawn_subprocess_error::spawn_subprocess_error(const char* exe, std::int32_t error_code,
+                                               int errno_value)
+    : std::runtime_error(stringify_child_error_info(exe, {error_code, errno_value})),
+      errno_value_(errno_value) {}
 
 subprocess::subprocess(const std::vector<std::string>& argv, const options& opts) {
     if (argv.empty()) {
@@ -117,7 +132,7 @@ void subprocess::spawn(std::unique_ptr<const char*[]> argvp, options& opts) {
 
     auto [err_pipe_rd, err_pipe_wr] = make_pipe();
 
-    spawn_impl(std::move(argvp), opts, err_pipe_wr.get());
+    spawn_impl(argvp.get(), opts, err_pipe_wr.get());
 
     // Child's error pipe write end will be closed on exec(), and we must close parent's
     // write end as well before read. Because if child process executed successfully, no
@@ -126,7 +141,7 @@ void subprocess::spawn(std::unique_ptr<const char*[]> argvp, options& opts) {
     read_child_error_pipe(err_pipe_rd.get(), argvp[0]);
 }
 
-void subprocess::spawn_impl(std::unique_ptr<const char*[]> argvp, const options& opts, int err_fd) {
+void subprocess::spawn_impl(const char* argvp[], const options& opts, int err_fd) {
     auto pid = static_cast<pid_t>(::syscall(SYS_clone, opts.clone_flags_, 0, nullptr, nullptr));
     check_system_error(pid, "failed to clone");
 
@@ -146,7 +161,7 @@ void subprocess::spawn_impl(std::unique_ptr<const char*[]> argvp, const options&
             notify_child_error(err_fd, child_errc::prepare_stdio, ex.code().value());
         }
 
-        auto errno_value = run_child_executable(argvp[0], argvp.get());
+        auto errno_value = run_child_executable(*argvp, argvp);
         notify_child_error(err_fd, child_errc::exec_call_failure, errno_value);
     }
 
@@ -160,7 +175,7 @@ void subprocess::read_child_error_pipe(int err_fd, const char* executable) {
     ssize_t rc = 0;
     do {
         rc = ::read(err_fd, &err_info, sizeof(err_info));
-    } while(rc == -1 && errno == EINTR);
+    } while (rc == -1 && errno == EINTR);
 
     // Child executed successfully.
     if (rc == 0) {
@@ -179,8 +194,8 @@ void subprocess::read_child_error_pipe(int err_fd, const char* executable) {
     // Wait it to exit.
     wait();
 
-    // TODO(KC): throw exception to signal failure.
-    (void)executable;
+    // Signal the spawn failure.
+    throw spawn_subprocess_error(executable, err_info.err_code, err_info.errno_value);
 }
 
 void subprocess::handle_stdio_action(int stdio_fd, const use_pipe_t& action) {

@@ -20,6 +20,18 @@
 
 namespace base {
 
+class spawn_subprocess_error : public std::runtime_error {
+public:
+    spawn_subprocess_error(const char* exe, std::int32_t error_code, int errno_value);
+
+    int errno_value() const noexcept {
+        return errno_value_;
+    }
+
+private:
+    int errno_value_;
+};
+
 class subprocess {
 private:
     struct use_null_t {
@@ -103,6 +115,7 @@ public:
     // Throws:
     //  - `std::invalid_argument` if `argv` is empty.
     //  - `std::system_error` for system related failures.
+    //  - `spawn_subprocess_error` for spawning child process failure
     explicit subprocess(const std::vector<std::string>& argv, const options& opts = options());
 
     ~subprocess() = default;
@@ -134,18 +147,14 @@ public:
     }
 
 private:
-    // Throws `std::system_error` for system related failures.
     void spawn(std::unique_ptr<const char*[]> argvp, options& opts);
 
-    // Throws `std::system_error` for system related failures.
-    void spawn_impl(std::unique_ptr<const char*[]> argvp, const options& opts, int err_fd);
+    void spawn_impl(const char* argvp[], const options& opts, int err_fd);
 
     void read_child_error_pipe(int err_fd, const char* executable);
 
-    // Throws `std::system_error` for system related failures.
     void handle_stdio_action(int stdio_fd, const use_null_t& action);
 
-    // Throws `std::system_error` for system related failures.
     void handle_stdio_action(int stdio_fd, const use_pipe_t& action);
 
 private:
