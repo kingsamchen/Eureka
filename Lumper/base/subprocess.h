@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -32,8 +33,42 @@ private:
     int errno_value_;
 };
 
+class process_exit_code {
+public:
+    enum class reason {
+        exited = 1,
+        killed
+    };
+
+    // Throws `runtime_error` if unable make from wait_status.
+    static process_exit_code make(int wait_status);
+
+    std::pair<reason, int> cause() const;
+
+    bool exited() const noexcept {
+        return WIFEXITED(wait_status_);
+    }
+
+    bool killed() const noexcept {
+        return WIFSIGNALED(wait_status_);
+    }
+
+private:
+    explicit process_exit_code(int wait_status)
+        : wait_status_(wait_status) {}
+
+private:
+    int wait_status_;
+};
+
 class subprocess {
 private:
+    enum class state {
+        not_started,
+        running,
+        exited
+    };
+
     struct use_null_t {
         struct tag {};
 
@@ -118,9 +153,10 @@ public:
     //  - `spawn_subprocess_error` for spawning child process failure
     explicit subprocess(const std::vector<std::string>& argv, const options& opts = options());
 
-    ~subprocess() = default;
+    ~subprocess();
 
     // Not copyable but movable, like std::thread.
+    // TODO(KC): explicit control move semantics over state.
 
     subprocess(const subprocess&) = delete;
 
@@ -130,7 +166,14 @@ public:
 
     subprocess& operator=(subprocess&&) noexcept = default;
 
-    void wait();
+    // Throws:
+    //  - `invalid_argument` if `waitable()` is false.
+    //  - `runtime_error` if unable to construct process exit code.
+    process_exit_code wait();
+
+    bool waitable() const noexcept {
+        return child_state_ == state::running;
+    }
 
     // Returns -1 i.e. invalid fd if no corresponding pipe was set.
 
@@ -158,7 +201,8 @@ private:
     void handle_stdio_action(int stdio_fd, const use_pipe_t& action);
 
 private:
-    pid_t pid_{};
+    state child_state_{state::not_started};
+    pid_t pid_{-1};
     esl::unique_fd stdio_pipes_[3]{};
 };
 

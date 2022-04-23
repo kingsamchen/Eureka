@@ -94,6 +94,36 @@ spawn_subprocess_error::spawn_subprocess_error(const char* exe, std::int32_t err
     : std::runtime_error(stringify_child_error_info(exe, {error_code, errno_value})),
       errno_value_(errno_value) {}
 
+//
+// process_exit_code
+//
+
+// static
+process_exit_code process_exit_code::make(int wait_status) {
+    if (!WIFEXITED(wait_status) && !WIFSIGNALED(wait_status)) {
+        throw std::runtime_error(fmt::format("invalid wait status: {}", wait_status));
+    }
+
+    return process_exit_code(wait_status);
+}
+
+auto process_exit_code::cause() const -> std::pair<reason, int> {
+    if (WIFEXITED(wait_status_)) {
+        return {reason::exited, WEXITSTATUS(wait_status_)};
+    }
+
+    if (WIFSIGNALED(wait_status_)) {
+        return {reason::killed, WTERMSIG(wait_status_)};
+    }
+
+    SPDLOG_CRITICAL("Invalid process exit code; status={}", wait_status_);
+    std::terminate();
+}
+
+//
+// subprocess
+//
+
 subprocess::subprocess(const std::vector<std::string>& argv, const options& opts) {
     if (argv.empty()) {
         throw std::invalid_argument("args cannot be empty");
@@ -108,6 +138,10 @@ subprocess::subprocess(const std::vector<std::string>& argv, const options& opts
     options clone_opts(opts);
 
     spawn(std::move(argvp), clone_opts);
+}
+
+subprocess::~subprocess() {
+    // TODO(KC):
 }
 
 void subprocess::spawn(std::unique_ptr<const char*[]> argvp, options& opts) {
@@ -166,6 +200,7 @@ void subprocess::spawn_impl(const char* argvp[], const options& opts, int err_fd
     }
 
     // Now we are done.
+    child_state_ = state::running;
     pid_ = pid;
 }
 
@@ -219,10 +254,35 @@ void subprocess::handle_stdio_action(int stdio_fd, const use_null_t& action) {
     check_system_error(rv, "failed to dup null dev fd");
 }
 
-// TODO(KC): Enhance it.
-void subprocess::wait() {
-    [[maybe_unused]] int status{};
-    ::waitpid(pid_, &status, 0);
+process_exit_code subprocess::wait() {
+    if (!waitable()) {
+        throw std::invalid_argument("subprocess is not waitable");
+    }
+
+    int status = 0;
+    pid_t waited_pid = -1;
+    do {
+        waited_pid = ::waitpid(pid_, &status, 0);
+    } while (waited_pid == -1 && errno == EINTR);
+
+    // Cannot throw here, because we know nothing about the child process, and there is
+    // nothing we can do to maintain the class invariance.
+    // This failure should rarely happen in practice, just abort.
+    if (waited_pid == -1) {
+        SPDLOG_CRITICAL("Failed to wait child process; errno={}", errno);
+        std::terminate();
+    }
+
+    if (waited_pid != pid_) {
+        SPDLOG_ERROR("Failed to verify waited child pid; pid_={} waited={}", pid_, waited_pid);
+    }
+
+    // The child process has exited anyway.
+    child_state_ = state::exited;
+    pid_ = -1;
+    assert(waitable() == false);
+
+    return process_exit_code::make(status);
 }
 
 } // namespace base
