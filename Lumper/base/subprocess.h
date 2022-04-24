@@ -153,18 +153,26 @@ public:
     //  - `spawn_subprocess_error` for spawning child process failure
     explicit subprocess(const std::vector<std::string>& argv, const options& opts = options());
 
+    // If current instance still has an associated running child process, `terminate()` is called.
     ~subprocess();
 
     // Not copyable but movable, like std::thread.
-    // TODO(KC): explicit control move semantics over state.
+
+    // After this call, `rhs` will be set to a default constructed state.
+    subprocess(subprocess&& other) noexcept
+        : child_state_(std::exchange(other.child_state_, state::not_started)),
+          pid_(std::exchange(other.pid_, -1)) {
+        using std::swap;
+        swap(stdio_pipes_, other.stdio_pipes_);
+    }
+
+    // If current instance still has an associated running child process, `terminate()` is called.
+    // After this call, `rhs` will be set to a default constructed state.
+    subprocess& operator=(subprocess&& rhs) noexcept;
 
     subprocess(const subprocess&) = delete;
 
     subprocess& operator=(const subprocess&) = delete;
-
-    subprocess(subprocess&&) noexcept = default;
-
-    subprocess& operator=(subprocess&&) noexcept = default;
 
     // Throws:
     //  - `invalid_argument` if `waitable()` is false.

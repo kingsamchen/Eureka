@@ -140,8 +140,27 @@ subprocess::subprocess(const std::vector<std::string>& argv, const options& opts
     spawn(std::move(argvp), clone_opts);
 }
 
+subprocess& subprocess::operator=(subprocess&& rhs) noexcept {
+    if (waitable()) {
+        SPDLOG_CRITICAL("Current instance still has a running child process");
+        std::terminate();
+    }
+
+    child_state_ = std::exchange(rhs.child_state_, state::not_started);
+    pid_ = std::exchange(rhs.pid_, -1);
+    for (auto i = 0; i < std::size(stdio_pipes_); ++i) {
+        stdio_pipes_[i] = std::move(rhs.stdio_pipes_[i]);
+        rhs.stdio_pipes_[i].reset();
+    }
+
+    return *this;
+}
+
 subprocess::~subprocess() {
-    // TODO(KC):
+    if (waitable()) {
+        SPDLOG_CRITICAL("Current instance still has a running child process");
+        std::terminate();
+    }
 }
 
 void subprocess::spawn(std::unique_ptr<const char*[]> argvp, options& opts) {
