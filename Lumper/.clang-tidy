@@ -17,6 +17,7 @@ Checks: >
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -cppcoreguidelines-pro-bounds-constant-array-index,
   -cppcoreguidelines-pro-type-vararg,
+  -clang-analyzer-core.UndefinedBinaryOperatorResult,
   -misc-no-recursion,
   -modernize-avoid-c-arrays,
   -modernize-return-braced-init-list,
@@ -30,7 +31,7 @@ Checks: >
   -readability-redundant-access-specifiers
 
 WarningsAsErrors: ''
-HeaderFilterRegex: ''
+HeaderFilterRegex: '(base/|lumper/).*\\.h$'
 
 CheckOptions:
   - key: cppcoreguidelines-macro-usage.CheckCapsOnly

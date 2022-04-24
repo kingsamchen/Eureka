@@ -10,8 +10,7 @@ if(LUMPER_ENABLE_CLANG_TIDY)
   else()
       message(STATUS "LUMPER_ENABLE_CLANG_TIDY = ON: ${CLANG_TIDY_EXE}")
       set(CMAKE_CXX_CLANG_TIDY
-          "${CLANG_TIDY_EXE}"
-          -header-filter=lumper/)
+          "${CLANG_TIDY_EXE}")
   endif()
 else()
   message(STATUS "LUMPER_ENABLE_CLANG_TIDY = OFF")
