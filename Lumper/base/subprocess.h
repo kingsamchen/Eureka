@@ -145,6 +145,8 @@ public:
         std::map<int, stdio_action> action_table_;
     };
 
+    subprocess() = default;
+
     // Spawn a process to run given commandline args.
     // `args[0]` must be fullpath to the executable.
     // Throws:
@@ -177,10 +179,14 @@ public:
     // Throws:
     //  - `invalid_argument` if `waitable()` is false.
     //  - `runtime_error` if unable to construct process exit code.
-    process_exit_code wait();
+    [[nodiscard]] process_exit_code wait();
 
     bool waitable() const noexcept {
         return child_state_ == state::running;
+    }
+
+    pid_t pid() const noexcept {
+        return pid_;
     }
 
     // Returns -1 i.e. invalid fd if no corresponding pipe was set.
@@ -195,6 +201,20 @@ public:
 
     int stderr_pipe() const {
         return stdio_pipes_[STDERR_FILENO].get();
+    }
+
+    // No-op if no corresponding pipe was set.
+
+    void close_stdin_pipe() noexcept {
+        stdio_pipes_[STDIN_FILENO].reset();
+    }
+
+    void close_stdout_pipe() noexcept {
+        stdio_pipes_[STDOUT_FILENO].reset();
+    }
+
+    void close_stderr_pipe() noexcept {
+        stdio_pipes_[STDERR_FILENO].reset();
     }
 
 private:

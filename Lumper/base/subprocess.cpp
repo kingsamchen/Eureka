@@ -19,8 +19,7 @@
 #include "fmt/os.h"
 #include "spdlog/spdlog.h"
 
-#define FORCE_AS_MEMBER_FUNCTION() \
-    ::base::ignore_unused(this)
+#include "base/ignore.h"
 
 namespace base {
 namespace {
@@ -29,9 +28,6 @@ template<typename E>
 auto enum_cast(E e) noexcept -> std::underlying_type_t<E> {
     return static_cast<std::underlying_type_t<E>>(e);
 }
-
-template<typename T>
-void ignore_unused(T&&) {}
 
 enum class child_errc : std::int32_t {
     success = 0,
@@ -195,7 +191,9 @@ void subprocess::spawn(std::unique_ptr<const char*[]> argvp, options& opts) {
 }
 
 void subprocess::spawn_impl(const char* argvp[], const options& opts, int err_fd) {
-    auto pid = static_cast<pid_t>(::syscall(SYS_clone, opts.clone_flags_, 0, nullptr, nullptr));
+    // Make sure send signal to the parent when child terminates.
+    auto clone_flags = opts.clone_flags_ | SIGCHLD;
+    auto pid = static_cast<pid_t>(::syscall(SYS_clone, clone_flags, 0, nullptr, nullptr));
     check_system_error(pid, "failed to clone");
 
     // Within child process.
@@ -246,7 +244,7 @@ void subprocess::read_child_error_pipe(int err_fd, const char* executable) {
 
     // We now are sure that child has failed.
     // Wait it to exit.
-    wait();
+    base::ignore_unused(wait());
 
     // Signal the spawn failure.
     throw spawn_subprocess_error(executable, err_info.err_code, err_info.errno_value);
