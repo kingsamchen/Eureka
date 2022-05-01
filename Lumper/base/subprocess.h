@@ -20,6 +20,16 @@
 #include "esl/unique_handle.h"
 
 namespace base {
+namespace detail {
+
+enum class child_errc : std::int32_t {
+    success = 0,
+    prepare_stdio,
+    run_pre_exec_callback,
+    exec_call_failure
+};
+
+} // namespace detail
 
 class spawn_subprocess_error : public std::runtime_error {
 public:
@@ -96,6 +106,16 @@ public:
     static constexpr use_null_t::tag use_null;
     static constexpr use_pipe_t::tag use_pipe;
 
+    struct evil_pre_exec_callback { // NOLINT(cppcoreguidelines-special-member-functions)
+        virtual ~evil_pre_exec_callback() = default;
+
+        // Returns 0 on success, and errno otherwise.
+        // DO NOT throw any exception.
+        // Restrictions applied to signal handler also apply to this function.
+        // Use with CARE.
+        virtual int run() noexcept = 0;
+    };
+
     class options {
         friend class subprocess;
 
@@ -138,11 +158,17 @@ public:
             return *this;
         }
 
+        options& set_evil_pre_exec_callback(evil_pre_exec_callback* cb) {
+            evil_pre_exec_callback_ = cb;
+            return *this;
+        }
+
     private:
         using stdio_action = std::variant<use_null_t, use_pipe_t>;
         std::uint64_t clone_flags_{};
         // TODO(KC): can replace with flatmap or ordered vector.
         std::map<int, stdio_action> action_table_;
+        evil_pre_exec_callback* evil_pre_exec_callback_{nullptr};
     };
 
     subprocess() = default;
@@ -224,9 +250,11 @@ private:
 
     void read_child_error_pipe(int err_fd, const char* executable);
 
-    void handle_stdio_action(int stdio_fd, const use_null_t& action);
+    static std::pair<int, detail::child_errc> prepare_child(const options& opts) noexcept;
 
-    void handle_stdio_action(int stdio_fd, const use_pipe_t& action);
+    static int handle_stdio_action(int stdio_fd, const use_null_t& action) noexcept;
+
+    static int handle_stdio_action(int stdio_fd, const use_pipe_t& action) noexcept;
 
 private:
     state child_state_{state::not_started};

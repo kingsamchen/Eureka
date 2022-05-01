@@ -4,12 +4,15 @@
 
 #include "doctest/doctest.h"
 
+#include <chrono>
 #include <csignal>
+#include <filesystem>
 #include <stdexcept>
 #include <string_view>
 #include <system_error>
 #include <vector>
 
+#include <fcntl.h>
 #include <sys/types.h>
 
 #include "esl/strings.h"
@@ -20,6 +23,8 @@
 #include "base/subprocess.h"
 
 namespace {
+
+namespace fs = std::filesystem;
 
 std::string drain_fd(int fd) {
     std::string result;
@@ -37,6 +42,31 @@ std::string drain_fd(int fd) {
 
     return result;
 }
+
+class touch_file_before_exec : public base::subprocess::evil_pre_exec_callback {
+public:
+    explicit touch_file_before_exec(std::string filename)
+        : filename_(std::move(filename)) {}
+
+    int run() noexcept override {
+        int fd = ::open(filename_.c_str(), O_CREAT | O_WRONLY);
+        if (fd == -1) {
+            return errno;
+        }
+
+        ::close(fd);
+        return 0;
+    }
+
+private:
+    std::string filename_;
+};
+
+struct einval_fail_before_exec : public base::subprocess::evil_pre_exec_callback {
+    int run() noexcept override {
+        return EINVAL;
+    }
+};
 
 TEST_SUITE_BEGIN("subprocess");
 
@@ -175,6 +205,28 @@ TEST_CASE("failure during constructing") {
         CHECK_THROWS_AS({ base::subprocess proc({"/no/such/file"}); },
                         base::spawn_subprocess_error);
     }
+}
+
+TEST_CASE("pre exec evil callback") {
+    auto filename = fmt::format("/tmp/{}.test",
+                                std::chrono::system_clock::now().time_since_epoch().count());
+    REQUIRE_FALSE(fs::exists(filename));
+    touch_file_before_exec tcb(filename);
+    base::subprocess proc({"/bin/true"},
+                          base::subprocess::options().set_evil_pre_exec_callback(&tcb));
+    std::error_code ec;
+    CHECK(fs::exists(filename, ec));
+    CHECK_EQ(ec, std::error_code{});
+    base::ignore_unused(proc.wait());
+}
+
+TEST_CASE("pre exec evil callback failed") {
+    einval_fail_before_exec ecb;
+    // NOLINTNEXTLINE(readability-else-after-return)
+    CHECK_THROWS_AS({
+        base::subprocess proc({"/bin/true"},
+                              base::subprocess::options().set_evil_pre_exec_callback(&ecb));
+    }, base::spawn_subprocess_error);
 }
 
 TEST_CASE("construct a subprocess by move") {

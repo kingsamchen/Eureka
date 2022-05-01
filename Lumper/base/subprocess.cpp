@@ -24,16 +24,12 @@
 namespace base {
 namespace {
 
+using detail::child_errc;
+
 template<typename E>
 auto enum_cast(E e) noexcept -> std::underlying_type_t<E> {
     return static_cast<std::underlying_type_t<E>>(e);
 }
-
-enum class child_errc : std::int32_t {
-    success = 0,
-    prepare_stdio,
-    exec_call_failure
-};
 
 struct child_error_info {
     std::underlying_type_t<child_errc> err_code;
@@ -43,6 +39,7 @@ struct child_error_info {
 std::string stringify_child_error_info(const char* exe, child_error_info info) {
     constexpr const char* errc_msgs[] = {"success",
                                          "failed to prepare stdio fd",
+                                         "failed to run pre-exec callback",
                                          "failed to call exec"};
     assert(0 <= info.err_code && info.err_code < std::size(errc_msgs));
     return fmt::format("cannot spawn {}: {}; errno={}",
@@ -65,12 +62,12 @@ std::pair<esl::unique_fd, esl::unique_fd> make_pipe() {
 }
 
 // The function returns only if an error has occurred.
-int run_child_executable(const char* file, const char* argv[]) {
+int run_child_executable(const char* file, const char* argv[]) noexcept {
     ::execvp(file, const_cast<char**>(argv)); // NOLINT(cppcoreguidelines-pro-type-const-cast)
     return errno;
 }
 
-[[noreturn]] void notify_child_error(int err_fd, child_errc err_code, int errno_value) {
+[[noreturn]] void notify_child_error(int err_fd, child_errc err_code, int errno_value) noexcept {
     child_error_info err{enum_cast(err_code), errno_value};
 
     // Since we are writing 8-byte into a blocking pipe, the write may block,
@@ -197,19 +194,13 @@ void subprocess::spawn_impl(const char* argvp[], const options& opts, int err_fd
     check_system_error(pid, "failed to clone");
 
     // Within child process.
+    // WARNING: we are in a dangerous state before calling exec(), as we cannot allocate
+    // dynamic memory, acquire lock, throw exception etc. Be careful about what you are
+    // going to do.
     if (pid == 0) {
-        try {
-            for (const auto& action : opts.action_table_) {
-                std::visit(
-                        [this, sfd = action.first](const auto& act) {
-                            handle_stdio_action(sfd, act);
-                        },
-                        action.second);
-            }
-        } catch (const std::system_error& ex) {
-            SPDLOG_ERROR("Failed to prepare stdio fd for child process; ec={} what={}",
-                         ex.code(), ex.what());
-            notify_child_error(err_fd, child_errc::prepare_stdio, ex.code().value());
+        auto [rc, errc] = prepare_child(opts);
+        if (rc != 0) {
+            notify_child_error(err_fd, errc, rc);
         }
 
         auto errno_value = run_child_executable(*argvp, argvp);
@@ -250,25 +241,47 @@ void subprocess::read_child_error_pipe(int err_fd, const char* executable) {
     throw spawn_subprocess_error(executable, err_info.err_code, err_info.errno_value);
 }
 
-void subprocess::handle_stdio_action(int stdio_fd, const use_pipe_t& action) {
-    FORCE_AS_MEMBER_FUNCTION();
+// static
+std::pair<int, detail::child_errc> subprocess::prepare_child(const options& opts) noexcept {
+    for (const auto& action : opts.action_table_) {
+        int rc = std::visit(
+                [sfd = action.first](const auto& real_act) {
+                    return handle_stdio_action(sfd, real_act);
+                },
+                action.second);
+        if (rc != 0) {
+            return {errno, child_errc::prepare_stdio};
+        }
+    }
 
-    int rv = ::dup2(action.pfd, stdio_fd);
-    check_system_error(rv, "failed to dup pipe fd");
+    if (opts.evil_pre_exec_callback_) {
+        if (int rc = opts.evil_pre_exec_callback_->run(); rc != 0) {
+            return {errno, child_errc::run_pre_exec_callback};
+        }
+    }
+
+    return {0, child_errc::success};
 }
 
-void subprocess::handle_stdio_action(int stdio_fd, const use_null_t& action) {
-    FORCE_AS_MEMBER_FUNCTION();
+// static
+int subprocess::handle_stdio_action(int stdio_fd, const use_pipe_t& action) noexcept {
+    return ::dup2(action.pfd, stdio_fd) != -1 ? 0 : errno;
+}
 
+// static
+int subprocess::handle_stdio_action(int stdio_fd, const use_null_t& action) noexcept {
     constexpr char dev_null_path[] = "/dev/null";
 
     int flags = O_CLOEXEC;
     flags |= action.mode == use_null_t::mode::in ? O_RDONLY : O_WRONLY;
-    auto fd = esl::wrap_unique_fd(::open(dev_null_path, flags));
-    check_system_error(fd.get(), "failed to open /dev/null");
+    int fd = ::open(dev_null_path, flags);
+    if (fd == -1) {
+        return errno;
+    }
 
-    int rv = ::dup2(fd.get(), stdio_fd);
-    check_system_error(rv, "failed to dup null dev fd");
+    int rc = ::dup2(fd, stdio_fd);
+    ::close(fd);
+    return rc != -1 ? 0 : errno;
 }
 
 process_exit_code subprocess::wait() {
