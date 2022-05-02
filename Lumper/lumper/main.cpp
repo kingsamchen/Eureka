@@ -2,29 +2,37 @@
 // Kingsley Chen <kingsamchen at gmail dot com>
 //
 
-#include "lumper/cli.h"
+#include <cstdlib>
+#include <exception>
 
 #include "fmt/ranges.h"
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/spdlog.h"
 
-using lumper::cli;
+#include "lumper/cli.h"
+#include "lumper/commands.h"
 
-void process(cli::cmd_run_t) {
-    const auto& parser = cli::for_current_process().command_parser();
-    auto maybe_args = parser.present<std::vector<std::string>>("ARGS");
-    fmt::print("cmd={}\nargs={}\n--it={}",
-               parser.get<std::string>("CMD"),
-               maybe_args.has_value() ? *maybe_args : std::vector<std::string>{},
-               parser.get<bool>("--it"));
-}
-
-void process(cli::cmd_ps_t) {
-    fmt::print("lumper ps!");
+void initialize_logger() {
+    try {
+        spdlog::set_default_logger(spdlog::basic_logger_mt("main", "/tmp/lumper.log"));
+    } catch (const std::exception& ex) {
+        fmt::print(stderr, "Cannot initialize logger: {}", ex.what());
+        std::exit(1);
+    }
 }
 
 int main(int argc, const char* argv[]) {
-    cli::init(argc, argv);
-    cli::for_current_process().process_command([](auto cmd) {
-        process(cmd);
-    });
+    initialize_logger();
+
+    try {
+        lumper::cli::init(argc, argv);
+        lumper::cli::for_current_process().process_command([](auto cmd) {
+            lumper::process(cmd);
+        });
+    } catch (const std::exception& ex) {
+        fmt::print(stderr, "Unexpected error occurred: {}", ex.what());
+        return 1;
+    }
+
     return 0;
 }
