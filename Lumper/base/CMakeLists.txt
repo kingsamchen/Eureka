@@ -1,5 +1,5 @@
-CPMAddPackage("gh:kingsamchen/esl#9a1f02cbea4902ab110ce7e9457f226a2c2c3375")
 CPMAddPackage("gh:fmtlib/fmt#8.1.1")
+CPMAddPackage("gh:kingsamchen/esl#9a1f02cbea4902ab110ce7e9457f226a2c2c3375")
 CPMAddPackage(
   NAME spdlog
   GITHUB_REPOSITORY gabime/spdlog
@@ -23,6 +23,8 @@ target_include_directories(base
 target_link_libraries(base
   PUBLIC
     esl
+
+  PRIVATE
     fmt
     spdlog
 )

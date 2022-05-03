@@ -1,4 +1,5 @@
 CPMAddPackage("gh:fmtlib/fmt#8.1.1")
+CPMAddPackage("gh:kingsamchen/esl#9a1f02cbea4902ab110ce7e9457f226a2c2c3375")
 CPMAddPackage("gh:p-ranav/argparse#v2.2")
 CPMAddPackage(
   NAME spdlog
@@ -6,8 +7,6 @@ CPMAddPackage(
   GIT_TAG v1.10.0
   OPTIONS "SPDLOG_FMT_EXTERNAL ON"
 )
-
-CPMAddPackage("gh:kingsamchen/esl#9a1f02cbea4902ab110ce7e9457f226a2c2c3375")
 
 add_executable(lumper)
 

@@ -10,9 +10,10 @@ target_sources(base_test
 
 target_link_libraries(base_test
   PRIVATE
-    base
     doctest
     fmt
+
+    base
 )
 
 lumper_apply_common_compile_options(base_test)
