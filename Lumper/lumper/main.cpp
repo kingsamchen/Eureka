@@ -29,8 +29,11 @@ int main(int argc, const char* argv[]) {
         lumper::cli::for_current_process().process_command([](auto cmd) {
             lumper::process(cmd);
         });
+    } catch (const lumper::command_run_error& ex) {
+        fmt::print(stderr, "Unexpected error when running command: {}", ex.what());
+        return 1;
     } catch (const std::exception& ex) {
-        fmt::print(stderr, "Unexpected error occurred: {}", ex.what());
+        fmt::print(stderr, "Unexpected error: {}", ex.what());
         return 1;
     }
 

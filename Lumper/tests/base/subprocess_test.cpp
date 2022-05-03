@@ -17,7 +17,6 @@
 
 #include "esl/strings.h"
 #include "fmt/core.h"
-#include "spdlog/spdlog.h"
 
 #include "base/ignore.h"
 #include "base/subprocess.h"

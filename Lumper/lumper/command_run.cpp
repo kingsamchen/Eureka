@@ -12,6 +12,7 @@
 #include "fmt/ranges.h"
 #include "spdlog/spdlog.h"
 
+#include "base/exception.h"
 #include "base/ignore.h"
 #include "base/subprocess.h"
 
@@ -48,8 +49,14 @@ void process(cli::cmd_run_t) {
 
     SPDLOG_INFO("Prepare to run cmd: {}", argv);
 
-    base::subprocess proc(argv, opts);
-    base::ignore_unused(proc.wait());
+    try {
+        base::subprocess proc(argv, opts);
+        base::ignore_unused(proc.wait());
+    } catch (const std::exception& ex) {
+        base::rethrow_as<command_run_error>(
+                std::current_exception(),
+                fmt::format("Failed to run cmd in sub-process; cmd={}", argv));
+    }
 }
 
 } // namespace lumper

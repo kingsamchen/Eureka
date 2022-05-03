@@ -9,7 +9,13 @@
 
 #include "lumper/cli.h"
 
+#include <stdexcept>
+
 namespace lumper {
+
+class command_run_error : public std::runtime_error {
+    using std::runtime_error::runtime_error;
+};
 
 void process(cli::cmd_run_t);
 
