@@ -242,6 +242,9 @@ void subprocess::read_child_error_pipe(int err_fd, const char* executable) {
 }
 
 // static
+// `std::visit` would throw if the variant is valueless but that shouldn't happen
+// in following code.
+// NOLINTNEXTLINE(bugprone-exception-escape)
 std::pair<int, detail::child_errc> subprocess::prepare_child(const options& opts) noexcept {
     for (const auto& action : opts.action_table_) {
         int rc = std::visit(

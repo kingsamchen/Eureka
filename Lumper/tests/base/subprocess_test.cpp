@@ -221,11 +221,10 @@ TEST_CASE("pre exec evil callback") {
 
 TEST_CASE("pre exec evil callback failed") {
     einval_fail_before_exec ecb;
+    auto opts = base::subprocess::options().set_evil_pre_exec_callback(&ecb);
     // NOLINTNEXTLINE(readability-else-after-return)
-    CHECK_THROWS_AS({
-        base::subprocess proc({"/bin/true"},
-                              base::subprocess::options().set_evil_pre_exec_callback(&ecb));
-    }, base::spawn_subprocess_error);
+    CHECK_THROWS_AS({ base::subprocess proc({"/bin/true"}, opts); },
+                    base::spawn_subprocess_error);
 }
 
 TEST_CASE("construct a subprocess by move") {
@@ -246,11 +245,13 @@ TEST_CASE("construct a subprocess by move") {
     CHECK_EQ(new_proc.stderr_pipe(), -1);
 
     // moved subprocess should be in default-inited state.
-    CHECK_EQ(proc.pid(), -1);
-    CHECK_FALSE(proc.waitable());
-    CHECK_EQ(proc.stdin_pipe(), -1);
-    CHECK_EQ(proc.stdout_pipe(), -1);
-    CHECK_EQ(proc.stderr_pipe(), -1);
+    // NOTE: it is dangerous in non-test code to access moved object before reset it to
+    // a known state.
+    CHECK_EQ(proc.pid(), -1);         // NOLINT(bugprone-use-after-move)
+    CHECK_FALSE(proc.waitable());     // NOLINT(bugprone-use-after-move)
+    CHECK_EQ(proc.stdin_pipe(), -1);  // NOLINT(bugprone-use-after-move)
+    CHECK_EQ(proc.stdout_pipe(), -1); // NOLINT(bugprone-use-after-move)
+    CHECK_EQ(proc.stderr_pipe(), -1); // NOLINT(bugprone-use-after-move)
 
     base::ignore_unused(new_proc.wait());
 }
@@ -271,8 +272,10 @@ TEST_CASE("move assign to a subprocess") {
         CHECK_EQ(new_proc.pid(), cpid);
         CHECK(new_proc.waitable());
 
-        CHECK_EQ(orig_proc.pid(), -1);
-        CHECK_FALSE(orig_proc.waitable());
+        // NOTE: it is dangerous in non-test code to access moved object before reset it to
+        // a known state.
+        CHECK_EQ(orig_proc.pid(), -1);     // NOLINT(bugprone-use-after-move)
+        CHECK_FALSE(orig_proc.waitable()); // NOLINT(bugprone-use-after-move)
 
         base::ignore_unused(new_proc.wait());
     }
@@ -287,8 +290,10 @@ TEST_CASE("move assign to a subprocess") {
         CHECK_EQ(new_proc.pid(), cpid);
         CHECK(new_proc.waitable());
 
-        CHECK_EQ(orig_proc.pid(), -1);
-        CHECK_FALSE(orig_proc.waitable());
+        // NOTE: it is dangerous in non-test code to access moved object before reset it to
+        // a known state.
+        CHECK_EQ(orig_proc.pid(), -1);     // NOLINT(bugprone-use-after-move)
+        CHECK_FALSE(orig_proc.waitable()); // NOLINT(bugprone-use-after-move)
 
         base::ignore_unused(new_proc.wait());
     }
