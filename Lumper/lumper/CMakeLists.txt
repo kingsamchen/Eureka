@@ -5,7 +5,7 @@ CPMAddPackage(
   NAME spdlog
   GITHUB_REPOSITORY gabime/spdlog
   GIT_TAG v1.10.0
-  OPTIONS "SPDLOG_FMT_EXTERNAL ON"
+  OPTIONS "SPDLOG_FMT_EXTERNAL ON" "SPDLOG_PREVENT_CHILD_FD ON"
 )
 
 add_executable(lumper)
