@@ -14,6 +14,8 @@ target_sources(lumper
   PRIVATE
     cli.cpp
     cli.h
+    cgroups/util.cpp
+    cgroups/util.h
     command_ps.cpp
     command_run.cpp
     commands.h
