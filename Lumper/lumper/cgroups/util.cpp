@@ -4,6 +4,7 @@
 
 #include "lumper/cgroups/util.h"
 
+#include <algorithm>
 #include <cassert>
 #include <fstream>
 #include <stdexcept>

@@ -14,7 +14,8 @@
 namespace lumper::cgroups {
 
 // Returns mount point of the given subsystem, otherwise returns empty string if not found.
-// Throws `std::filesystem::filesystem_error` on file failure.
+// Throws `std::filesystem::filesystem_error` on file failure, but should rarely happend in
+// practice.
 std::string find_mount_point(std::string_view subsystem);
 
 // Returns the path to the desired cgroup.
