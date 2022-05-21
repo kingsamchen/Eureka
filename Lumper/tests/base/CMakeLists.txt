@@ -4,6 +4,7 @@ add_executable(base_test)
 
 target_sources(base_test
   PRIVATE
+    file_util_test.cpp
     subprocess_test.cpp
     test_main.cpp
 )

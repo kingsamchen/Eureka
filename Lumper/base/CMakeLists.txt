@@ -12,6 +12,8 @@ add_library(base)
 target_sources(base
   PRIVATE
     exception.h
+    file_util.cpp
+    file_util.h
     subprocess.cpp
     subprocess.h
 )
