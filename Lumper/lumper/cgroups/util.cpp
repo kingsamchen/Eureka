@@ -14,7 +14,6 @@
 #include <sys/stat.h>
 
 #include "fmt/format.h"
-
 #include "esl/strings.h"
 
 namespace lumper::cgroups {

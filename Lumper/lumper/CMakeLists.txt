@@ -14,6 +14,10 @@ target_sources(lumper
   PRIVATE
     cli.cpp
     cli.h
+    cgroups/cgroup_manager.cpp
+    cgroups/cgroup_manager.h
+    cgroups/memory_subsystem.cpp
+    cgroups/subsystems.h
     cgroups/util.cpp
     cgroups/util.h
     command_ps.cpp

@@ -48,7 +48,6 @@ void process(cli::cmd_run_t) {
     }
 
     SPDLOG_INFO("Prepare to run cmd: {}", argv);
-
     try {
         base::subprocess proc(argv, opts);
         base::ignore_unused(proc.wait());
