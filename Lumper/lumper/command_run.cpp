@@ -9,12 +9,14 @@
 #include <sched.h>
 #include <sys/mount.h>
 
+#include "esl/scope_guard.h"
 #include "fmt/ranges.h"
 #include "spdlog/spdlog.h"
 
 #include "base/exception.h"
 #include "base/ignore.h"
 #include "base/subprocess.h"
+#include "lumper/cgroups/cgroup_manager.h"
 
 namespace lumper {
 
@@ -42,15 +44,24 @@ void process(cli::cmd_run_t) {
     mount_proc_before_exec mount_proc;
     opts.set_evil_pre_exec_callback(&mount_proc);
 
-    std::vector<std::string> argv = {parser.get<std::string>("CMD")};
-    if (auto args = parser.present<std::vector<std::string>>("ARGS"); args) {
-        argv.insert(argv.end(), args->begin(), args->end());
+    cgroups::resource_config res_cfg;
+
+    auto mem_limit = parser.present<std::string>("--memory");
+    if (mem_limit) {
+        res_cfg.set_memory_limit(*mem_limit);
     }
 
+    // TODO(KC): Explicitly throw if CMD is not provided.
+    auto argv = parser.get<std::vector<std::string>>("CMD");
     SPDLOG_INFO("Prepare to run cmd: {}", argv);
     try {
+        cgroups::cgroup_manager cgroup_mgr("lumper-cgroup", res_cfg);
+
         base::subprocess proc(argv, opts);
-        base::ignore_unused(proc.wait());
+        ESL_ON_SCOPE_EXIT {
+            base::ignore_unused(proc.wait());
+        };
+        cgroup_mgr.apply(proc.pid());
     } catch (const std::exception& ex) {
         base::rethrow_as<command_run_error>(
                 std::current_exception(),

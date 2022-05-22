@@ -9,6 +9,7 @@
 
 #include "esl/strings.h"
 #include "fmt/printf.h"
+#include "fmt/ranges.h"
 
 namespace lumper {
 namespace {
@@ -52,10 +53,10 @@ cli::cli(int argc, const char* argv[])
             .nargs(0)
             .default_value(false)
             .implicit_value(true);
+    parser_run.add_argument("-m", "--memory")
+            .help("enable memory limit");
     parser_run.add_argument("CMD")
-            .help("Command that want to run");
-    parser_run.add_argument("ARGS")
-            .help("Command args. Optional")
+            .help("executable and its arguments (optional)")
             .remaining();
     cmd_parser_table_.emplace(k_cmd_run, cmd_parser{cmd_run_t{}, std::move(parser_run)});
 
@@ -86,7 +87,7 @@ cli::cli(int argc, const char* argv[])
         }
 
         cur_parser = &cur_cmd_parser_->second.parser;
-        cur_cmd_parser_->second.parser.parse_args(prog_args);
+        cur_parser->parse_args(prog_args);
     } catch (const std::logic_error& ex) {
         fmt::print(stderr, "{}\n\n{}", ex.what(), cur_parser->help().str());
         throw cli_parse_failure{};
