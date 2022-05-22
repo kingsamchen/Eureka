@@ -10,6 +10,7 @@
 #include <sys/mount.h>
 
 #include "esl/scope_guard.h"
+#include "esl/strings.h"
 #include "fmt/ranges.h"
 #include "spdlog/spdlog.h"
 
@@ -22,6 +23,11 @@ namespace lumper {
 
 struct mount_proc_before_exec : public base::subprocess::evil_pre_exec_callback {
     int run() noexcept override {
+        // See https://man7.org/linux/man-pages/man7/mount_namespaces.7.html#NOTES
+        if (::mount("", "/", "", MS_PRIVATE | MS_REC, "") != 0) {
+            return errno;
+        }
+
         std::uint64_t flags = MS_NOEXEC | MS_NOSUID | MS_NODEV;
         if (::mount("proc", "/proc", "proc", flags, "") == 0) {
             return 0;
@@ -60,7 +66,10 @@ void process(cli::cmd_run_t) {
         base::subprocess proc(argv, opts);
         ESL_ON_SCOPE_EXIT {
             base::ignore_unused(proc.wait());
+            // NOLINTNEXTLINE(bugprone-lambda-function-name)
+            SPDLOG_INFO("Command {} completed", esl::strings::join(argv, " "));
         };
+
         cgroup_mgr.apply(proc.pid());
     } catch (const std::exception& ex) {
         base::rethrow_as<command_run_error>(
