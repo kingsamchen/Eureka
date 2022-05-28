@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <exception>
 
+#include "fmt/ostream.h"
 #include "fmt/ranges.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/spdlog.h"
@@ -29,6 +30,9 @@ int main(int argc, const char* argv[]) {
         lumper::cli::for_current_process().process_command([](auto cmd) {
             lumper::process(cmd);
         });
+    } catch (const lumper::cli_parse_failure& ex) {
+        fmt::print(stderr, "{}\n\n{}", ex.what(), ex.parser());
+        return 1;
     } catch (const lumper::command_run_error& ex) {
         fmt::print(stderr, "Unexpected error when running command: {}", ex.what());
         return 1;

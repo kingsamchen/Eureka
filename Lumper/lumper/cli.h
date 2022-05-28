@@ -13,7 +13,23 @@
 
 #include "argparse/argparse.hpp"
 
+#include "base/test_util.h"
+
 namespace lumper {
+
+class cli_parse_failure : public std::runtime_error {
+public:
+    cli_parse_failure(const std::string& what, const argparse::ArgumentParser* parser)
+        : std::runtime_error(what),
+          parser_(parser) {}
+
+    const argparse::ArgumentParser& parser() const {
+        return *parser_;
+    }
+
+private:
+    const argparse::ArgumentParser* parser_;
+};
 
 class cli {
 public:
@@ -38,7 +54,10 @@ public:
     }
 
 private:
-    cli(int argc, const char* argv[]);
+    cli()
+        : prog_("lumper") {}
+
+    void parse(int argc, const char* argv[]);
 
 private:
     using cmd_type = std::variant<cmd_ps_t, cmd_run_t>;
@@ -52,7 +71,9 @@ private:
     std::map<std::string, cmd_parser> cmd_parser_table_;
     decltype(cmd_parser_table_)::iterator cur_cmd_parser_;
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-    static inline const cli* current_{nullptr};
+    static inline cli* current_{nullptr};
+
+    FRIEND_TEST_SUBCLASS(cli_test_stub);
 };
 
 } // namespace lumper

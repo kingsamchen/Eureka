@@ -57,24 +57,26 @@ void process(cli::cmd_run_t) {
         res_cfg.set_memory_limit(*mem_limit);
     }
 
-    // TODO(KC): Explicitly throw if CMD is not provided.
-    auto argv = parser.get<std::vector<std::string>>("CMD");
-    SPDLOG_INFO("Prepare to run cmd: {}", argv);
+    auto argv = parser.present<std::vector<std::string>>("CMD");
+    if (!argv || argv->empty()) {
+        throw cli_parse_failure("No CMD provided", &parser);
+    }
+
+    SPDLOG_INFO("Prepare to run cmd: {}", *argv);
     try {
         cgroups::cgroup_manager cgroup_mgr("lumper-cgroup", res_cfg);
 
-        base::subprocess proc(argv, opts);
+        base::subprocess proc(*argv, opts);
         ESL_ON_SCOPE_EXIT {
             base::ignore_unused(proc.wait());
             // NOLINTNEXTLINE(bugprone-lambda-function-name)
-            SPDLOG_INFO("Command {} completed", esl::strings::join(argv, " "));
+            SPDLOG_INFO("Command {} completed", esl::strings::join(*argv, " "));
         };
 
         cgroup_mgr.apply(proc.pid());
     } catch (const std::exception& ex) {
-        base::rethrow_as<command_run_error>(
-                std::current_exception(),
-                fmt::format("Failed to run cmd in sub-process; cmd={}", argv));
+        SPDLOG_ERROR("Failed to run cmd in sub-process; cmd={}", *argv);
+        throw command_run_error(ex.what());
     }
 }
 

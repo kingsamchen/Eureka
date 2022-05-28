@@ -14,8 +14,10 @@ target_sources(base
     exception.h
     file_util.cpp
     file_util.h
+    ignore.h
     subprocess.cpp
     subprocess.h
+    test_util.h
 )
 
 target_include_directories(base

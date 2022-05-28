@@ -18,22 +18,15 @@ constexpr char k_prog_cmd[] = "COMMAND";
 constexpr char k_cmd_run[] = "run";
 constexpr char k_cmd_ps[] = "ps";
 
-class cli_parse_failure : public std::runtime_error {
-public:
-    cli_parse_failure()
-        : runtime_error("cli parse failure") {}
-};
-
 } // namespace
 
 // static
 void cli::init(int argc, const char* argv[]) {
-    try {
-        static cli instance(argc, argv);
-        current_ = &instance;
-    } catch (const cli_parse_failure&) {
-        std::exit(1);
-    }
+    // Once ctor of `instance` is done, its lifetime will endure until after return from the
+    // main function.
+    static cli instance;
+    current_ = &instance;
+    current_->parse(argc, argv);
 }
 
 // static
@@ -45,8 +38,7 @@ const cli& cli::for_current_process() {
     return *current_;
 }
 
-cli::cli(int argc, const char* argv[])
-    : prog_("lumper") {
+void cli::parse(int argc, const char* argv[]) {
     argparse::ArgumentParser parser_run("lumper run");
     parser_run.add_argument("--it")
             .help("enable tty")
@@ -88,12 +80,8 @@ cli::cli(int argc, const char* argv[])
 
         cur_parser = &cur_cmd_parser_->second.parser;
         cur_parser->parse_args(prog_args);
-    } catch (const std::logic_error& ex) {
-        fmt::print(stderr, "{}\n\n{}", ex.what(), cur_parser->help().str());
-        throw cli_parse_failure{};
-    } catch (const std::runtime_error& ex) {
-        fmt::print(stderr, "{}\n\n{}", ex.what(), cur_parser->help().str());
-        throw cli_parse_failure{};
+    } catch (const std::exception& ex) {
+        throw cli_parse_failure(ex.what(), cur_parser);
     }
 }
 

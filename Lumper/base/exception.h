@@ -15,16 +15,14 @@
 
 namespace base {
 
-template<typename E, std::enable_if_t<std::is_base_of_v<std::exception, E>, int> = 0>
-void rethrow_as(const std::exception_ptr& eptr, const std::string& failure) {
+template<typename E,
+         typename... Args,
+         std::enable_if_t<std::is_base_of_v<std::exception, E>, int> = 0>
+void rethrow_as(const std::exception_ptr& eptr, Args&&... args) {
     try {
         std::rethrow_exception(eptr);
-    } catch (const std::system_error& ex) {
-        SPDLOG_ERROR("{}; cause={} code={}", failure, ex.what(), ex.code());
-        throw E(ex.what());
     } catch (const std::exception& ex) {
-        SPDLOG_ERROR("{}; cause={}", failure, ex.what());
-        throw E(ex.what());
+        throw E(ex.what(), std::forward<Args>(args)...);
     }
 }
 
