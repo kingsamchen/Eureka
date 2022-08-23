@@ -1,15 +1,16 @@
+CPMAddPackage(
+  NAME cppcodec
+  URL "https://github.com/tplgy/cppcodec/archive/refs/tags/v0.2.tar.gz"
+  OPTIONS "BUILD_TESTING OFF"
+)
 
 add_executable(topt)
 
 target_sources(topt
   PRIVATE
     main.cpp
-
-  $<$<BOOL:${WIN32}>:
-  >
-
-  $<$<NOT:$<BOOL:${WIN32}>>:
-  >
+    shared_secret_key.cpp
+    shared_secret_key.h
 )
 
 target_include_directories(topt
@@ -17,6 +18,7 @@ target_include_directories(topt
 )
 
 target_link_libraries(topt
+  cppcodec
 )
 
 learn_topt_apply_common_compile_options(topt)
