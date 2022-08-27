@@ -1,0 +1,8 @@
+{
+  "name": "learn-topt",
+  "version": "0.1.0",
+  "dependencies": [
+    "cppcodec",
+    "cryptopp"
+  ]
+}

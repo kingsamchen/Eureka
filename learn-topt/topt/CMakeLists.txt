@@ -1,24 +1,33 @@
-CPMAddPackage(
-  NAME cppcodec
-  URL "https://github.com/tplgy/cppcodec/archive/refs/tags/v0.2.tar.gz"
-  OPTIONS "BUILD_TESTING OFF"
-)
+# CPMAddPackage(
+#   NAME cppcodec
+#   URL "https://github.com/tplgy/cppcodec/archive/refs/tags/v0.2.tar.gz"
+#   OPTIONS "BUILD_TESTING OFF"
+# )
+
+find_package(cryptopp REQUIRED)
+find_path(CPPCODEC_INCLUDE_DIRS "cppcodec")
 
 add_executable(topt)
 
 target_sources(topt
   PRIVATE
     main.cpp
+    endian.h
     shared_secret_key.cpp
     shared_secret_key.h
+    topt.cpp
+    topt.h
 )
 
 target_include_directories(topt
-  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../
+    ${CPPCODEC_INCLUDE_DIRS}/../
 )
 
 target_link_libraries(topt
-  cppcodec
+  PRIVATE
+    cryptopp-static
 )
 
 learn_topt_apply_common_compile_options(topt)
