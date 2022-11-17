@@ -1,9 +1,12 @@
+CPMAddPackage("gh:fmtlib/fmt#8.1.1")
 CPMAddPackage("gh:onqtam/doctest#v2.4.8")
 
 add_executable(bloom-filter)
 
 target_sources(bloom-filter
   PRIVATE
+    bloom_filter.cpp
+    bloom_filter.h
     test_main.cpp
 
   $<$<BOOL:${WIN32}>:
@@ -19,6 +22,7 @@ target_include_directories(bloom-filter
 
 target_link_libraries(bloom-filter
   PRIVATE
+    fmt
     doctest
 )
 
