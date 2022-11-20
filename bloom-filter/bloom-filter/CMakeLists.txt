@@ -1,13 +1,14 @@
 CPMAddPackage("gh:fmtlib/fmt#8.1.1")
-CPMAddPackage("gh:onqtam/doctest#v2.4.8")
+CPMAddPackage("gh:onqtam/doctest#v2.4.9")
 
 add_executable(bloom-filter)
 
-target_sources(bloom-filter
-  PRIVATE
-    bloom_filter.cpp
-    bloom_filter.h
-    test_main.cpp
+target_sources(bloom-filter PRIVATE
+  bloom_filter.cpp
+  bloom_filter.h
+  MurmurHash2.cpp
+  MurmurHash2.h
+  test_main.cpp
 
   $<$<BOOL:${WIN32}>:
   >
