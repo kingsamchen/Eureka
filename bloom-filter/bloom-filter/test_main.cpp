@@ -30,6 +30,34 @@ TEST_CASE("adjust optimal max entries with given error rate") {
     }
 }
 
+TEST_CASE("add and contain") {
+    constexpr double error_rate = 0.01;
+    bf::bloom_filter bf(1000, error_rate);
+    std::string data_list[] = {"Alfa",
+                               "Bravo",
+                               "Charlie",
+                               "Delta",
+                               "Echo"};
+    SUBCASE("initially not present") {
+        for (const auto& s : data_list) {
+            INFO("str=", s);
+            CHECK_FALSE(bf.may_contain(s.data(), static_cast<int>(s.size())));
+        }
+    }
+
+    SUBCASE("should contain when added") {
+        for (const auto& s : data_list) {
+            INFO("str=", s);
+            REQUIRE(bf.add(s.data(), static_cast<int>(s.size())));
+        }
+
+        for (const auto& s : data_list) {
+            INFO("str=", s);
+            CHECK(bf.may_contain(s.data(), static_cast<int>(s.size())));
+        }
+    }
+}
+
 int main(int argc, const char* argv[]) {
     doctest::Context context;
     context.applyCommandLine(argc, argv);
