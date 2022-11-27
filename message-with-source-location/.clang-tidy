@@ -1,0 +1,50 @@
+---
+Checks: >
+  -*,
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  bugprone-*,
+  cppcoreguidelines-*,
+  google-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-type-vararg,
+  -misc-no-recursion,
+  -modernize-avoid-c-arrays,
+  -modernize-return-braced-init-list,
+  -modernize-use-nodiscard,
+  -modernize-use-trailing-return-type,
+  -performance-no-int-to-ptr,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-length,
+  -readability-named-parameter,
+  -readability-qualified-auto,
+  -readability-redundant-access-specifiers
+
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+
+CheckOptions:
+  - key: cppcoreguidelines-macro-usage.CheckCapsOnly
+    value: 1
+  - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value: 1
+  - key: modernize-avoid-bind.PermissiveParameterList
+    value: 1
+  - key: readability-implicit-bool-conversion.AllowIntegerConditions
+    value: 1
+  - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: 1
+  - key: readability-magic-numbers.IgnorePowersOf2IntegerValues
+    value: 1
+  - key: readability-magic-numbers.IgnoredIntegerValues
+    value: 0;1;2;3;4;5;6;7;8;9;10;42;100;1000
+...
