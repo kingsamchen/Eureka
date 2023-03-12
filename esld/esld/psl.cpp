@@ -90,7 +90,9 @@ std::string_view match_tld(std::string_view rule_data, const std::string& domain
 
         auto dot_pos = domain.rfind('.', dot_chk_pos);
         std::string_view test_label{&domain[dot_pos + 1], domain.size() - dot_pos};
+#if !defined(NDEBUG)
         fmt::print(stderr, "---\ntld={}\ntest_label={}\n", tld, test_label);
+#endif
 
         while (true) {
             auto pos = rule_data.find(test_label, start);
@@ -111,13 +113,17 @@ std::string_view match_tld(std::string_view rule_data, const std::string& domain
                 rule = strings::trim_left(rule, "*.");
             }
 
+#if !defined(NDEBUG)
             fmt::print(stderr, "hit-rule={}\trule-type={}\n", rule, static_cast<int>(hit_type));
+#endif
 
             start = pos + test_label.size();
 
             // Hit rule is not a match.
             if (!strings::ends_with(domain, rule)) {
+#if !defined(NDEBUG)
                 fmt::print(stderr, "not a match, continue searching\n");
+#endif
                 continue;
             }
 
@@ -140,7 +146,9 @@ std::string_view match_tld(std::string_view rule_data, const std::string& domain
                 tld = rule;
             }
 
+#if !defined(NDEBUG)
             fmt::print(stderr, "update tld={}\n", tld);
+#endif
 
             break;
         }

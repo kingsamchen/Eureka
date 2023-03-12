@@ -38,3 +38,23 @@ get_target_property(test_FILES esld_test SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${test_FILES})
 
 add_test(NAME tests COMMAND esld_test)
+
+#
+# perf_test
+#
+
+add_executable(perf_test)
+
+target_sources(perf_test
+  PRIVATE
+    perf_main.cpp
+)
+
+target_link_libraries(perf_test
+  PRIVATE
+    esld
+    esl
+    fmt
+)
+
+esld_apply_common_compile_options(perf_test)
