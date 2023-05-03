@@ -178,6 +178,8 @@ gradlew.bat
 
 *.out
 
+out/
+
 .vs/
 
 cmake-build*/
