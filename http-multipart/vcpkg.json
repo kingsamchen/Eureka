@@ -1,0 +1,8 @@
+{
+  "name": "http-multipart",
+  "version": "0.1.0",
+  "dependencies": [
+    "doctest",
+    "fmt"
+  ]
+}
