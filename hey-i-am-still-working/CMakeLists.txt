@@ -1,10 +1,12 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 
 # Add POLICY below.
 
 # Detect if being bundled via sub-directory.
 if(NOT DEFINED PROJECT_NAME)
   set(HEY_I_AM_STILL_WORKING_NOT_SUBPROJECT ON)
+else()
+  set(HEY_I_AM_STILL_WORKING_NOT_SUBPROJECT OFF)
 endif()
 
 project(hey-i-am-still-working CXX)
@@ -15,6 +17,7 @@ if(HEY_I_AM_STILL_WORKING_NOT_SUBPROJECT)
   set(CMAKE_CXX_STANDARD 17)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
   set(ROOT_DIR ${CMAKE_SOURCE_DIR})
 
@@ -52,4 +55,7 @@ endif()
 # Compiler configurations.
 string (REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 include(${HEY_I_AM_STILL_WORKING_CMAKE_DIR}/compiler_msvc.cmake)
+
+include(${HEY_I_AM_STILL_WORKING_CMAKE_DIR}/clang_tidy.cmake)
+
 add_subdirectory(himsw)

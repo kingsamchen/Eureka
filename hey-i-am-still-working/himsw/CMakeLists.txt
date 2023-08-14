@@ -40,33 +40,28 @@ target_link_libraries(himsw
     spdlog
 )
 
-apply_hey_i_am_still_working_compile_conf(himsw)
+hey_i_am_still_working_apply_common_compile_options(himsw)
 
-get_target_property(himsw_FILES himsw SOURCES)
-source_group("himsw" FILES ${himsw_FILES})
+if(HEY_I_AM_STILL_WORKING_ENABLE_CLANG_TIDY)
+  hey_i_am_still_working_apply_clang_tidy(himsw)
+endif()
 
-if(MSVC AND HEY_I_AM_STILL_WORKING_ENABLE_CODE_ANALYSIS)
-  enable_hey_i_am_still_working_msvc_static_analysis_conf(himsw
+if(HEY_I_AM_STILL_WORKING_USE_MSVC_PARALLEL_BUILD)
+  hey_i_am_still_working_apply_msvc_parallel_build(himsw)
+endif()
+
+if(HEY_I_AM_STILL_WORKING_USE_MSVC_STATIC_ANALYSIS)
+  hey_i_am_still_working_apply_msvc_static_analysis(himsw
     WDL
       /wd6011 # Dereferencing potentially NULL pointer.
   )
 endif()
 
+get_target_property(himsw_FILES himsw SOURCES)
+source_group("himsw" FILES ${himsw_FILES})
+
 set_target_properties(himsw PROPERTIES
   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-
-  VS_GLOBAL_RunCodeAnalysis true
-
-  # Use visual studio core guidelines
-  # Tweak as your wish.
-  VS_GLOBAL_EnableMicrosoftCodeAnalysis true
-  # VS_GLOBAL_CodeAnalysisRuleSet ${CMAKE_CURRENT_SOURCE_DIR}/foo.ruleset
-  # VS_GLOBAL_CodeAnalysisRuleSet ${CMAKE_CURRENT_SOURCE_DIR}/foo.ruleset
-
-  # Use clangtidy
-  # Tweak as your wish.
-  VS_GLOBAL_EnableClangTidyCodeAnalysis true
-  # VS_GLOBAL_ClangTidyChecks -checks=-*,modernize-*,-modernize-use-trailing-return-type
 )
 
 target_precompile_headers(himsw
