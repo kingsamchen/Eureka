@@ -1,38 +1,17 @@
 ---
-# Compliant to clang-foramt 11
+# Compliant to clang-foramt 13
 Language: Cpp
-Standard: Latest
+BasedOnStyle: LLVM
 AccessModifierOffset: -4
-AlignConsecutiveBitFields: true
-AlignConsecutiveMacros: true
-AlignEscapedNewlines: Right
-AlignOperands: true
-AllowAllArgumentsOnNextLine: true
-AllowAllConstructorInitializersOnNextLine: true
-AllowAllParametersOfDeclarationOnNextLine: true
+AlignConsecutiveBitFields: AcrossComments
+AlignConsecutiveMacros: AcrossComments
 AllowShortBlocksOnASingleLine: Empty
-AllowShortCaseLabelsOnASingleLine: false
-AllowShortEnumsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Empty
-AllowShortIfStatementsOnASingleLine: Never
-AllowShortLambdasOnASingleLine: None
-AllowShortLoopsOnASingleLine: false
-AlwaysBreakAfterDefinitionReturnType: None
-AlwaysBreakAfterReturnType: None
+AllowShortLambdasOnASingleLine: Inline
 AlwaysBreakTemplateDeclarations: Yes
-BreakBeforeBinaryOperators: None
-BreakBeforeBraces: Attach
-BreakConstructorInitializers: BeforeColon
-#BreakInheritanceList: AfterComma
-BreakStringLiterals: true
 ColumnLimit: 0
-ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ConstructorInitializerIndentWidth: 4
-ContinuationIndentWidth: 4
-Cpp11BracedListStyle: true
-#EmptyLineAfterAccessModifier: Leave
-#EmptyLineBeforeAccessModifier: Leave
-IncludeBlocks: Preserve
+ContinuationIndentWidth: 8
 IncludeCategories:
   - Regex: '^<.*'
     Priority: 1
@@ -41,22 +20,8 @@ IncludeCategories:
   - Regex: '.*'
     Priority: 3
 IncludeIsMainRegex: '([-_](test|unittest))?$'
-IndentCaseBlocks: false
-IndentCaseLabels: false
-IndentExternBlock: AfterExternBlock
 IndentWidth: 4
-MaxEmptyLinesToKeep: 1
-NamespaceIndentation: None
 PointerAlignment: Left
-SortIncludes: true
-SortUsingDeclarations: true
 SpaceAfterTemplateKeyword: false
-SpaceBeforeAssignmentOperators: true
-SpaceBeforeCtorInitializerColon: true
-SpaceBeforeInheritanceColon: true
-SpaceBeforeParens: ControlStatementsExceptForEachMacros
-SpacesBeforeTrailingComments: 1
-TabWidth: 4
-UseCRLF: false
-UseTab: Never
+SpaceBeforeParens: ControlStatementsExceptControlMacros
 ...
