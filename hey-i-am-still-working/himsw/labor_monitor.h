@@ -10,15 +10,24 @@
 #include <chrono>
 #include <functional>
 #include <string>
+#include <utility>
 
 #include <Windows.h>
 
 namespace himsw {
 
+using daytime_range = std::pair<tm, tm>;
+
 struct monitor_config {
     std::chrono::seconds max_idle{180};
     DWORD simulation_key{VK_SCROLL};
+    std::vector<daytime_range> break_ranges;
 };
+
+template<typename To, typename From>
+To force_as(From from) {
+    return reinterpret_cast<To>(from);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+}
 
 class labor_monitor {
 private:
@@ -68,13 +77,13 @@ private:
     }
 
     // May throw win_last_error
-    std::chrono::seconds get_idle_duration() const;
+    static std::chrono::seconds get_idle_duration();
 
     // May throw win_last_error
-    void tick_on_active();
+    void tick_on_active(bool within_breakoff);
 
     // May throw win_last_error
-    void tick_on_simulating();
+    void tick_on_simulating(bool within_breakoff);
 
     static LRESULT keyboard_hook_proc(int code, WPARAM wparam, LPARAM lparam);
 

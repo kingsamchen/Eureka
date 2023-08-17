@@ -24,9 +24,6 @@
 
 namespace {
 
-template<typename T>
-void ignore_result(T&&) {}
-
 template<typename Iter>
 std::string join_string(Iter begin, Iter end, std::string_view sep) {
     if (begin == end) {
@@ -43,7 +40,7 @@ std::string join_string(Iter begin, Iter end, std::string_view sep) {
 
 std::string now_in_date() {
     auto tp = std::time(nullptr);
-    struct tm tm;
+    tm tm{};
     localtime_s(&tm, &tp);
     std::ostringstream oss;
     oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S ");
@@ -118,7 +115,7 @@ public:
 
         auto chk_hwnd = ::GetDlgItem(window->dlg_, IDC_CHKSTATUS);
         Button_SetCheck(chk_hwnd, BST_CHECKED);
-        ::SendMessageW(window->dlg_, WM_COMMAND, IDC_CHKSTATUS, reinterpret_cast<LPARAM>(chk_hwnd));
+        ::SendMessageW(window->dlg_, WM_COMMAND, IDC_CHKSTATUS, himsw::force_as<LPARAM>(chk_hwnd));
 
         return window;
     }
@@ -152,7 +149,7 @@ public:
             }
         };
 
-        events_[WM_TIMER] = [this](WPARAM, LPARAM) {
+        events_[WM_TIMER] = [](WPARAM, LPARAM) {
             // currently only one timer.
             on_timer();
         };
@@ -168,7 +165,7 @@ public:
         events_[WM_COMMAND] = [this](WPARAM wparam, LPARAM lparam) {
             auto ctrl_id = LOWORD(wparam);
             if (ctrl_id == IDC_CHKSTATUS) {
-                auto state = Button_GetCheck(reinterpret_cast<HWND>(lparam));
+                auto state = Button_GetCheck(himsw::force_as<HWND>(lparam));
                 on_monitor_state_changed(state == BST_CHECKED);
             }
         };
@@ -184,7 +181,7 @@ public:
         return visible_;
     }
 
-    bool try_process_event(int event_id, WPARAM wparam, LPARAM lparam) {
+    bool try_process_event(unsigned int event_id, WPARAM wparam, LPARAM lparam) {
         auto entry = events_.find(event_id);
         if (entry == events_.end()) {
             return false;
@@ -217,7 +214,7 @@ private:
         show(!visible());
     }
 
-    void on_timer() {
+    static void on_timer() {
         himsw::labor_monitor::instance().tick();
     }
 
@@ -244,7 +241,7 @@ private:
 private:
     HWND dlg_{nullptr};
     bool visible_{false};
-    std::unordered_map<int, std::function<void(WPARAM, LPARAM)>> events_;
+    std::unordered_map<unsigned int, std::function<void(WPARAM, LPARAM)>> events_;
     std::unique_ptr<himsw::tray> tray_;
     std::deque<std::string> msgs_;
     static constexpr size_t k_max_kept_msgs{10};
@@ -274,7 +271,7 @@ public:
 
     main_loop& operator=(main_loop&&) = delete;
 
-    void run() {
+    static void run() {
         MSG msg;
         while (::GetMessageW(&msg, nullptr, 0, 0) != 0) {
             if (!dialog_window_manager::instance().any_dialog_message_processed(&msg)) {
@@ -294,18 +291,28 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
 
     try {
         spdlog::set_default_logger(spdlog::basic_logger_mt("main_logger", "himsw.log"));
+        spdlog::default_logger()->flush_on(spdlog::level::info);
+
+        tm break_start{};
+        tm break_stop{};
+        break_start.tm_hour = 11;
+        break_start.tm_min = 30;
+        break_stop.tm_hour = 13;
+        break_stop.tm_min = 10;
+        himsw::monitor_config cfg;
+        cfg.break_ranges.emplace_back(break_start, break_stop);
+        himsw::labor_monitor::instance().update_config(cfg);
         himsw::labor_monitor::instance().prepare();
 
         auto main_window = dialog_window::make();
         himsw::labor_monitor::instance().set_info_update_handler(
-            [ptr = std::weak_ptr(main_window)](const std::string& msg) {
-                if (auto wnd = ptr.lock(); wnd) {
-                    wnd->update_info(msg);
-                }
-            });
+                [ptr = std::weak_ptr(main_window)](const std::string& msg) {
+                    if (auto wnd = ptr.lock(); wnd) {
+                        wnd->update_info(msg);
+                    }
+                });
 
-        main_loop loop;
-        loop.run();
+        main_loop::run();
     } catch (const spdlog::spdlog_ex& ex) {
         auto reason = fmt::format("Failed to initialize logging component; ex={}", ex.what());
         ::MessageBoxA(nullptr, reason.c_str(), "Error", MB_ICONERROR);
