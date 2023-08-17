@@ -29,12 +29,13 @@ Checks: >
   -performance-no-int-to-ptr,
   -readability-function-cognitive-complexity,
   -readability-identifier-length,
+  -readability-magic-numbers,
   -readability-named-parameter,
   -readability-qualified-auto,
   -readability-redundant-access-specifiers
 
 WarningsAsErrors: '*'
-HeaderFilterRegex: '(hashids|tests|cmd)\/.*\.h$'
+HeaderFilterRegex: 'himsw\/(?!resource\.h$).*\.h'
 
 CheckOptions:
   - key: cppcoreguidelines-macro-usage.CheckCapsOnly
