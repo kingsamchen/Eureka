@@ -4,7 +4,7 @@ option(HEY_I_AM_STILL_WORKING_USE_MSVC_STATIC_ANALYSIS "If enabled, run MSVC bui
 option(HEY_I_AM_STILL_WORKING_USE_WIN32_LEAN_AND_MEAN "If enabled, define WIN32_LEAN_AND_MEAN" ON)
 
 if(HEY_I_AM_STILL_WORKING_NOT_SUBPROJECT)
-  message(STATUS "hashids compiler MSVC global conf is in active")
+  message(STATUS "himsw compiler MSVC global conf is in active")
 
   # Force generating debugging symbols in Release build.
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
@@ -44,7 +44,7 @@ function(hey_i_am_still_working_apply_common_compile_options TARGET)
 endfunction()
 
 function(hey_i_am_still_working_apply_msvc_parallel_build TARGET)
-  message(STATUS "Apply hashids msvc parallel build for ${TARGET}")
+  message(STATUS "Apply himsw msvc parallel build for ${TARGET}")
 
   target_compile_options(${TARGET}
     PRIVATE
@@ -58,7 +58,7 @@ endfunction()
 #     /wd6011
 # )
 function(hey_i_am_still_working_apply_msvc_static_analysis TARGET)
-  message(STATUS "Apply hashids msvc static analysis for ${TARGET}")
+  message(STATUS "Apply himsw msvc static analysis for ${TARGET}")
 
   set(multiValueArgs WDL)
   cmake_parse_arguments(ARG "" "" "${multiValueArgs}" ${ARGN})

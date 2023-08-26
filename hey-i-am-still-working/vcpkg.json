@@ -1,0 +1,15 @@
+{
+  "name": "himsw",
+  "version": "0.1.0",
+  "dependencies": [
+    "esl",
+    "fmt",
+    "spdlog",
+    "tomlplusplus"
+  ],
+  "vcpkg-configuration": {
+    "overlay-ports": [
+      "./build/vcpkg-overlay"
+    ]
+  }
+}

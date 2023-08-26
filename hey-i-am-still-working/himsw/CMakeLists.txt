@@ -1,14 +1,3 @@
-CPMAddPackage(
-  NAME spdlog
-  GITHUB_REPOSITORY gabime/spdlog
-  VERSION 1.9.2
-)
-
-if(spdlog_ADDED)
-  set_target_properties(spdlog PROPERTIES
-    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-  )
-endif()
 
 add_executable(himsw WIN32)
 
@@ -35,9 +24,18 @@ target_compile_definitions(himsw
     WIN32_LEAN_AND_MEAN
 )
 
+target_compile_options(himsw
+  PRIVATE
+    /utf-8
+)
+
 target_link_libraries(himsw
   PRIVATE
-    spdlog
+    fmt::fmt
+    spdlog::spdlog
+    tomlplusplus::tomlplusplus
+
+    esl::esl
 )
 
 hey_i_am_still_working_apply_common_compile_options(himsw)
