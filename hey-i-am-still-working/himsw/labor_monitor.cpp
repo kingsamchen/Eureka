@@ -72,19 +72,28 @@ void labor_monitor::cleanup() noexcept {
     }
 }
 
+void labor_monitor::enable_breakoff(bool enable) {
+    breakoff_enabled_ = enable;
+    const std::string state = enable ? "breakoff enabled" : "breakoff disabled";
+    info_handler_(state);
+}
+
 void labor_monitor::tick() {
-    auto tp = std::time(nullptr);
-    tm now_tm{};
-    localtime_s(&now_tm, &tp);
-    auto within_breakoff =
-            std::any_of(cfg_.break_ranges.begin(), cfg_.break_ranges.end(),
-                        [&now_tm](const daytime_range& breakoff_range) {
-                            const auto& [st, ed] = breakoff_range;
-                            // Not so restrict.
-                            return compare(st, ed) <= 0
-                                           ? (compare(now_tm, st) >= 0 && compare(now_tm, ed) <= 0)
-                                           : (compare(now_tm, st) >= 0 || compare(now_tm, ed) <= 0);
-                        });
+    bool within_breakoff = false;
+    if (breakoff_enabled_) {
+        auto tp = std::time(nullptr);
+        tm now_tm{};
+        localtime_s(&now_tm, &tp);
+        within_breakoff = std::any_of(
+                cfg_.break_ranges.begin(), cfg_.break_ranges.end(),
+                [&now_tm](const daytime_range& breakoff_range) {
+                    const auto& [st, ed] = breakoff_range;
+                    // Not so restrict.
+                    return compare(st, ed) <= 0
+                                   ? (compare(now_tm, st) >= 0 && compare(now_tm, ed) <= 0)
+                                   : (compare(now_tm, st) >= 0 || compare(now_tm, ed) <= 0);
+                });
+    }
     try {
         if (state_ == state::active) {
             tick_on_active(within_breakoff);

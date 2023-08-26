@@ -29,8 +29,6 @@ endif()
 set(HEY_I_AM_STILL_WORKING_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(HEY_I_AM_STILL_WORKING_CMAKE_DIR ${HEY_I_AM_STILL_WORKING_DIR}/cmake)
 
-include(${HEY_I_AM_STILL_WORKING_CMAKE_DIR}/CPM.cmake)
-
 message(STATUS "GENERATOR = " ${CMAKE_GENERATOR})
 
 set(HEY_I_AM_STILL_WORKING_PCH_HEADER ${HEY_I_AM_STILL_WORKING_DIR}/build/pch/precompile.h)
@@ -57,5 +55,10 @@ string (REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 include(${HEY_I_AM_STILL_WORKING_CMAKE_DIR}/compiler_msvc.cmake)
 
 include(${HEY_I_AM_STILL_WORKING_CMAKE_DIR}/clang_tidy.cmake)
+
+find_package(fmt CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(esl CONFIG REQUIRED)
+find_package(tomlplusplus CONFIG REQUIRED)
 
 add_subdirectory(himsw)

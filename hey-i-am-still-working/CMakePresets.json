@@ -1,0 +1,31 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+      "major": 3,
+      "minor": 21,
+      "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "default",
+            "displayName": "Default config",
+            "description": "Default configure on Windows",
+            "binaryDir": "${sourceDir}/out/msvc",
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+            "cacheVariables": {
+                "VCPKG_TARGET_TRIPLET": "x64-windows-static"
+            }
+        },
+        {
+            "name": "release",
+            "displayName": "Release config",
+            "description": "Enable clang-idy",
+            "binaryDir": "${sourceDir}/out/msvc-tidy",
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+            "cacheVariables": {
+                "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+                "HEY_I_AM_STILL_WORKING_ENABLE_CLANG_TIDY": true
+            }
+        }
+    ]
+}

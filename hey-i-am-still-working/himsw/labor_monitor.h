@@ -26,7 +26,7 @@ struct monitor_config {
 
 template<typename To, typename From>
 To force_as(From from) {
-    return reinterpret_cast<To>(from);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+    return reinterpret_cast<To>(from); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 }
 
 class labor_monitor {
@@ -63,6 +63,8 @@ public:
         info_handler_ = std::move(fn);
     }
 
+    void enable_breakoff(bool enable);
+
 private:
     labor_monitor()
         : state_(state::active),
@@ -93,6 +95,7 @@ private:
 
 private:
     state state_;
+    bool breakoff_enabled_{false};
     std::chrono::system_clock::time_point last_simulation_;
     static constexpr std::chrono::seconds k_simul_interval{30};
     monitor_config cfg_;

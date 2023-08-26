@@ -13,9 +13,11 @@
 #include <Windows.h>
 #include <windowsx.h>
 
+#include "esl/strings.h"
 #include "spdlog/fmt/fmt.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/spdlog.h"
+#include "toml++/toml.h"
 
 #include "himsw/labor_monitor.h"
 #include "himsw/resource.h"
@@ -24,20 +26,6 @@
 
 namespace {
 
-template<typename Iter>
-std::string join_string(Iter begin, Iter end, std::string_view sep) {
-    if (begin == end) {
-        return std::string{};
-    }
-
-    std::string str(*begin);
-    for (auto it = begin + 1; it != end; ++it) {
-        str.append(sep.data(), sep.length()).append(*it);
-    }
-
-    return str;
-}
-
 std::string now_in_date() {
     auto tp = std::time(nullptr);
     tm tm{};
@@ -45,6 +33,36 @@ std::string now_in_date() {
     std::ostringstream oss;
     oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S ");
     return oss.str();
+}
+
+// Would throw if conf file is not found or invalid.
+himsw::monitor_config load_config() {
+    himsw::monitor_config m_cfg;
+
+    // Force the conf file in in current directory.
+    constexpr std::string_view filename = "config.toml";
+    toml::table cfg = toml::parse_file(filename);
+
+    auto breakoffs = cfg.get_as<toml::array>("breakoff");
+    for (const auto& offtime : *breakoffs) {
+        const auto& s = offtime.as_table()->get_as<toml::time>("start")->get();
+        tm tm_s{};
+        tm_s.tm_hour = s.hour;
+        tm_s.tm_min = s.minute;
+        tm_s.tm_sec = s.second;
+
+        const auto& e = offtime.as_table()->get_as<toml::time>("end")->get();
+        tm tm_e{};
+        tm_e.tm_hour = e.hour;
+        tm_e.tm_min = e.minute;
+        tm_e.tm_sec = e.second;
+
+        m_cfg.break_ranges.emplace_back(tm_s, tm_e);
+    }
+
+    spdlog::info("Config file loaded!");
+
+    return m_cfg;
 }
 
 class dialog_window;
@@ -113,9 +131,16 @@ public:
         dialog_window_manager::instance().enroll(window->dlg_, window.get());
         window->show();
 
+        // Turn on by default.
         auto chk_hwnd = ::GetDlgItem(window->dlg_, IDC_CHKSTATUS);
         Button_SetCheck(chk_hwnd, BST_CHECKED);
         ::SendMessageW(window->dlg_, WM_COMMAND, IDC_CHKSTATUS, himsw::force_as<LPARAM>(chk_hwnd));
+
+        // Enable break-off time by default.
+        chk_hwnd = nullptr;
+        chk_hwnd = ::GetDlgItem(window->dlg_, IDC_BREAK_OFF);
+        Button_SetCheck(chk_hwnd, BST_CHECKED);
+        ::SendMessageW(window->dlg_, WM_COMMAND, IDC_BREAK_OFF, himsw::force_as<LPARAM>(chk_hwnd));
 
         return window;
     }
@@ -167,6 +192,9 @@ public:
             if (ctrl_id == IDC_CHKSTATUS) {
                 auto state = Button_GetCheck(himsw::force_as<HWND>(lparam));
                 on_monitor_state_changed(state == BST_CHECKED);
+            } else if (ctrl_id == IDC_BREAK_OFF) {
+                auto state = Button_GetCheck(himsw::force_as<HWND>(lparam));
+                on_breakoff_changed(state == BST_CHECKED);
             }
         };
     }
@@ -198,7 +226,7 @@ public:
             msgs_.pop_back();
         }
 
-        auto text = join_string(msgs_.begin(), msgs_.end(), "\r\n");
+        auto text = esl::strings::join(msgs_, "\r\n");
         ::SetDlgItemTextA(dlg_, IDC_MSG, text.c_str());
     }
 
@@ -236,6 +264,10 @@ private:
             ::KillTimer(dlg_, IDT_TIMER);
             update_info("monitoring is off");
         }
+    }
+
+    static void on_breakoff_changed(bool enabled) {
+        himsw::labor_monitor::instance().enable_breakoff(enabled);
     }
 
 private:
@@ -293,14 +325,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
         spdlog::set_default_logger(spdlog::basic_logger_mt("main_logger", "himsw.log"));
         spdlog::default_logger()->flush_on(spdlog::level::info);
 
-        tm break_start{};
-        tm break_stop{};
-        break_start.tm_hour = 11;
-        break_start.tm_min = 30;
-        break_stop.tm_hour = 13;
-        break_stop.tm_min = 10;
-        himsw::monitor_config cfg;
-        cfg.break_ranges.emplace_back(break_start, break_stop);
+        auto cfg = load_config();
         himsw::labor_monitor::instance().update_config(cfg);
         himsw::labor_monitor::instance().prepare();
 
@@ -320,6 +345,16 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
     } catch (const himsw::win_last_error& ex) {
         const std::string cause = "Failed to prepare the labor monitor";
         spdlog::error("{}; ex={} ec={}", cause, ex.what(), ex.error_code());
+        ::MessageBoxA(nullptr, cause.c_str(), "Error", MB_ICONERROR);
+        return critical_failure;
+    } catch (const toml::parse_error& ex) {
+        const std::string cause = "Failed to parse the config file";
+        spdlog::error("{}; ex={} ", cause, ex.what());
+        ::MessageBoxA(nullptr, cause.c_str(), "Error", MB_ICONERROR);
+        return critical_failure;
+    } catch (const std::exception& ex) {
+        const std::string cause = "Unexpected error occured";
+        spdlog::error("{}; ex={} ", cause, ex.what());
         ::MessageBoxA(nullptr, cause.c_str(), "Error", MB_ICONERROR);
         return critical_failure;
     }
