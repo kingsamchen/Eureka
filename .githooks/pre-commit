@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+echo -e "Running clang-format-diff...\n"
+
+fmt_diff=$(git diff --no-ext -U0 --no-color --relative --cached | clang-format-diff.py -p1)
+
+colorize_diff='
+    /^+/ { printf "\033[1;32m" }
+    /^-/ { printf "\033[1;31m" }
+    // { print $0 "\033[0m"; }'
+
+if [ -n "$fmt_diff" ]; then
+    echo "$fmt_diff" | awk "$colorize_diff"
+    echo -e "\nPlease re-format above files before commit"
+    exit 1
+fi
+
+echo "clang-format-diff passed"
