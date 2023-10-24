@@ -5,20 +5,15 @@
 #include <array>
 #include <iostream>
 
-#include "kbase/command_line.h"
-
-#include "asio/ip/tcp.hpp"
+#include "argparse/argparse.hpp"
 #include "asio/io_context.hpp"
+#include "asio/ip/tcp.hpp"
 
-void RunCli()
-{
-    auto cmd = kbase::CommandLine::ForCurrentProcess();
-    const auto& ip = cmd.GetParameter(0);
-    auto port = static_cast<unsigned short>(cmd.GetParameterAs<int>(1));
-
+void RunCli(const argparse::ArgumentParser& args) {
     asio::io_context ctx;
 
-    asio::ip::tcp::endpoint addr {asio::ip::make_address(ip), port};
+    asio::ip::tcp::endpoint addr{asio::ip::make_address(args.get("ip")),
+                                 args.get<uint16_t>("port")};
     asio::ip::tcp::socket conn_sock(ctx);
     conn_sock.connect(addr);
 
@@ -37,12 +32,19 @@ void RunCli()
     }
 }
 
-int main(int argc, const char* argv[])
-{
-    kbase::CommandLine::Init(argc, argv);
+int main(int argc, const char* argv[]) {
+    argparse::ArgumentParser program("daytime-cli");
+    program.add_argument("ip")
+            .required()
+            .help("remote ip addr");
+    program.add_argument("port")
+            .required()
+            .action([](const std::string& value) { return static_cast<uint16_t>(std::stoi(value)); })
+            .help("remote port");
 
     try {
-        RunCli();
+        program.parse_args(argc, argv);
+        RunCli(program);
     } catch (std::exception& ex) {
         std::cerr << ex.what() << std::endl;
     }

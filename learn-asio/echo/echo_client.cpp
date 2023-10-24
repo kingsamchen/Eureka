@@ -7,14 +7,11 @@
 #include <string>
 #include <thread>
 
+#include "argparse/argparse.hpp"
 #include "asio/io_context.hpp"
 #include "asio/ip/tcp.hpp"
 #include "asio/write.hpp"
-
-#include "kbase/at_exit_manager.h"
-#include "kbase/basic_macros.h"
-#include "kbase/command_line.h"
-#include "kbase/logging.h"
+#include "glog/logging.h"
 
 namespace ip = asio::ip;
 using ip::tcp;
@@ -25,18 +22,16 @@ public:
         : io_ctx_(io_ctx),
           remote_addr_(tcp::endpoint(ip::make_address_v4(ip), port)),
           conn_(io_ctx_),
-          in_buf_()
-    {}
+          in_buf_() {}
 
-    ~EchoClient()
-    {}
+    ~EchoClient() {}
 
-    DISALLOW_COPY(EchoClient);
+    EchoClient(const EchoClient&) = delete;
+    EchoClient(EchoClient&&) = delete;
+    EchoClient& operator=(const EchoClient&) = delete;
+    EchoClient& operator=(EchoClient&&) = delete;
 
-    DISALLOW_MOVE(EchoClient);
-
-    void Start()
-    {
+    void Start() {
         std::cout << "Connecting to " << remote_addr_ << "...\n";
         conn_.async_connect(remote_addr_, [this](std::error_code ec) {
             if (ec) {
@@ -48,8 +43,7 @@ public:
         });
     }
 
-    void Stop()
-    {
+    void Stop() {
         asio::post(io_ctx_, [this] {
             std::error_code ec;
             conn_.shutdown(tcp::socket::shutdown_send, ec);
@@ -57,16 +51,14 @@ public:
         });
     }
 
-    void Send(std::string msg)
-    {
-        asio::post(io_ctx_, [this, msg=std::move(msg)]() mutable {
+    void Send(std::string msg) {
+        asio::post(io_ctx_, [this, msg = std::move(msg)]() mutable {
             DoWrite(std::move(msg));
         });
     }
 
 private:
-    void DoRead()
-    {
+    void DoRead() {
         conn_.async_read_some(asio::buffer(in_buf_), [this](std::error_code ec, size_t len) {
             if (ec) {
                 if (ec == asio::error::eof) {
@@ -83,8 +75,7 @@ private:
         });
     }
 
-    void DoWrite(std::string msg)
-    {
+    void DoWrite(std::string msg) {
         out_buf_ = std::move(msg);
         asio::async_write(conn_, asio::buffer(out_buf_), [this](std::error_code ec, size_t) {
             if (ec) {
@@ -103,20 +94,22 @@ private:
     std::string out_buf_;
 };
 
-int main(int argc, const char* argv[])
-{
+int main(int argc, const char* argv[]) {
+    google::InitGoogleLogging(argv[0]);
+
+    argparse::ArgumentParser program("echo-client");
+    program.add_argument("ip")
+            .required()
+            .help("remote ip addr");
+    program.add_argument("port")
+            .required()
+            .action([](const std::string& value) { return static_cast<uint16_t>(std::stoi(value)); })
+            .help("remote port");
+
     try {
-        kbase::AtExitManager exit_manager;
-
-        kbase::LoggingSettings settings;
-        settings.logging_destination = kbase::LogToSystemDebugLog;
-        kbase::ConfigureLoggingSettings(settings);
-
-        kbase::CommandLine::Init(argc, argv);
-
-        auto cmdline = kbase::CommandLine::ForCurrentProcess();
-        auto ip = cmdline.GetParameter(0);
-        auto port = cmdline.GetParameterAs<unsigned short>(1);
+        program.parse_args(argc, argv);
+        auto ip = program.get("ip");
+        auto port = program.get<std::uint16_t>("port");
 
         asio::io_context ctx;
 

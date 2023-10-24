@@ -10,63 +10,59 @@
 #include "asio/ip/tcp.hpp"
 #include "asio/signal_set.hpp"
 #include "asio/write.hpp"
-
-#include "kbase/at_exit_manager.h"
-#include "kbase/basic_macros.h"
-#include "kbase/command_line.h"
-#include "kbase/logging.h"
+#include "gflags/gflags.h"
+#include "glog/logging.h"
 
 using asio::ip::tcp;
+
+DEFINE_uint32(port, 9876, "listening port");
 
 class Session : public std::enable_shared_from_this<Session> {
 public:
     explicit Session(tcp::socket sock)
         : conn_(std::move(sock)),
-          buf_()
-    {}
+          buf_() {}
 
-    DISALLOW_COPY(Session);
+    Session(const Session&) = delete;
+    Session& operator=(const Session&) = delete;
 
-    void Start()
-    {
+    void Start() {
         DoRead();
     }
 
 private:
-    void DoRead()
-    {
+    void DoRead() {
         conn_.async_read_some(
-            asio::buffer(buf_),
-            [this, self=shared_from_this()](std::error_code ec, size_t bytes) {
-                if (ec) {
-                    if (ec == asio::error::eof) {
-                        LOG(INFO) << "Remote connection @ " << conn_.remote_endpoint()
-                                  << "disconnected";
-                    } else {
-                        LOG(ERROR) << "Failed to read from connection; "
-                                   << "remote=" << conn_.remote_endpoint() << " ec=" << ec;
+                asio::buffer(buf_),
+                [this, self = shared_from_this()](std::error_code ec, size_t bytes) {
+                    if (ec) {
+                        if (ec == asio::error::eof) {
+                            LOG(INFO) << "Remote connection @ " << conn_.remote_endpoint()
+                                      << "disconnected";
+                        } else {
+                            LOG(ERROR) << "Failed to read from connection; "
+                                       << "remote=" << conn_.remote_endpoint() << " ec=" << ec;
+                        }
+
+                        return;
                     }
 
-                    return;
-                }
-
-                DoWrite(bytes);
-            });
+                    DoWrite(bytes);
+                });
     }
 
-    void DoWrite(size_t len)
-    {
+    void DoWrite(size_t len) {
         asio::async_write(
-            conn_,
-            asio::buffer(buf_, len),
-            [this, self=shared_from_this()](std::error_code ec, size_t) {
-                if (ec) {
-                    LOG(ERROR) << "Failed to write to connection; remote="
-                               << conn_.remote_endpoint() << " ec=" << ec;
-                    return;
-                }
-                DoRead();
-            });
+                conn_,
+                asio::buffer(buf_, len),
+                [this, self = shared_from_this()](std::error_code ec, size_t) {
+                    if (ec) {
+                        LOG(ERROR) << "Failed to write to connection; remote="
+                                   << conn_.remote_endpoint() << " ec=" << ec;
+                        return;
+                    }
+                    DoRead();
+                });
     }
 
 private:
@@ -79,15 +75,14 @@ class EchoServer {
 public:
     explicit EchoServer(unsigned short port)
         : acceptor_(io_ctx_, tcp::endpoint(tcp::v4(), port)),
-          signals_(io_ctx_, SIGINT)
-    {}
+          signals_(io_ctx_, SIGINT) {}
 
-    DISALLOW_COPY(EchoServer);
+    EchoServer(const EchoServer&) = delete;
+    EchoServer(EchoServer&&) = delete;
+    EchoServer& operator=(const EchoServer&) = delete;
+    EchoServer& operator=(EchoServer&&) = delete;
 
-    DISALLOW_MOVE(EchoServer);
-
-    void Start()
-    {
+    void Start() {
         LOG(INFO) << "EchoServer is running";
 
         signals_.async_wait([this](auto, auto) {
@@ -101,8 +96,7 @@ public:
     }
 
 private:
-    void DoAccept()
-    {
+    void DoAccept() {
         acceptor_.async_accept([this](std::error_code ec, tcp::socket peer) {
             if (ec) {
                 LOG(ERROR) << "Failed to accept new connection; " << ec;
@@ -122,26 +116,16 @@ private:
     asio::signal_set signals_;
 };
 
-void RunServer()
-{
-    auto cmd = kbase::CommandLine::ForCurrentProcess();
-    auto port = cmd.GetSwitchValueAs<unsigned short>("port", 9876);
-
-    EchoServer srv(port);
+void RunServer() {
+    EchoServer srv(static_cast<unsigned short>(FLAGS_port));
     srv.Start();
 }
 
-int main(int argc, const char* argv[])
-{
+int main(int argc, char* argv[]) {
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
+    google::InitGoogleLogging(argv[0]);
+
     try {
-        kbase::AtExitManager exit_manager;
-
-        kbase::LoggingSettings logging_settings;
-        logging_settings.logging_destination = kbase::LoggingDestination::LogToSystemDebugLog;
-        kbase::ConfigureLoggingSettings(logging_settings);
-
-        kbase::CommandLine::Init(argc, argv);
-
         RunServer();
     } catch (std::exception& ex) {
         LOG(ERROR) << "Unhandled exception: " << ex.what();

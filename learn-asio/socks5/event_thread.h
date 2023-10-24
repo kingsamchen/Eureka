@@ -11,17 +11,14 @@
 #include <string>
 #include <thread>
 
-#include "kbase/basic_macros.h"
-
 #include "asio/io_context.hpp"
 
 class EventThread {
 public:
     ~EventThread();
 
-    DISALLOW_COPY(EventThread);
-
-    DISALLOW_MOVE(EventThread);
+    EventThread(const EventThread&) = delete;
+    EventThread& operator=(const EventThread&) = delete;
 
     static std::unique_ptr<EventThread> Create(std::string name);
 
@@ -41,4 +38,4 @@ private:
     std::thread raw_thread_;
 };
 
-#endif  // LEARN_ASIO_SOCKS5_EVENT_THREAD_H_
+#endif // LEARN_ASIO_SOCKS5_EVENT_THREAD_H_

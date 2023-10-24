@@ -10,8 +10,6 @@
 #include "asio/io_context.hpp"
 #include "asio/ip/tcp.hpp"
 
-#include "kbase/basic_macros.h"
-
 #include "packets.h"
 
 using asio::ip::tcp;
@@ -34,9 +32,8 @@ public:
 
     ~Tunnel();
 
-    DISALLOW_COPY(Tunnel);
-
-    DISALLOW_MOVE(Tunnel);
+    Tunnel(const Tunnel&) = delete;
+    Tunnel& operator=(const Tunnel&) = delete;
 
     static std::shared_ptr<Tunnel> Make(asio::io_context::executor_type executor,
                                         tcp::socket&& client_sock);
@@ -81,4 +78,4 @@ private:
     std::string io_remote_buf_;
 };
 
-#endif  // LEARN_ASIO_SOCKS5_TUNNEL_H_
+#endif // LEARN_ASIO_SOCKS5_TUNNEL_H_

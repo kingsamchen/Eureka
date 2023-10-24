@@ -1,4 +1,8 @@
 
-add_executable(signals signal_handler.cpp)
-apply_learn_asio_compile_conf(signals)
-target_link_libraries(signals PRIVATE kbase asio)
+add_executable(handle_signals signal_handler.cpp)
+learn_asio_apply_common_compile_options(handle_signals)
+target_link_libraries(handle_signals
+  PRIVATE
+    asio::asio
+    fmt::fmt
+)

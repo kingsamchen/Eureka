@@ -1,0 +1,17 @@
+{
+    "name": "learn-asio",
+    "version": "0.1.0",
+    "dependencies": [
+        "argparse",
+        "asio",
+	"esl",
+        "fmt",
+        "gflags",
+        "glog"
+    ],
+    "vcpkg-configuration": {
+        "overlay-ports": [
+            "./build/vcpkg-overlay"
+        ]
+    }
+}

@@ -1,129 +1,83 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.21)
+
+# Add POLICY below.
 
 # Detect if being bundled via sub-directory.
 if(NOT DEFINED PROJECT_NAME)
   set(LEARN_ASIO_NOT_SUBPROJECT ON)
+else()
+  set(LEARN_ASIO_NOT_SUBPROJECT OFF)
 endif()
+
+message(STATUS "learn-asio as root project = ${LEARN_ASIO_NOT_SUBPROJECT}")
 
 project(learn-asio CXX)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 if(LEARN_ASIO_NOT_SUBPROJECT)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
   set(ROOT_DIR ${CMAKE_SOURCE_DIR})
 endif()
 
+# Add options below.
+
 set(LEARN_ASIO_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(LEARN_ASIO_CMAKE_DIR ${LEARN_ASIO_DIR}/cmake)
 
+include(CTest)
 include(${LEARN_ASIO_CMAKE_DIR}/CPM.cmake)
 
-include(${LEARN_ASIO_CMAKE_DIR}/cotire.cmake)
-set(LEARN_ASIO_PCH_HEADER ${LEARN_ASIO_DIR}/build/pch/precompile.h)
+message(STATUS "learn-asio GENERATOR = " ${CMAKE_GENERATOR})
 
-# Compiler and output configurations.
-if(MSVC)
-  string (REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  include(${LEARN_ASIO_CMAKE_DIR}/compiler_msvc.cmake)
-  foreach(OUTPUTCONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
-    string(TOUPPER ${OUTPUTCONFIG_TYPE} OUTPUTCONFIG)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${OUTPUTCONFIG_TYPE}/bin)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${OUTPUTCONFIG_TYPE}/lib)
-  endforeach()
-else()
-  include(${LEARN_ASIO_CMAKE_DIR}/compiler_posix.cmake)
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-endif()
-
-if(NOT MSVC)
-  message(STATUS "BUILD_TYPE = " ${CMAKE_BUILD_TYPE})
-endif()
-
-CPMAddPackage(
-  NAME KBase
-  GITHUB_REPOSITORY kingsamchen/KBase
-  VERSION 0.1.6
-)
-
-find_package(Threads REQUIRED)
-
-CPMAddPackage(
-  NAME asio
-  VERSION 1.16.1
-  GITHUB_REPOSITORY chriskohlhoff/asio
-  GIT_TAG asio-1-16-1
-)
-
-if(asio_ADDED)
-  add_library(asio INTERFACE)
-
-  target_include_directories(asio
-    INTERFACE ${asio_SOURCE_DIR}/asio/include
-  )
-
-  target_compile_definitions(asio
-    INTERFACE
-      ASIO_STANDALONE
-      ASIO_NO_DEPRECATED
-  )
-
-  target_link_libraries(asio
-    INTERFACE
-      Threads::Threads
-  )
-
-  if(WIN32)
-    # macro see @ https://stackoverflow.com/a/40217291/1746503
-    macro(get_win32_winnt version)
-      if (CMAKE_SYSTEM_VERSION)
-        set(ver ${CMAKE_SYSTEM_VERSION})
-        string(REGEX MATCH "^([0-9]+).([0-9])" ver ${ver})
-        string(REGEX MATCH "^([0-9]+)" verMajor ${ver})
-        # Check for Windows 10, b/c we'll need to convert to hex 'A'.
-        if ("${verMajor}" MATCHES "10")
-          set(verMajor "A")
-          string(REGEX REPLACE "^([0-9]+)" ${verMajor} ver ${ver})
-        endif ("${verMajor}" MATCHES "10")
-        # Remove all remaining '.' characters.
-        string(REPLACE "." "" ver ${ver})
-        # Prepend each digit with a zero.
-        string(REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver})
-        set(${version} "0x${ver}")
-      endif()
-    endmacro()
-
-    if(NOT DEFINED _WIN32_WINNT)
-      get_win32_winnt(ver)
-      set(_WIN32_WINNT ${ver})
+# Output configurations.
+get_property(MULTICONF_GENERATOR GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(LEARN_ASIO_NOT_SUBPROJECT)
+  if(MULTICONF_GENERATOR)
+    foreach(OUTPUTCONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
+      string(TOUPPER ${OUTPUTCONFIG_TYPE} OUTPUTCONFIG)
+      set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${OUTPUTCONFIG_TYPE}/bin)
+      set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${OUTPUTCONFIG_TYPE}/lib)
+    endforeach()
+  else()
+    if(NOT CMAKE_BUILD_TYPE)
+      set(CMAKE_BUILD_TYPE "Release")
     endif()
-
-    message(STATUS "Set _WIN32_WINNET=${_WIN32_WINNT}")
-
-    target_compile_definitions(asio
-      INTERFACE
-        _WIN32_WINNT=${_WIN32_WINNT}
-        WIN32_LEAN_AND_MEAN
-    )
+    message(STATUS "learn-asio BUILD_TYPE = " ${CMAKE_BUILD_TYPE})
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+  endif()
+else()
+  if(NOT MULTICONF_GENERATOR)
+    message(STATUS "learn-asio BUILD_TYPE = " ${CMAKE_BUILD_TYPE})
   endif()
 endif()
 
-add_subdirectory(timer)
-
-add_subdirectory(daytime)
-
-add_subdirectory(echo)
-
-if(UNIX)
-  add_subdirectory(handling_signal)
+# Compiler configurations.
+if(MSVC)
+  include(${LEARN_ASIO_CMAKE_DIR}/compiler_msvc.cmake)
+else()
+  include(${LEARN_ASIO_CMAKE_DIR}/compiler_posix.cmake)
 endif()
 
-add_subdirectory(socks4a)
+include(${LEARN_ASIO_CMAKE_DIR}/clang_tidy.cmake)
 
-add_subdirectory(socks5)
+find_package(argparse CONFIG REQUIRED)
+find_package(asio CONFIG REQUIRED)
+find_package(esl CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+find_package(gflags CONFIG REQUIRED)
+find_package(glog CONFIG REQUIRED)
+find_package(Threads REQUIRED)
 
+add_subdirectory(daytime)
+add_subdirectory(echo)
 add_subdirectory(endpoints)
+add_subdirectory(handling_signal)
+add_subdirectory(socks4a)
+add_subdirectory(socks5)
+add_subdirectory(timer)

@@ -6,12 +6,11 @@
 
 #include "asio/executor_work_guard.hpp"
 
-#include "kbase/logging.h"
+#include "glog/logging.h"
 
 EventThread::EventThread(std::string name)
     : name_(std::move(name)),
-      started_(false)
-{
+      started_(false) {
     raw_thread_ = std::thread(&EventThread::ThreadMain, this);
 
     {
@@ -20,27 +19,24 @@ EventThread::EventThread(std::string name)
     }
 }
 
-EventThread::~EventThread()
-{
+EventThread::~EventThread() {
     try {
         io_ctx_.stop();
         raw_thread_.join();
     } catch (const std::exception& ex) {
-        DLOG(WARNING) << "Unexpected exception: " << ex.what() ;
+        DLOG(WARNING) << "Unexpected exception: " << ex.what();
     }
 
     DLOG(INFO) << name_ << " exited";
 }
 
 // static
-std::unique_ptr<EventThread> EventThread::Create(std::string name)
-{
+std::unique_ptr<EventThread> EventThread::Create(std::string name) {
     std::unique_ptr<EventThread> thread(new EventThread(std::move(name)));
     return thread;
 }
 
-void EventThread::ThreadMain()
-{
+void EventThread::ThreadMain() {
     {
         std::lock_guard lock(start_mtx_);
         started_ = true;
@@ -54,7 +50,6 @@ void EventThread::ThreadMain()
     io_ctx_.run();
 }
 
-asio::io_context::executor_type EventThread::GetExecutor() noexcept
-{
+asio::io_context::executor_type EventThread::GetExecutor() noexcept {
     return io_ctx_.get_executor();
 }

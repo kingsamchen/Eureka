@@ -6,19 +6,16 @@
 
 #include "asio/io_context.hpp"
 #include "asio/signal_set.hpp"
-
-#include "kbase/command_line.h"
-#include "kbase/logging.h"
+#include "gflags/gflags.h"
+#include "glog/logging.h"
 
 #include "proxy.h"
 
-int main(int argc, const char* argv[])
-{
-    kbase::CommandLine::Init(argc, argv);
+DEFINE_uint32(port, 9876, "listening port");
 
-    kbase::LoggingSettings settings;
-    settings.logging_destination = kbase::LogToSystemDebugLog;
-    kbase::ConfigureLoggingSettings(settings);
+int main(int argc, char* argv[]) {
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
+    google::InitGoogleLogging(argv[0]);
 
     asio::io_context ioc;
 
@@ -28,8 +25,7 @@ int main(int argc, const char* argv[])
         std::cout << "Bye-bye" << std::endl;
     });
 
-    auto port = kbase::CommandLine::ForCurrentProcess().GetSwitchValueAs<uint16_t>("port", 9876);
-
+    auto port = static_cast<std::uint16_t>(FLAGS_port);
     asio::ip::tcp::endpoint addr(asio::ip::tcp::v4(), port);
     Proxy proxy(ioc, addr);
     proxy.Start();

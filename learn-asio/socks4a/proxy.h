@@ -5,8 +5,6 @@
 #include "asio/io_context.hpp"
 #include "asio/ip/tcp.hpp"
 
-#include "kbase/basic_macros.h"
-
 #ifndef PROXY_H_
 #define PROXY_H_
 
@@ -18,9 +16,8 @@ public:
 
     ~Proxy() = default;
 
-    DISALLOW_COPY(Proxy);
-
-    DISALLOW_MOVE(Proxy);
+    Proxy(const Proxy&) = delete;
+    Proxy& operator=(const Proxy&) = delete;
 
     void Start();
 

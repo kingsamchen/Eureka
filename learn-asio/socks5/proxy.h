@@ -12,8 +12,6 @@
 #include "asio/io_context.hpp"
 #include "asio/ip/tcp.hpp"
 
-#include "kbase/basic_macros.h"
-
 #include "event_thread.h"
 
 using asio::ip::tcp;
@@ -24,9 +22,8 @@ public:
 
     ~Proxy() = default;
 
-    DISALLOW_COPY(Proxy);
-
-    DISALLOW_MOVE(Proxy);
+    Proxy(const Proxy&) = delete;
+    Proxy& operator=(const Proxy&) = delete;
 
     void Start();
 
@@ -45,4 +42,4 @@ private:
     size_t next_worker_id_;
 };
 
-#endif  // LEARN_ASIO_SOCKS5_PROXY_H_
+#endif // LEARN_ASIO_SOCKS5_PROXY_H_

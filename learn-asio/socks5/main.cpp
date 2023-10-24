@@ -3,22 +3,23 @@
 #include <iostream>
 #include <string>
 
-#include "argparse.hpp"
+#include "argparse/argparse.hpp"
 
 #include "asio/io_context.hpp"
 #include "asio/signal_set.hpp"
 
-#include "kbase/logging.h"
+#include "glog/logging.h"
 
 #include "proxy.h"
 
-int main(int argc, const char* argv[])
-{
+int main(int argc, const char* argv[]) {
+    google::InitGoogleLogging(argv[0]);
+
     argparse::ArgumentParser program("socks5-proxy");
     program.add_argument("-p", "--port")
-        .required()
-        .action([](const std::string& value) { return static_cast<uint16_t>(std::stoi(value)); })
-        .help("listening port");
+            .required()
+            .action([](const std::string& value) { return static_cast<uint16_t>(std::stoi(value)); })
+            .help("listening port");
 
     uint16_t port;
     try {
@@ -29,10 +30,6 @@ int main(int argc, const char* argv[])
         std::cout << program;
         return EXIT_FAILURE;
     }
-
-    kbase::LoggingSettings settings;
-    settings.logging_destination = kbase::LogToSystemDebugLog;
-    kbase::ConfigureLoggingSettings(settings);
 
     try {
         asio::io_context io_ctx;
