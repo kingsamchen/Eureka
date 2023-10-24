@@ -1,10 +1,4 @@
 
-CPMAddPackage(
-  NAME argparse
-  VERSION 2.1
-  GITHUB_REPOSITORY p-ranav/argparse
-)
-
 add_executable(socks5)
 
 target_sources(socks5
@@ -19,11 +13,13 @@ target_sources(socks5
     packets.h
 )
 
-apply_learn_asio_compile_conf(socks5)
+learn_asio_apply_common_compile_options(socks5)
 
 target_link_libraries(socks5
   PRIVATE
-    argparse
-    asio
-    kbase
+    argparse::argparse
+    asio::asio
+    esl::esl
+    fmt::fmt
+    glog::glog
 )

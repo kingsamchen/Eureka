@@ -4,7 +4,7 @@
 
 #include "proxy.h"
 
-#include "kbase/logging.h"
+#include "glog/logging.h"
 
 #include "tunnel.h"
 

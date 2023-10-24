@@ -1,10 +1,9 @@
 
 add_executable(endpoints main.cpp)
 
-apply_learn_asio_compile_conf(endpoints)
+learn_asio_apply_common_compile_options(endpoints)
 
 target_link_libraries(endpoints
   PRIVATE
-    asio
-    kbase
+    asio::asio
 )

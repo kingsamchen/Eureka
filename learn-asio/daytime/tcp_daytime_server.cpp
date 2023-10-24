@@ -2,31 +2,27 @@
  @ 0xCCCCCCCC
 */
 
-#include <iostream>
 #include <exception>
+#include <iostream>
 
 #include "asio/buffer.hpp"
 #include "asio/io_context.hpp"
 #include "asio/ip/tcp.hpp"
 #include "asio/write.hpp"
-
-#include "kbase/command_line.h"
+#include "gflags/gflags.h"
 
 using asio::ip::tcp;
 
-std::string MakeDaytime()
-{
+DEFINE_uint32(port, 9876, "listening port");
+
+std::string MakeDaytime() {
     time_t now = time(nullptr);
     return std::string(ctime(&now));
 }
 
-void RunServer()
-{
+void RunServer() {
     asio::io_context ctx;
-
-    auto port =
-        kbase::CommandLine::ForCurrentProcess().GetSwitchValueAs<int>("port", 9876);
-    tcp::acceptor acceptor(ctx, tcp::endpoint{tcp::v4(), static_cast<uint16_t>(port)});
+    tcp::acceptor acceptor(ctx, tcp::endpoint{tcp::v4(), static_cast<uint16_t>(FLAGS_port)});
 
     while (true) {
         tcp::socket conn_sock(ctx);
@@ -42,9 +38,8 @@ void RunServer()
     }
 }
 
-int main(int argc, const char* argv[])
-{
-    kbase::CommandLine::Init(argc, argv);
+int main(int argc, char* argv[]) {
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
 
     try {
         RunServer();

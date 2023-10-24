@@ -8,31 +8,28 @@
 #include "asio/executor_work_guard.hpp"
 #include "asio/io_context.hpp"
 #include "asio/signal_set.hpp"
+#include "fmt/format.h"
 
-int main()
-{
+int main() {
     asio::io_context ioc;
 
-    asio::signal_set signals(ioc, SIGINT, SIGTERM, SIGALRM);
+    asio::signal_set signals(ioc, SIGINT, SIGTERM);
 
     std::function<void()> p = [&] {
-        signals.async_wait([&ioc, &p](std::error_code ec, int sig_no) {
-            printf("Recv signal=%d\n", sig_no);
-            if (sig_no == SIGINT || sig_no == SIGTERM) {
-                ioc.stop();
-                printf("Quit\n");
-            }
-            p();
+        signals.async_wait([&ioc](std::error_code, int signo) {
+            fmt::println("Recv signal={}", signo);
+            ioc.stop();
+            fmt::println("Quit");
         });
     };
     p();
 
-    printf("Running\n");
+    fmt::println("Running");
 
     auto guard = asio::make_work_guard(ioc);
     ioc.run();
 
-    printf("main thread exit\n");
+    fmt::println("main thread exit");
 
     return 0;
 }
