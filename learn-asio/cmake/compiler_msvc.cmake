@@ -21,6 +21,7 @@ function(learn_asio_apply_common_compile_options TARGET)
       _UNICODE
       UNICODE
       NOMINMAX
+      _WIN32_WINNT=0x0601
 
       $<$<CONFIG:DEBUG>:
         _DEBUG

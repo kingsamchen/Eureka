@@ -13,6 +13,13 @@
             "generator": "Ninja Multi-Config",
             "binaryDir": "${sourceDir}/out/${presetName}",
             "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        },
+        {
+            "name": "windows",
+            "displayName": "Default config on Windows",
+            "description": "Default configuration",
+            "binaryDir": "${sourceDir}/out/${presetName}",
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
         }
     ]
 }
