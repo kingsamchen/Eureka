@@ -167,7 +167,6 @@ gradle/
 **/.idea/tasks.xml
 **/.idea/libraries/
 **/.idea/inspectionProfiles/
-build/
 local.properties
 gradle.properties
 gradlew
