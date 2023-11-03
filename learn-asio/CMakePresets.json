@@ -12,7 +12,11 @@
             "description": "Default configuration",
             "generator": "Ninja Multi-Config",
             "binaryDir": "${sourceDir}/out/${presetName}",
-            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+            "cacheVariables": {
+                "LEARN_ASIO_ENABLE_CLANG_TIDY": false,
+                "LEARN_ASIO_USE_SANITIZER": true
+            }
         },
         {
             "name": "windows",
