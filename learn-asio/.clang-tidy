@@ -34,7 +34,7 @@ Checks: >
   -readability-redundant-access-specifiers
 
 WarningsAsErrors: '*'
-HeaderFilterRegex: '(handling_signal)\/.*\.h$'
+HeaderFilterRegex: '(use-with-coroutine\/echo|use-with-coroutine\/chat)\/.*\.h$'
 
 CheckOptions:
   - key: cppcoreguidelines-macro-usage.CheckCapsOnly

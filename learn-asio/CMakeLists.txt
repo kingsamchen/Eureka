@@ -25,7 +25,6 @@ if(LEARN_ASIO_NOT_SUBPROJECT)
 endif()
 
 # Add options below.
-
 set(LEARN_ASIO_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(LEARN_ASIO_CMAKE_DIR ${LEARN_ASIO_DIR}/cmake)
 
@@ -36,6 +35,7 @@ message(STATUS "learn-asio GENERATOR = " ${CMAKE_GENERATOR})
 
 # Output configurations.
 get_property(MULTICONF_GENERATOR GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+
 if(LEARN_ASIO_NOT_SUBPROJECT)
   if(MULTICONF_GENERATOR)
     foreach(OUTPUTCONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
@@ -47,6 +47,7 @@ if(LEARN_ASIO_NOT_SUBPROJECT)
     if(NOT CMAKE_BUILD_TYPE)
       set(CMAKE_BUILD_TYPE "Release")
     endif()
+
     message(STATUS "learn-asio BUILD_TYPE = " ${CMAKE_BUILD_TYPE})
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -72,7 +73,14 @@ find_package(esl CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(gflags CONFIG REQUIRED)
 find_package(glog CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 find_package(Threads REQUIRED)
+
+target_compile_definitions(asio INTERFACE
+  $<$<BOOL:${WIN32}>:
+    _WIN32_WINNT=0x0601
+  >
+)
 
 add_subdirectory(daytime)
 add_subdirectory(echo)

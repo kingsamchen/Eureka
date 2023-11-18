@@ -4,10 +4,11 @@
     "dependencies": [
         "argparse",
         "asio",
-	"esl",
+        "esl",
         "fmt",
         "gflags",
-        "glog"
+        "glog",
+        "spdlog"
     ],
     "vcpkg-configuration": {
         "overlay-ports": [
