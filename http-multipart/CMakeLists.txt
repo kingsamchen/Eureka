@@ -30,7 +30,6 @@ set(HTTP_MULTIPART_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(HTTP_MULTIPART_CMAKE_DIR ${HTTP_MULTIPART_DIR}/cmake)
 
 include(CTest)
-include(${HTTP_MULTIPART_CMAKE_DIR}/CPM.cmake)
 
 message(STATUS "http-multipart GENERATOR = " ${CMAKE_GENERATOR})
 
@@ -67,7 +66,7 @@ endif()
 include(${HTTP_MULTIPART_CMAKE_DIR}/clang_tidy.cmake)
 
 find_package(doctest CONFIG REQUIRED)
+find_package(esl CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
-CPMAddPackage("gh:kingsamchen/esl#caeca99503f5566782d7f60b44582c01761b3117")
 
 add_subdirectory(multipart)

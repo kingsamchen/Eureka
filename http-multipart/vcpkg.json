@@ -3,6 +3,15 @@
   "version": "0.1.0",
   "dependencies": [
     "doctest",
+    "esl",
     "fmt"
-  ]
+  ],
+  "vcpkg-configuration": {
+    "overlay-ports": [
+      "./build/vcpkg-overlay/ports"
+    ],
+    "overlay-triplets": [
+      "./build/vcpkg-overlay/triplets"
+    ]
+  }
 }

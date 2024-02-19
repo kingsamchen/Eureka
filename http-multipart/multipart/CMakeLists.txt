@@ -15,8 +15,8 @@ target_include_directories(multipart
 target_link_libraries(multipart
   PRIVATE
     doctest::doctest
+    esl::esl
     fmt::fmt
-    esl
 )
 
 http_multipart_apply_common_compile_options(multipart)
