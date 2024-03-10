@@ -1,0 +1,8 @@
+{
+  "name": "json-serde",
+  "version": "0.1.0",
+  "dependencies": [
+    "cppcodec",
+    "nlohmann-json"
+  ]
+}
