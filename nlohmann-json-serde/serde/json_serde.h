@@ -19,7 +19,7 @@
 
 #define JSON_F_DE(member, name)       \
     {                                 \
-        if (j.contains(name)) {       \
+        if (j.contains(name) && !j[name].is_null()) {       \
             j[name].get_to(m.member); \
         }                             \
     }
@@ -35,6 +35,7 @@
 #define JSON_SERDE_OP_2ARGS_A(fn, x, y) JSON_SERDE_EXPAND_OP_2ARGS(fn, x, y, B)
 #define JSON_SERDE_OP_2ARGS_B(fn, x, y) JSON_SERDE_EXPAND_OP_2ARGS(fn, x, y, A)
 
+#define JSON_SERDE_OP_1ARGS(fn, x)
 #define JSON_SERDE_OP_0ARGS(fn)
 
 #define JSON_SERDE_CHOOSE_OP(_0, _1, _2, _3, name, ...) name

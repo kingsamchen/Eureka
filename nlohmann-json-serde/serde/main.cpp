@@ -3,7 +3,6 @@
 //
 
 #include <iostream>
-#include <tuple>
 
 #include "nlohmann/json.hpp"
 
@@ -56,7 +55,6 @@ public:
                                                  json_serde::base64_encoded))
         (extra_, "extra", json_serde::with_options(json_serde::omit_empty)))
 
-private:
     int seq_{0};
     int ts_{0};
     std::vector<int> ints_;
@@ -65,11 +63,17 @@ private:
 };
 
 int main() {
-    Message msg(42, 0, "test-on-the-fly");
-    auto j = nlohmann::json(msg);
-    std::cout << j.dump() << "\n";
-    Message msg2;
-    j.get_to(msg2);
-    std::cout << msg2;
+    auto j = R"(
+        {
+            "seq": 42,
+            "ts": 10240,
+            "ints": null,
+            "data": null,
+            "extra": null
+        }
+    )"_json;
+    Message msg;
+    j.get_to(msg);
+    std::cout << msg.extra_.s1.empty();
     return 0;
 }

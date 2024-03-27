@@ -47,7 +47,7 @@ void json_deserialize_with_opts(const nlohmann::json& j,
                                 std::string_view name,
                                 T& member_value,
                                 const std::tuple<Opt...>& opts) {
-    if (!j.contains(name)) {
+    if (!j.contains(name) || j[name].is_null()) {
         return;
     }
 
