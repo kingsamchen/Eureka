@@ -1,7 +1,7 @@
 FROM ubuntu:22.04
 
 LABEL maintainer="kingsamchen@gmail.com"
-LABEL release-date="2022-11-26"
+LABEL release-date="2024-05-04"
 
 ENV USER=dev
 ENV PASSWD=dev
@@ -26,3 +26,7 @@ RUN useradd -s /bin/bash -m ${USER} && yes ${PASSWD} | passwd ${USER} && \
     chmod 644 /etc/sudoers
 
 USER ${USER}
+
+COPY ./gitconfig /home/${USER}/.gitconfig
+COPY ./vimrc /home/${USER}/.vimrc
+
