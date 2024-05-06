@@ -1,0 +1,36 @@
+set nocompatible
+set modelines=0
+set backspace=indent,eol,start
+set nobackup
+set noswapfile
+set autoread
+set clipboard=unnamed
+set mouse=a
+set mousehide
+set completeopt=longest,menu
+syntax on
+filetype on
+colorscheme evening
+set encoding=utf-8
+set number
+set smartindent
+set autoindent
+set smarttab
+set tabstop=4
+set shiftwidth=4
+set expandtab
+set nowrap
+set ambiwidth=double
+set splitright
+set splitbelow
+set termguicolors       " enable 256color
+set cursorline
+set showmatch
+set sm!                 " highlight matched paren
+set hlsearch
+set ruler
+set novisualbell
+set showcmd
+set laststatus=2        " always show statusline
+set showtabline=2       " always show tabline
+set vb t_vb=
