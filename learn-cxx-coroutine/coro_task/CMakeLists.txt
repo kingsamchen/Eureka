@@ -17,6 +17,8 @@ target_include_directories(coro_task
 )
 
 target_link_libraries(coro_task
+  PRIVATE
+    fmt::fmt
 )
 
 learn_coroutine_apply_common_compile_options(coro_task)

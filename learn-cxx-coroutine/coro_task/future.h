@@ -6,6 +6,10 @@
 
 #include <coroutine>
 #include <cstdlib>
+#include <thread>
+
+#include "fmt/core.h"
+#include "fmt/std.h"
 
 namespace coro {
 
@@ -19,6 +23,7 @@ class future {
         }
 
         void return_value(const T& v) {
+            fmt::println("{}: {}", __PRETTY_FUNCTION__, std::this_thread::get_id());
             value = v;
         }
 
@@ -27,6 +32,7 @@ class future {
         }
 
         std::suspend_always final_suspend() noexcept {
+            fmt::println("{}: {}", __PRETTY_FUNCTION__, std::this_thread::get_id());
             return {};
         }
 
@@ -55,7 +61,11 @@ public:
     future& operator=(future&&) = delete;
 
     T get() {
-        handle_.resume();
+        fmt::println("{}: {}", __PRETTY_FUNCTION__, std::this_thread::get_id());
+        std::thread t([this]{
+            handle_.resume();
+        });
+        t.join();
         return handle_.promise().value;
     }
 

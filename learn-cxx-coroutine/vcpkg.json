@@ -1,5 +1,7 @@
 {
   "name": "learn-coroutine",
   "version": "0.1.0",
-  "dependencies": []
+  "dependencies": [
+    "fmt"
+  ]
 }
