@@ -40,10 +40,6 @@ if(MSVC)
         /wd6011 # Dereferencing potentially NULL pointer.
     )
   endif()
-else()
-  if(LEARN_COROUTINE_USE_SANITIZER)
-    learn_coroutine_apply_sanitizer(simple_generator)
-  endif()
 endif()
 
 get_target_property(simple_generator_FILES simple_generator SOURCES)
