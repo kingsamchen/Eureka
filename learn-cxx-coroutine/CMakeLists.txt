@@ -67,3 +67,4 @@ include(${LEARN_COROUTINE_CMAKE_DIR}/clang_tidy.cmake)
 include(${LEARN_COROUTINE_CMAKE_DIR}/sanitizer.cmake)
 
 add_subdirectory(simple_generator)
+add_subdirectory(coro_task)
