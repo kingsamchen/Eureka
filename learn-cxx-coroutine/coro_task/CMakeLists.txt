@@ -4,6 +4,8 @@ add_executable(coro_task)
 target_sources(coro_task
   PRIVATE
     main.cpp
+    future.h
+    job.h
 
   $<$<BOOL:${WIN32}>:
   >
