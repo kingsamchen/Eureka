@@ -12,19 +12,45 @@
 
 namespace coro {
 
+struct my_suspend_always {
+    bool await_ready() const noexcept {
+        fmt::println("        my_suspend_always::await_ready");
+        return false;
+    }
+    void await_suspend(std::coroutine_handle<>) const noexcept {
+        fmt::println("        my_suspend_always::await_suspend");
+    }
+    void await_resume() const noexcept {
+        fmt::println("        my_suspend_always::await_resume");
+    }
+};
+
+struct my_suspend_never {
+    bool await_ready() const noexcept {
+        fmt::println("        my_suspend_never::await_ready");
+        return true;
+    }
+    void await_suspend(std::coroutine_handle<>) const noexcept {
+        fmt::println("        my_suspend_never::await_suspend");
+    }
+    void await_resume() const noexcept {
+        fmt::println("        my_suspend_never::await_resume");
+    }
+};
+
 class job {
     struct promise {
         job get_return_object() {
             return job(std::coroutine_handle<promise>::from_promise(*this));
         }
 
-        std::suspend_always initial_suspend() noexcept {
+        my_suspend_always initial_suspend() noexcept {
             (void)this;
             fmt::println("Prepare the job");
             return {};
         }
 
-        std::suspend_always final_suspend() noexcept {
+        my_suspend_always final_suspend() noexcept {
             (void)this;
             fmt::println("Execute the job");
             return {};
