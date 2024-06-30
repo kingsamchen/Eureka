@@ -15,8 +15,8 @@
 // }
 
 coro::job prepare_job() {
- fmt::println("{}: {}", __PRETTY_FUNCTION__, std::this_thread::get_id());
-    co_await std::suspend_never{};
+    fmt::println("{}: {}", __PRETTY_FUNCTION__, std::this_thread::get_id());
+    co_await coro::my_suspend_never{};
 }
 
 int main() {
@@ -24,5 +24,6 @@ int main() {
     auto job = prepare_job();
     fmt::println("start the job");
     job.start();
+    fmt::println("after the job");
     return 0;
 }
