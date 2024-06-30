@@ -6,6 +6,7 @@ target_sources(coro_task
     main.cpp
     future.h
     job.h
+    job2.h
 
   $<$<BOOL:${WIN32}>:
   >
