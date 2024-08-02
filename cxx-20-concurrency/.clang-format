@@ -1,0 +1,40 @@
+---
+# Compliant to clang-foramt 17
+Language: Cpp
+BasedOnStyle: LLVM
+AccessModifierOffset: -4
+AlignConsecutiveBitFields: AcrossComments
+AlignConsecutiveMacros: AcrossComments
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortLambdasOnASingleLine: Inline
+AlwaysBreakTemplateDeclarations: Yes
+ColumnLimit: 0
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 8
+BracedInitializerIndentWidth: 4
+BreakAfterAttributes: Leave
+BreakBeforeConceptDeclarations: Always
+EmptyLineAfterAccessModifier: Never
+IfMacros: ['IF']
+IncludeCategories:
+  - Regex: '^<.*'
+    Priority: 1
+  - Regex: '^".*'
+    Priority: 2
+  - Regex: '.*'
+    Priority: 3
+IncludeIsMainRegex: '([-_](test|unittest))?$'
+IndentWidth: 4
+IndentRequiresClause: false
+InsertNewlineAtEOF: true
+KeepEmptyLinesAtTheStartOfBlocks: false
+LineEnding: LF
+PointerAlignment: Left
+QualifierAlignment: Custom
+QualifierOrder: ['inline', 'static', 'friend', 'constexpr', 'const', 'volatile', 'type']
+RequiresClausePosition: OwnLine
+ShortNamespaceLines: 0
+SpaceAfterTemplateKeyword: false
+SpaceBeforeParens: ControlStatementsExceptControlMacros
+...
