@@ -67,6 +67,8 @@ include(${LEARN_COROUTINE_CMAKE_DIR}/clang_tidy.cmake)
 include(${LEARN_COROUTINE_CMAKE_DIR}/sanitizer.cmake)
 
 find_package(fmt CONFIG REQUIRED)
+find_package(doctest CONFIG REQUIRED)
 
 add_subdirectory(simple_generator)
 add_subdirectory(coro_task)
+add_subdirectory(thread_pool)
