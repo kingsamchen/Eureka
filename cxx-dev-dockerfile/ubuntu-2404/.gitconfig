@@ -1,0 +1,38 @@
+[user]
+    name = Kingsley Chen
+    email = kingsamchen@gmail.com
+
+[core]
+    autocrlf = input
+    editor = vim
+    untrackedcache = true
+
+[i18n]
+    filesEncoding = utf-8
+
+[http]
+    proxy = http://127.0.0.1:10080
+[https]
+    proxy = http://127.0.0.1:10080
+
+[advice]
+    skippedCherryPicks = false
+
+[alias]
+    lg = log --graph --pretty=format:'%C(yellow)%d%Creset %C(cyan)%h%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=short --all
+    prune-local = "!prune_local() { git branch -vv | grep ': gone]' | awk '{ print $1}' | xargs git branch -D; }; prune_local"
+
+[credential]
+    helper = store
+
+[merge]
+    conflictstyle = diff3
+
+[push]
+    default = current
+
+[rerere]
+    enabled = true
+
+[diff]
+	external = difft
