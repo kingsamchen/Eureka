@@ -1,7 +1,0 @@
-{
-  "name": "cxx-20-concurrency",
-  "version": "0.1.0",
-  "dependencies": [
-    "fmt"
-  ]
-}
