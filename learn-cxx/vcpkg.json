@@ -1,0 +1,8 @@
+{
+  "name": "learn-cxx",
+  "version": "0.1.0",
+  "dependencies": [
+    "doctest",
+    "fmt"
+  ]
+}
