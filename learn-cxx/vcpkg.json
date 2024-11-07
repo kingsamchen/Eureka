@@ -3,6 +3,13 @@
   "version": "0.1.0",
   "dependencies": [
     "doctest",
-    "fmt"
-  ]
+    "esl",
+    "fmt",
+    "tl-generator"
+  ],
+  "vcpkg-configuration": {
+    "overlay-ports": [
+      "./build/vcpkg-overlay"
+    ]
+  }
 }
