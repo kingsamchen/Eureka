@@ -67,7 +67,10 @@ include(${LEARN_CXX_CMAKE_DIR}/clang_tidy.cmake)
 include(${LEARN_CXX_CMAKE_DIR}/sanitizer.cmake)
 
 find_package(doctest CONFIG REQUIRED)
+find_package(esl CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+
+find_path(TL_GENERATOR_INCLUDE_DIRS "tl/generator.hpp")
 
 add_subdirectory(concurrency)
 add_subdirectory(coroutine)
