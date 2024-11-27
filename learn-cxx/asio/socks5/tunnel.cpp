@@ -173,10 +173,10 @@ void Tunnel::ReadRequestpacket(std::unique_ptr<RequestPacket> packet, RequestPar
 
                         size_t length = static_cast<uint8_t>(pkt->dest_addr[0]);
                         pkt->dest_addr.resize(length);
-                        auto buf = asio::buffer(pkt->dest_addr.data(), length);
+                        auto buf2 = asio::buffer(pkt->dest_addr.data(), length);
                         asio::async_read(
                                 client_sock_,
-                                buf,
+                                buf2,
                                 [this, self = shared_from_this(), pkt = std::move(pkt)](auto e, auto) mutable {
                                     if (e) {
                                         LOG(ERROR) << "Failed to read request dest addr; ec=" << e;
@@ -260,15 +260,16 @@ void Tunnel::ConnetRemote(std::unique_ptr<RequestPacket> packet) {
 
     asio::async_connect(
             dial_sock_,
-            endpoints,
-            [this, self = shared_from_this()](auto ec, const auto& remote) {
+            endpoints.begin(),
+            endpoints.end(),
+            [this, self = shared_from_this()](auto ec, std::vector<tcp::endpoint>::iterator it_remote) {
                 if (ec) {
                     LOG(ERROR) << "Failed to connect to remote; ec=" << ec;
                     RejectClient(RejectReason::HostUnreachable);
                     return;
                 }
 
-                remote_addr_ = remote;
+                remote_addr_ = *it_remote;
 
                 ReplyRequest();
             });

@@ -1,4 +1,0 @@
-The package esl provides CMake targets:
-
-    find_package(esl CONFIG REQUIRED)
-    target_link_libraries(main PRIVATE esl::esl)
