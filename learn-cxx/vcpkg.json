@@ -2,9 +2,14 @@
   "name": "learn-cxx",
   "version": "0.1.0",
   "dependencies": [
+    "argparse",
+    "asio",
     "doctest",
     "esl",
     "fmt",
+    "gflags",
+    "glog",
+    "spdlog",
     "tl-generator"
   ],
   "vcpkg-configuration": {

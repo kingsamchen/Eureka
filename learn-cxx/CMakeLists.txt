@@ -66,12 +66,25 @@ endif()
 include(${LEARN_CXX_CMAKE_DIR}/clang_tidy.cmake)
 include(${LEARN_CXX_CMAKE_DIR}/sanitizer.cmake)
 
+find_package(argparse CONFIG REQUIRED)
+find_package(asio CONFIG REQUIRED)
 find_package(doctest CONFIG REQUIRED)
 find_package(esl CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+find_package(gflags CONFIG REQUIRED)
+find_package(glog CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(Threads REQUIRED)
 
 find_path(TL_GENERATOR_INCLUDE_DIRS "tl/generator.hpp")
 
+target_compile_definitions(asio::asio INTERFACE
+  $<$<BOOL:${WIN32}>:
+    _WIN32_WINNT=0x0601
+  >
+)
+
+add_subdirectory(asio)
 add_subdirectory(concurrency)
 add_subdirectory(coroutine)
 add_subdirectory(error_code_condition)

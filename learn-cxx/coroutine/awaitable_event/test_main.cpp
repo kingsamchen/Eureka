@@ -22,9 +22,9 @@ coro::no_return wait_for_one_event(coro::waitable_event& e, std::atomic_flag& fl
     try {
         // resume after the event is signaled ...
         co_await e;
-    } catch (std::system_error& e) {
+    } catch (std::system_error& ex) {
         // event throws if there was an internal system error
-        FAIL(e.what());
+        FAIL(ex.what());
     }
     flag.test_and_set();
 }
