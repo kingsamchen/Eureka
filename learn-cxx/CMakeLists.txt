@@ -66,8 +66,13 @@ endif()
 include(${LEARN_CXX_CMAKE_DIR}/clang_tidy.cmake)
 include(${LEARN_CXX_CMAKE_DIR}/sanitizer.cmake)
 
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
+
 find_package(argparse CONFIG REQUIRED)
 find_package(asio CONFIG REQUIRED)
+find_package(Boost CONFIG REQUIRED COMPONENTS asio beast)
 find_package(doctest CONFIG REQUIRED)
 find_package(esl CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
