@@ -4,6 +4,8 @@
   "dependencies": [
     "argparse",
     "asio",
+    "boost-asio",
+    "boost-beast",
     "doctest",
     "esl",
     "fmt",
