@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <string_view>
 
@@ -22,7 +23,7 @@ struct find_result {
 
 // Find a wildcard segment if existed and retrieve the wildcard name if valid.
 // A wildcard segment starts with `:` or `*` and the name cannot contains `:` and `*`.
-constexpr find_result find_wildcard(std::string_view path) {
+[[nodiscard]] constexpr find_result find_wildcard(std::string_view path) {
     const auto start = path.find_first_of(":*");
     if (start == std::string_view::npos) {
         return find_result{};
@@ -38,6 +39,13 @@ constexpr find_result find_wildcard(std::string_view path) {
     }
 
     return find_result{.wildcard_name = std::string_view{}, .pos = start};
+}
+
+// Returns length of common prefix.
+[[nodiscard]] constexpr std::size_t longest_common_prefix(std::string_view s1,
+                                                          std::string_view s2) {
+    auto iters = std::ranges::mismatch(s1, s2);
+    return static_cast<std::size_t>(std::distance(s1.begin(), iters.in1));
 }
 
 } // namespace http
