@@ -67,3 +67,26 @@ TEST_CASE("Find wildcard in path") {
         }
     }
 }
+
+TEST_CASE("Longest common prefix") {
+    SUBCASE("s1 is sub-string of s2") {
+        static_assert(http::longest_common_prefix("abc", "abcdef") == 3);
+    }
+
+    SUBCASE("s2 is sub-string of s1") {
+        static_assert(http::longest_common_prefix("abcdef", "abc") == 3);
+    }
+
+    SUBCASE("not substring but have common prefix") {
+        static_assert(http::longest_common_prefix("foobar", "foobaz") == 5);
+    }
+
+    SUBCASE("one of str is empty") {
+        static_assert(http::longest_common_prefix("", "foobar") == 0);
+        static_assert(http::longest_common_prefix("foobar", "") == 0);
+    }
+
+    SUBCASE("have none common prefix") {
+        static_assert(http::longest_common_prefix("hello", "foobar") == 0);
+    }
+}
