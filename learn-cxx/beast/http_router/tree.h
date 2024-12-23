@@ -17,7 +17,7 @@ struct find_result {
     }
 
     [[nodiscard]] constexpr bool valid_name() const noexcept {
-        return !wildcard_name.empty();
+        return wildcard_name.size() > 1;
     }
 };
 

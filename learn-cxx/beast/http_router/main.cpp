@@ -66,6 +66,20 @@ TEST_CASE("Find wildcard in path") {
             static_assert(!r.valid_name());
         }
     }
+
+    SUBCASE("empty wildcard name is also invalid") {
+        {
+            constexpr auto r = http::find_wildcard("/hello/:/");
+            static_assert(r.found());
+            static_assert(!r.valid_name());
+        }
+
+        {
+            constexpr auto r = http::find_wildcard("/hello/*/");
+            static_assert(r.found());
+            static_assert(!r.valid_name());
+        }
+    }
 }
 
 TEST_CASE("Longest common prefix") {
