@@ -10,8 +10,10 @@ if(LEARN_CXX_USE_CLANG_TIDY)
   message(STATUS "Found clang-tidy = ${CLANG_TIDY_EXE}")
 endif()
 
-function(learn_cxx_apply_clang_tidy TARGET)
-  message(STATUS "Apply learn_cxx clang-tidy for ${TARGET}")
+function(learn_cxx_clang_tidy TARGET)
+  if(NOT LEARN_CXX_USE_CLANG_TIDY)
+    return()
+  endif()
 
   if(MSVC AND CMAKE_GENERATOR MATCHES "Visual Studio")
     set_target_properties(${TARGET} PROPERTIES

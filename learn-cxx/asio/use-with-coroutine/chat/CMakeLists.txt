@@ -29,10 +29,5 @@ target_include_directories(coro_chat_server
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../
 )
 
-if(LEARN_CXX_USE_CLANG_TIDY)
-  learn_cxx_apply_clang_tidy(coro_chat_server)
-endif()
-
-if(LEARN_CXX_USE_SANITIZER)
-  learn_cxx_apply_sanitizer(coro_chat_server)
-endif()
+learn_cxx_clang_tidy(coro_chat_server)
+learn_cxx_sanitizers(coro_chat_server)

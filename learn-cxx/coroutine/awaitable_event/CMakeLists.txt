@@ -24,8 +24,8 @@ target_link_libraries(awaitable_event
     fmt::fmt
 )
 
-learn_cxx_apply_common_compile_options(awaitable_event)
+learn_cxx_common_compile_configs(awaitable_event)
 
-if(LEARN_CXX_USE_SANITIZER)
-  learn_cxx_apply_sanitizer(awaitable_event)
+if(LEARN_CXX_USE_SANITIZERS)
+  learn_cxx_sanitizers(awaitable_event)
 endif()

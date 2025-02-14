@@ -10,26 +10,14 @@ target_link_libraries(jthread_and_cancellation
     fmt::fmt
 )
 
-learn_cxx_apply_common_compile_options(jthread_and_cancellation)
+learn_cxx_common_compile_configs(jthread_and_cancellation)
 
 if(LEARN_CXX_USE_CLANG_TIDY)
-  learn_cxx_apply_clang_tidy(jthread_and_cancellation)
+  learn_cxx_clang_tidy(jthread_and_cancellation)
 endif()
 
-if(LEARN_CXX_USE_SANITIZER)
-  learn_cxx_apply_sanitizer(jthread_and_cancellation)
-endif()
-
-if(MSVC)
-  if(LEARN_CXX_USE_MSVC_PARALLEL_BUILD)
-    learn_cxx_apply_msvc_parallel_build(jthread_and_cancellation)
-  endif()
-  if(LEARN_CXX_USE_MSVC_STATIC_ANALYSIS)
-    learn_cxx_apply_msvc_static_analysis(jthread_and_cancellation
-      WDL
-        /wd6011 # Dereferencing potentially NULL pointer.
-    )
-  endif()
+if(LEARN_CXX_USE_SANITIZERS)
+  learn_cxx_sanitizers(jthread_and_cancellation)
 endif()
 
 #
@@ -47,26 +35,14 @@ target_link_libraries(use_latch
     fmt::fmt
 )
 
-learn_cxx_apply_common_compile_options(use_latch)
+learn_cxx_common_compile_configs(use_latch)
 
 if(LEARN_CXX_USE_CLANG_TIDY)
-  learn_cxx_apply_clang_tidy(use_latch)
+  learn_cxx_clang_tidy(use_latch)
 endif()
 
-if(LEARN_CXX_USE_SANITIZER)
-  learn_cxx_apply_sanitizer(use_latch)
-endif()
-
-if(MSVC)
-  if(LEARN_CXX_USE_MSVC_PARALLEL_BUILD)
-    learn_cxx_apply_msvc_parallel_build(use_latch)
-  endif()
-  if(LEARN_CXX_USE_MSVC_STATIC_ANALYSIS)
-    learn_cxx_apply_msvc_static_analysis(use_latch
-      WDL
-        /wd6011 # Dereferencing potentially NULL pointer.
-    )
-  endif()
+if(LEARN_CXX_USE_SANITIZERS)
+  learn_cxx_sanitizers(use_latch)
 endif()
 
 #
@@ -84,26 +60,14 @@ target_link_libraries(use_sem
     fmt::fmt
 )
 
-learn_cxx_apply_common_compile_options(use_sem)
+learn_cxx_common_compile_configs(use_sem)
 
 if(LEARN_CXX_USE_CLANG_TIDY)
-  learn_cxx_apply_clang_tidy(use_sem)
+  learn_cxx_clang_tidy(use_sem)
 endif()
 
-if(LEARN_CXX_USE_SANITIZER)
-  learn_cxx_apply_sanitizer(use_sem)
-endif()
-
-if(MSVC)
-  if(LEARN_CXX_USE_MSVC_PARALLEL_BUILD)
-    learn_cxx_apply_msvc_parallel_build(use_sem)
-  endif()
-  if(LEARN_CXX_USE_MSVC_STATIC_ANALYSIS)
-    learn_cxx_apply_msvc_static_analysis(use_sem
-      WDL
-        /wd6011 # Dereferencing potentially NULL pointer.
-    )
-  endif()
+if(LEARN_CXX_USE_SANITIZERS)
+  learn_cxx_sanitizers(use_sem)
 endif()
 
 get_target_property(concurrency_FILES jthread_and_cancellation SOURCES)
