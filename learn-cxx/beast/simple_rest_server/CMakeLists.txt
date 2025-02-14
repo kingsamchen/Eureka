@@ -18,8 +18,5 @@ target_link_libraries(simple_rest_server
     gflags::gflags
 )
 
-learn_cxx_apply_common_compile_options(simple_rest_server)
-
-if(LEARN_CXX_USE_SANITIZER)
-  learn_cxx_apply_sanitizer(simple_rest_server)
-endif()
+learn_cxx_common_compile_configs(simple_rest_server)
+learn_cxx_sanitizers(simple_rest_server)

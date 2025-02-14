@@ -24,28 +24,9 @@ target_link_libraries(coro_thread_pool
     fmt::fmt
 )
 
-learn_cxx_apply_common_compile_options(coro_thread_pool)
-
-if(LEARN_CXX_USE_CLANG_TIDY)
-  learn_cxx_apply_clang_tidy(coro_thread_pool)
-endif()
-
-if(LEARN_CXX_USE_SANITIZER)
-  learn_cxx_apply_sanitizer(coro_thread_pool)
-endif()
-
-# TODO: Edit at your will
-if(MSVC)
-  if(LEARN_CXX_USE_MSVC_PARALLEL_BUILD)
-    learn_cxx_apply_msvc_parallel_build(coro_thread_pool)
-  endif()
-  if(LEARN_CXX_USE_MSVC_STATIC_ANALYSIS)
-    learn_cxx_apply_msvc_static_analysis(coro_thread_pool
-      WDL
-        /wd6011 # Dereferencing potentially NULL pointer.
-    )
-  endif()
-endif()
+learn_cxx_common_compile_configs(coro_thread_pool)
+learn_cxx_clang_tidy(coro_thread_pool)
+learn_cxx_sanitizers(coro_thread_pool)
 
 get_target_property(coro_thread_pool_FILES coro_thread_pool SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${coro_thread_pool_FILES})

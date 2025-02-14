@@ -21,28 +21,9 @@ target_link_libraries(error_code_condition
     fmt::fmt
 )
 
-learn_cxx_apply_common_compile_options(error_code_condition)
-
-if(LEARN_CXX_ENABLE_CLANG_TIDY)
-  learn_cxx_apply_clang_tidy(error_code_condition)
-endif()
-
-# TODO: Edit at your will
-if(MSVC)
-  if(LEARN_CXX_USE_MSVC_PARALLEL_BUILD)
-    learn_cxx_apply_msvc_parallel_build(error_code_condition)
-  endif()
-  if(LEARN_CXX_USE_MSVC_STATIC_ANALYSIS)
-    learn_cxx_apply_msvc_static_analysis(error_code_condition
-      WDL
-        /wd6011 # Dereferencing potentially NULL pointer.
-    )
-  endif()
-else()
-  if(LEARN_CXX_USE_SANITIZER)
-    learn_cxx_apply_sanitizer(error_code_condition)
-  endif()
-endif()
+learn_cxx_common_compile_configs(error_code_condition)
+learn_cxx_sanitizers(error_code_condition)
+learn_cxx_clang_tidy(error_code_condition)
 
 get_target_property(error_code_condition_FILES error_code_condition SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${error_code_condition_FILES})

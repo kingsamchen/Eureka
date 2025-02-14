@@ -13,7 +13,7 @@ target_sources(socks5
     packets.h
 )
 
-learn_cxx_apply_common_compile_options(socks5)
+learn_cxx_common_compile_configs(socks5)
 
 target_link_libraries(socks5
   PRIVATE

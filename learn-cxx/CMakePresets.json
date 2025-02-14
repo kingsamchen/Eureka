@@ -15,7 +15,7 @@
             "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "LEARN_CXX_USE_SANITIZER": "ASAN;UBSAN",
+                "LEARN_CXX_USE_SANITIZERS": "ASAN;UBSAN",
                 "LEARN_CXX_USE_CLANG_TIDY": "ON"
             }
         },
@@ -36,9 +36,8 @@
             "binaryDir": "${sourceDir}/out/${presetName}",
             "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
             "cacheVariables": {
-                "LEARN_CXX_USE_SANITIZER": "ASAN",
-                "LEARN_CXX_USE_CLANG_TIDY": "ON",
-                "LEARN_CXX_USE_MSVC_STATIC_ANALYSIS": "ON"
+                "LEARN_CXX_USE_SANITIZERS": "ASAN",
+                "LEARN_CXX_USE_CLANG_TIDY": "ON"
             },
             "condition": {
                 "type": "equals",
@@ -52,8 +51,7 @@
             "displayName": "Windows Dev",
             "description": "Dev build on Windows",
             "cacheVariables": {
-                "LEARN_CXX_USE_CLANG_TIDY": "OFF",
-                "LEARN_CXX_USE_MSVC_STATIC_ANALYSIS": "OFF"
+                "LEARN_CXX_USE_CLANG_TIDY": "OFF"
             }
         }
     ],

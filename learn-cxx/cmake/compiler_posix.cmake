@@ -10,7 +10,7 @@ if(LEARN_CXX_NOT_SUBPROJECT)
   endif()
 endif()
 
-function(learn_cxx_apply_common_compile_options TARGET)
+function(learn_cxx_common_compile_configs TARGET)
   target_compile_definitions(${TARGET}
     PRIVATE
       $<$<CONFIG:DEBUG>:

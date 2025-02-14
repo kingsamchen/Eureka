@@ -22,28 +22,9 @@ target_link_libraries(try-ranges
     fmt::fmt
 )
 
-learn_cxx_apply_common_compile_options(try-ranges)
-
-if(LEARN_CXX_ENABLE_CLANG_TIDY)
-  learn_cxx_apply_clang_tidy(try-ranges)
-endif()
-
-# TODO: Edit at your will
-if(MSVC)
-  if(LEARN_CXX_USE_MSVC_PARALLEL_BUILD)
-    learn_cxx_apply_msvc_parallel_build(try-ranges)
-  endif()
-  if(LEARN_CXX_USE_MSVC_STATIC_ANALYSIS)
-    learn_cxx_apply_msvc_static_analysis(try-ranges
-      WDL
-        /wd6011 # Dereferencing potentially NULL pointer.
-    )
-  endif()
-else()
-  if(LEARN_CXX_USE_SANITIZER)
-    learn_cxx_apply_sanitizer(try-ranges)
-  endif()
-endif()
+learn_cxx_common_compile_configs(try-ranges)
+learn_cxx_clang_tidy(try-ranges)
+learn_cxx_sanitizers(try-ranges)
 
 get_target_property(try-ranges_FILES try-ranges SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${try-ranges_FILES})
