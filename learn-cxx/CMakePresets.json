@@ -51,6 +51,7 @@
             "displayName": "Windows Dev",
             "description": "Dev build on Windows",
             "cacheVariables": {
+                "LEARN_CXX_USE_SANITIZERS": "",
                 "LEARN_CXX_USE_CLANG_TIDY": "OFF"
             }
         }
