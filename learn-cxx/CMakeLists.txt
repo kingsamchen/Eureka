@@ -29,6 +29,9 @@ endif()
 set(LEARN_CXX_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(LEARN_CXX_CMAKE_DIR ${LEARN_CXX_DIR}/cmake)
 
+include(CheckIPOSupported)
+check_ipo_supported(RESULT supported OUTPUT error)
+
 include(CTest)
 
 message(STATUS "learn-cxx GENERATOR = " ${CMAKE_GENERATOR})

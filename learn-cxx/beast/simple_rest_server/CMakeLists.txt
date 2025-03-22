@@ -20,3 +20,5 @@ target_link_libraries(simple_rest_server
 
 learn_cxx_common_compile_configs(simple_rest_server)
 learn_cxx_sanitizers(simple_rest_server)
+
+set_target_properties(simple_rest_server PROPERTIES INTERPROCEDURAL_OPTIMIZATION ON)
