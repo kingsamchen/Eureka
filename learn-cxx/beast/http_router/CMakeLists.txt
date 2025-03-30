@@ -17,8 +17,5 @@ target_link_libraries(http_router
     doctest::doctest
 )
 
-learn_cxx_apply_common_compile_options(http_router)
-
-if(LEARN_CXX_USE_SANITIZER)
-  learn_cxx_apply_sanitizer(http_router)
-endif()
+learn_cxx_common_compile_configs(http_router)
+learn_cxx_sanitizers(http_router)
