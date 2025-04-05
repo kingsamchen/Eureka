@@ -15,6 +15,8 @@ target_include_directories(http_router
 target_link_libraries(http_router
   PRIVATE
     doctest::doctest
+    esl::esl
+    fmt::fmt
 )
 
 learn_cxx_common_compile_configs(http_router)
