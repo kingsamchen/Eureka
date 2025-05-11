@@ -4,6 +4,7 @@ add_executable(http_router)
 target_sources(http_router
   PRIVATE
     main.cpp
+    stringification.h
 
     tree.h
 )

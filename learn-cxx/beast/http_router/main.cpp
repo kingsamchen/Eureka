@@ -4,8 +4,11 @@
 #include "doctest/doctest.h"
 
 #include <esl/strings.h>
+#include <fmt/format.h>
 
 #include "http_router/tree.h"
+
+#include "http_router/stringification.h"
 
 int main(int argc, const char* argv[]) { // NOLINT(bugprone-exception-escape)
     doctest::Context context;
@@ -22,6 +25,12 @@ auto fake_handler() {
 }
 
 } // namespace
+
+// Cannot put into anonymous namespace to make sure ADL.
+std::ostream& operator<<(std::ostream& os, param p) { // NOLINT(misc-use-internal-linkage)
+    os << "(key=" << p.key << ", value=" << p.value << ")";
+    return os;
+}
 
 class node_test_stub {
 public:
@@ -63,11 +72,44 @@ public:
         return !!n_.handler_;
     }
 
+    int check_priorities() const { // NOLINT
+        int prio = 0;
+        for (auto child : children()) {
+            prio += child.check_priorities();
+        }
+
+        if (has_handler()) {
+            ++prio;
+        }
+
+        INFO("node path=", path());
+        CHECK_EQ(prio, n_.priority_);
+
+        return prio;
+    }
+
 private:
     const http::node& n_; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 } // namespace http
+
+struct locate_request {
+    std::string test_path;
+    bool handler_found;
+    std::string hit_route;
+    std::vector<http::param> params;
+
+    locate_request(std::string_view test,
+                   bool found)
+        : test_path(test), handler_found(found) {}
+
+    locate_request(std::string_view test,
+                   bool found,
+                   std::string_view route,
+                   std::vector<http::param> ps)
+        : test_path(test), handler_found(found), hit_route(route), params(std::move(ps)) {}
+};
 
 using http::node_test_stub;
 
@@ -263,6 +305,10 @@ TEST_CASE("Route is a subset of another route") {
 
 //
 // Tests adopted
+//
+
+//
+// Part 1: build tree
 //
 
 TEST_CASE("Only one wildcard per path segment is allowed") {
@@ -478,7 +524,201 @@ TEST_CASE("Path duplicates") {
     }
 }
 
-// TEST_CASE("Debug") {
-//     auto r = esl::strings::split("abc", '/').begin();
-//     CHECK_EQ(*r, "abc");
-// }
+TEST_CASE("Priorities of tree") {
+    http::node tree;
+
+    SUBCASE("simple routes") {
+        constexpr std::string_view paths[]{
+            "/hi",
+            "/contact",
+            "/co",
+            "/c",
+            "/a",
+            "/ab",
+            "/doc/",
+            "/doc/go_faq.html",
+            "/doc/go1.html",
+        };
+
+        for (const auto path : paths) {
+            tree.add_route(path, http::fake_handler());
+        }
+
+        node_test_stub stub(tree);
+        stub.check_priorities();
+    }
+
+    SUBCASE("wild routes") {
+        constexpr std::string_view paths[]{
+            "/",
+            "/cmd/:tool/:sub",
+            "/cmd/:tool/",
+            "/src/*filepath",
+            "/search/",
+            "/search/:query",
+            "/user_:name",
+            "/user_:name/about",
+            "/files/:dir/*filepath",
+            "/doc/",
+            "/doc/go_faq.html",
+            "/doc/go1.html",
+            "/info/:user/public",
+            "/info/:user/project/:project",
+        };
+
+        for (const auto path : paths) {
+            tree.add_route(path, http::fake_handler());
+        }
+
+        node_test_stub stub(tree);
+        stub.check_priorities();
+    }
+}
+
+//
+// Part 2: Locate
+//
+
+TEST_CASE("Locate non-wild path") {
+    constexpr std::string_view paths[]{
+        "/hi",
+        "/contact",
+        "/co",
+        "/c",
+        "/a",
+        "/ab",
+        "/doc/",
+        "/doc/go_faq.html",
+        "/doc/go1.html",
+    };
+
+    http::node tree;
+    std::string handler_path;
+    for (const auto path : paths) {
+        tree.add_route(path, [&handler_path, path](auto, auto) {
+            handler_path = path;
+        });
+    }
+
+    locate_request requests[]{
+        {"/a", true},
+        {"/", false},
+        {"/hi", true},
+        {"/contact", true},
+        {"/co", true},
+        {"/con", false},
+        {"/cona", false},
+        {"/no", false},
+        {"/ab", true},
+        {"/doc", false},
+        {"/doc/", true},
+    };
+
+    std::vector<http::param> params;
+    for (const auto& req : requests) {
+        auto* handler = tree.locate(req.test_path, params);
+        CHECK_EQ(handler != nullptr, req.handler_found);
+        if (handler) {
+            (*handler)({}, {});
+            CHECK_EQ(handler_path, req.test_path);
+        }
+    }
+}
+
+TEST_CASE("Locate wildcard path") {
+    constexpr std::string_view paths[]{
+        "/",
+        "/cmd/:tool/:sub",
+        "/cmd/:tool/",
+        "/src/*filepath",
+        "/search/",
+        "/search/:query",
+        "/user_:name",
+        "/user_:name/about",
+        "/files/:dir/*filepath",
+        "/doc/",
+        "/doc/go_faq.html",
+        "/doc/go1.html",
+        "/info/:user/public",
+        "/info/:user/project/:project",
+    };
+
+    http::node tree;
+    std::string handler_path;
+    for (const auto path : paths) {
+        tree.add_route(path, [&handler_path, path](auto, auto) {
+            handler_path = path;
+        });
+    }
+
+    locate_request requests[]{
+        {"/", true, "/", {}},
+        {"/cmd/test/", true, "/cmd/:tool/", {{.key = "tool", .value = "test"}}},
+        {"/cmd/test", false, "", {{.key = "tool", .value = "test"}}},
+        {"/cmd/test/3",
+         true,
+         "/cmd/:tool/:sub",
+         {{.key = "tool", .value = "test"}, {.key = "sub", .value = "3"}}},
+        {"/src/", true, "/src/*filepath", {{.key = "filepath", .value = "/"}}},
+        {"/src/some/file.png",
+         true,
+         "/src/*filepath",
+         {{.key = "filepath", .value = "/some/file.png"}}},
+        {"/search/", true, "/search/", {}},
+        {"/search/someth!ng+in+ünìcodé",
+         true,
+         "/search/:query",
+         {{.key = "query", .value = "someth!ng+in+ünìcodé"}}},
+        {"/search/someth!ng+in+ünìcodé/",
+         false,
+         "",
+         {{.key = "query", .value = "someth!ng+in+ünìcodé"}}},
+        {"/user_test", true, "/user_:name", {{.key = "name", .value = "test"}}},
+        {"/user_test/about", true, "/user_:name/about", {{.key = "name", .value = "test"}}},
+        {"/files/js/inc/framework.js",
+         true,
+         "/files/:dir/*filepath",
+         {{.key = "dir", .value = "js"}, {.key = "filepath", .value = "/inc/framework.js"}}},
+        {"/info/gordon/public", true, "/info/:user/public", {{.key = "user", .value = "gordon"}}},
+        {"/info/gordon/project/go",
+         true,
+         "/info/:user/project/:project",
+         {{.key = "user", .value = "gordon"}, {.key = "project", .value = "go"}}},
+    };
+
+    for (const auto& req : requests) {
+        INFO("Test path=", req.test_path);
+        std::vector<http::param> params;
+        auto* handler = tree.locate(req.test_path, params);
+        CHECK_EQ(req.params, params);
+        CHECK_EQ(handler != nullptr, req.handler_found);
+        if (handler) {
+            (*handler)({}, {});
+            CHECK_EQ(handler_path, req.hit_route);
+        }
+    }
+}
+
+TEST_CASE("Debug") {
+    std::vector<http::param> params;
+    params.reserve(8);
+    http::node tree;
+    tree.add_route("/hello", http::fake_handler());
+    tree.add_route("/hello/world", http::fake_handler());
+    tree.add_route("/hello/test/*name", http::fake_handler());
+    tree.add_route("/user/:name/test", http::fake_handler());
+    auto* ptr = tree.locate("/hello/world", params);
+    CHECK_NE(ptr, nullptr);
+    CHECK(params.empty());
+    CHECK_EQ(tree.locate("/hell/no", params), nullptr);
+    CHECK(params.empty());
+    CHECK_NE(tree.locate("/hello/test/john", params), nullptr);
+    CHECK_FALSE(params.empty());
+    CHECK_EQ(params[0].key, "name");
+    CHECK_EQ(params[0].value, "/john");
+
+    params.clear();
+    CHECK_NE(tree.locate("/user/kingsley/test", params), nullptr);
+    CHECK_EQ(params[0].key, "name");
+    CHECK_EQ(params[0].value, "kingsley");
+}
