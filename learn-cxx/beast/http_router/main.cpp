@@ -478,7 +478,20 @@ TEST_CASE("Path duplicates") {
     }
 }
 
-// TEST_CASE("Debug") {
-//     auto r = esl::strings::split("abc", '/').begin();
-//     CHECK_EQ(*r, "abc");
-// }
+TEST_CASE("Debug") {
+    std::vector<http::param> params;
+    params.reserve(8);
+    http::node tree;
+    tree.add_route("/hello", http::fake_handler());
+    tree.add_route("/hello/world", http::fake_handler());
+    tree.add_route("/hello/test/*name", http::fake_handler());
+    auto* ptr = tree.locate("/hello/world", params);
+    CHECK_NE(ptr, nullptr);
+    CHECK(params.empty());
+    CHECK_EQ(tree.locate("/hell/no", params), nullptr);
+    CHECK(params.empty());
+    CHECK_NE(tree.locate("/hello/test/john", params), nullptr);
+    CHECK_FALSE(params.empty());
+    CHECK_EQ(params[0].key, "name");
+    CHECK_EQ(params[0].value, "/john");
+}

@@ -22,6 +22,11 @@ struct response {};
 
 using handler = std::function<void(request, response)>;
 
+struct param {
+    std::string_view key;
+    std::string_view value;
+};
+
 struct wildcard_result {
     std::string_view name;
     std::size_t pos{std::string_view::npos};
@@ -86,6 +91,40 @@ public:
         }
 
         insert_route(path, full_path, std::move(handler));
+    }
+
+    // TODO(KC): make the locate const-ness? how to resolve non-const handler issue?
+    handler* locate(std::string_view path, std::vector<param>& params) {
+        if (path.size() == path_.size()) {
+            return handler_ ? &handler_ : nullptr;
+        }
+
+        if (path.size() > path_.size() && path.starts_with(path_)) {
+            path.remove_prefix(path_.size());
+
+            if (!has_wild_child_) {
+                const char idxc = path[0];
+                const auto pos = indices_.find(idxc);
+                if (pos == std::string::npos) {
+                    return nullptr;
+                }
+
+                return children_[pos]->locate(path, params);
+            }
+
+            assert(params.size() < params.capacity());
+            auto& child = *children_.front();
+            if (child.type_ == type::param) {
+            } else if (child.type_ == type::catch_all) {
+                params.push_back(param{.key = std::string_view{child.path_}.substr(2),
+                                       .value = path});
+                return &child.handler_;
+            } else [[unlikely]] {
+                throw std::runtime_error(fmt::format("node type '{}' of route '{}' is invalid"));
+            }
+        }
+
+        return nullptr;
     }
 
 private:
