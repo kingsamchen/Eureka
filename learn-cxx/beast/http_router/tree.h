@@ -20,7 +20,20 @@ namespace http {
 struct request {};
 struct response {};
 
-using handler = std::function<void(request, response)>;
+using handler_t = std::function<void(request, response)>;
+
+// TODO(KC): put into esl.
+template<typename E>
+constexpr std::underlying_type_t<E> to_underlying(E e) {
+    return static_cast<std::underlying_type_t<E>>(e);
+}
+
+struct param {
+    std::string_view key;
+    std::string_view value;
+
+    friend bool operator==(param lhs, param rhs) = default;
+};
 
 struct wildcard_result {
     std::string_view name;
@@ -34,6 +47,9 @@ struct wildcard_result {
         return name.size() > 1;
     }
 };
+
+// Valid since C++20.
+static_assert(std::is_aggregate_v<wildcard_result>);
 
 inline constexpr wildcard_result unknown_wildcard;
 
@@ -74,13 +90,13 @@ class node {
     };
 
 public:
-    void add_route(std::string_view path, handler handler) {
+    void add_route(std::string_view path, handler_t handler) {
         // The sub-tree rooted by the node has one more route.
         ++priority_;
 
         auto full_path = path;
         if (path_.empty() && indices_.empty()) {
-            insert_path(path, full_path, wildcard_result{}, std::move(handler));
+            insert_path(path, full_path, unknown_wildcard, std::move(handler));
             type_ = type::root;
             return;
         }
@@ -88,8 +104,57 @@ public:
         insert_route(path, full_path, std::move(handler));
     }
 
+    // TODO(KC): make the locate const-ness? how to resolve non-const handler issue?
+    handler_t* locate(std::string_view path, std::vector<param>& params) {
+        if (path.size() == path_.size()) {
+            return handler_ ? &handler_ : nullptr;
+        }
+
+        if (path.size() > path_.size() && path.starts_with(path_)) {
+            path.remove_prefix(path_.size());
+
+            if (!has_wild_child_) {
+                const char idxc = path[0];
+                const auto pos = indices_.find(idxc);
+                if (pos == std::string::npos) {
+                    return nullptr;
+                }
+
+                return children_[pos]->locate(path, params);
+            }
+
+            // TODO(KC): restrict dynamic allocation for params???
+            // assert(params.size() < params.capacity());
+            auto& child = *children_.front();
+            if (child.type_ == type::param) {
+                const auto param_end = path.find('/');
+
+                params.push_back(param{.key = std::string_view{child.path_}.substr(1),
+                                       .value = path.substr(0, param_end)});
+
+                if (param_end == std::string_view::npos) {
+                    return child.handler_ ? &child.handler_ : nullptr;
+                }
+
+                // Go deeper.
+                if (!child.children_.empty()) {
+                    return child.children_[0]->locate(path.substr(param_end), params);
+                }
+            } else if (child.type_ == type::catch_all) {
+                params.push_back(param{.key = std::string_view{child.path_}.substr(2),
+                                       .value = path});
+                return &child.handler_;
+            } else [[unlikely]] {
+                throw std::runtime_error(fmt::format("node type '{}' of route '{}' is invalid",
+                                                     to_underlying(child.type_), child.path_));
+            }
+        }
+
+        return nullptr;
+    }
+
 private:
-    void insert_route(std::string_view path, std::string_view full_path, handler handler) {
+    void insert_route(std::string_view path, std::string_view full_path, handler_t handler) {
         const auto len = longest_common_prefix(path, path_);
 
         // Split current node to make node path equal to common prefix.
@@ -170,15 +235,15 @@ private:
             children_.push_back(std::make_unique<node>());
             auto& child = *children_.back();
             esl::ignore_unused(increment_child_priority(indices_.size() - 1));
-            child.insert_path(path, full_path, wildcard_result{}, std::move(handler));
+            child.insert_path(path, full_path, unknown_wildcard, std::move(handler));
             return;
         }
 
-        insert_path(path, full_path, wildcard_result{}, std::move(handler));
+        insert_path(path, full_path, unknown_wildcard, std::move(handler));
     }
 
     void insert_path(std::string_view path, std::string_view full_path, wildcard_result wildcard,
-                     handler handler) {
+                     handler_t handler) {
         // The invocation with no wildcard means we haven't scanned the `path` yet.
         // Let's scan the path in flight.
         if (!wildcard.found()) {
@@ -205,28 +270,30 @@ private:
             const auto plain_segments = path.substr(0, wildcard.pos);
             if (!plain_segments.empty()) {
                 path_ = plain_segments;
-                has_wild_child_ = true;
-
-                children_.push_back(std::make_unique<node>());
-                auto& child = *children_.back();
-                ++child.priority_;
-                auto pos = std::exchange(wildcard.pos, 0);
-                child.insert_path(path.substr(pos), full_path, wildcard, std::move(handler));
-            } else {
-                path_ = wildcard.name;
-                type_ = type::param;
-
-                if (path.size() == wildcard.name.size()) {
-                    handler_ = std::move(handler);
-                    return;
-                }
-
-                children_.push_back(std::make_unique<node>());
-                auto& child = *children_.back();
-                ++child.priority_;
-                child.insert_path(path.substr(wildcard.name.size()), full_path, unknown_wildcard,
-                                  std::move(handler));
+                path.remove_prefix(plain_segments.size());
             }
+
+            has_wild_child_ = true;
+
+            // The param node.
+            children_.push_back(std::make_unique<node>());
+            auto& child = *children_.back();
+            child.priority_ = 1;
+            child.type_ = type::param;
+            child.path_ = wildcard.name;
+
+            // The path ends with the wildcard, the param node is the leaf.
+            if (path.size() == wildcard.name.size()) {
+                child.handler_ = std::move(handler);
+                return;
+            }
+
+            // There are another non-wildcard subpath.
+            child.children_.push_back(std::make_unique<node>());
+            auto& grand_child = *child.children_.back();
+            grand_child.priority_ = 1;
+            grand_child.insert_path(path.substr(wildcard.name.size()), full_path, unknown_wildcard,
+                                    std::move(handler));
         } else {
             if (wildcard.pos + wildcard.name.size() != path.size()) {
                 throw std::invalid_argument(fmt::format(
@@ -305,7 +372,7 @@ private:
     type type_{type::plain};
     int priority_{0};
     std::vector<std::unique_ptr<node>> children_;
-    handler handler_;
+    handler_t handler_;
 
     friend class node_test_stub;
 };
