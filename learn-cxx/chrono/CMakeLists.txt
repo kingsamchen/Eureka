@@ -14,6 +14,8 @@ target_link_libraries(use_chrono
   PRIVATE
     doctest::doctest
     fmt::fmt
+    date::date
+    date::date-tz
 )
 
 learn_cxx_common_compile_configs(use_chrono)
