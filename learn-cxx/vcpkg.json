@@ -6,6 +6,7 @@
     "asio",
     "boost-asio",
     "boost-beast",
+    "date",
     "doctest",
     "esl",
     "fmt",
