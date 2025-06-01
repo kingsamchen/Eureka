@@ -95,8 +95,9 @@ target_compile_definitions(asio::asio INTERFACE
 
 add_subdirectory(asio)
 add_subdirectory(beast)
+add_subdirectory(chrono)
 add_subdirectory(concurrency)
 add_subdirectory(coroutine)
-add_subdirectory(chrono)
+add_subdirectory(cpo)
 add_subdirectory(error_code_condition)
 add_subdirectory(ranges)
