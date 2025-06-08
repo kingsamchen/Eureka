@@ -2,29 +2,36 @@
  @ 0xCCCCCCCC
 */
 
-#include <iostream>
+#include <cstdint>
 
-#include "asio.hpp"
+#include <asio/ip/address.hpp>
+#include <asio/ip/tcp.hpp>
 
-void sample1() {
-    [[maybe_unused]] auto any = asio::ip::address_v4::any();
-    [[maybe_unused]] auto bc_addr = asio::ip::address_v4::broadcast();
-    [[maybe_unused]] auto loopback = asio::ip::address_v6::loopback();
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest/doctest.h>
 
-    asio::ip::tcp::endpoint ep;
+namespace {
+
+asio::ip::tcp::endpoint make_endpoint(const std::string& addr, std::uint16_t port) {
+    return asio::ip::tcp::endpoint(asio::ip::make_address(addr), port);
 }
 
-void test_poll() {
-    asio::io_context ctx;
-
-    asio::signal_set sig(ctx, SIGINT, SIGTERM);
-    sig.async_wait([](auto, auto) {
-        std::cout << "signaled\n";
-    });
-
-    ctx.poll();
+asio::ip::tcp::endpoint make_endpoint(std::uint16_t port) {
+    return make_endpoint("0.0.0.0", port);
 }
 
-int main() {
-    return 0;
+} // namespace
+
+TEST_CASE("Make tcp endpoint") {
+    auto ep = make_endpoint(8080);
+    CHECK_EQ(ep.port(), 8080);
+    CHECK(ep.address().is_v4());
+    CHECK_EQ(ep.address().to_string(), "0.0.0.0");
+}
+
+TEST_CASE("Make ipv6 tcp endpoint") {
+    auto ep = make_endpoint("::", 9876);
+    CHECK_EQ(ep.port(), 9876);
+    CHECK(ep.address().is_v6());
+    CHECK_EQ(ep.address().to_string(), "::");
 }

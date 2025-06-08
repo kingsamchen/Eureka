@@ -49,5 +49,5 @@ CheckOptions:
   - key: readability-magic-numbers.IgnorePowersOf2IntegerValues
     value: 1
   - key: readability-magic-numbers.IgnoredIntegerValues
-    value: 0;1;2;3;4;5;6;7;8;9;10;42;100;1000
+    value: 0;1;2;3;4;5;6;7;8;9;10;42;100;1000;80;443;8080;9876
 ...
