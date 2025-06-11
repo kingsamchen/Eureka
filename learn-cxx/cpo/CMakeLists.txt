@@ -4,7 +4,8 @@ add_executable(cpo)
 target_sources(cpo
   PRIVATE
     main.cpp
-    cpo.h
+    cpo_member_function.h
+    cpo_tag_invoke.h
 )
 
 target_include_directories(cpo
