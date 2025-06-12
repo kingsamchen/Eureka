@@ -1,0 +1,3 @@
+
+add_executable(cpp11_windows_transmit_file transmit_file.cpp)
+target_link_libraries(cpp11_windows_transmit_file Boost::asio)

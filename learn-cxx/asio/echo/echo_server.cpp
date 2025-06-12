@@ -47,6 +47,8 @@ private:
                         return;
                     }
 
+                    buf_[bytes+1] = '\0';
+                    std::puts(buf_.data());
                     DoWrite(bytes);
                 });
     }

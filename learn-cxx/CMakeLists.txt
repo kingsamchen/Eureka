@@ -73,15 +73,19 @@ if(POLICY CMP0167)
   cmake_policy(SET CMP0167 NEW)
 endif()
 
+find_package(PkgConfig)
+pkg_check_modules(liburing REQUIRED IMPORTED_TARGET liburing)
+
 find_package(argparse CONFIG REQUIRED)
 find_package(asio CONFIG REQUIRED)
-find_package(Boost CONFIG REQUIRED COMPONENTS asio beast)
+find_package(Boost CONFIG REQUIRED COMPONENTS asio beast serialization thread)
 find_package(date CONFIG REQUIRED)
 find_package(doctest CONFIG REQUIRED)
 find_package(esl CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(gflags CONFIG REQUIRED)
 find_package(glog CONFIG REQUIRED)
+find_package(OpenSSL CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 
@@ -91,6 +95,15 @@ target_compile_definitions(asio::asio INTERFACE
   $<$<BOOL:${WIN32}>:
     _WIN32_WINNT=0x0601
   >
+)
+
+target_compile_definitions(Boost::asio
+  INTERFACE
+    $<$<BOOL:${WIN32}>:
+      _WIN32_WINNT=0x0601
+    >
+
+    BOOST_ASIO_HAS_IO_URING
 )
 
 add_subdirectory(asio)

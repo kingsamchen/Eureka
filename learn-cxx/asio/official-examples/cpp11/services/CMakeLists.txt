@@ -1,0 +1,3 @@
+
+add_executable(cpp11_services_daytime_cli daytime_client.cpp logger_service.cpp)
+target_link_libraries(cpp11_services_daytime_cli Boost::asio)

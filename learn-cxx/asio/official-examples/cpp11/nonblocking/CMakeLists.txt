@@ -1,0 +1,2 @@
+add_executable(cpp11_third_party_non_blocking third_party_lib.cpp)
+target_link_libraries(cpp11_third_party_non_blocking Boost::asio)

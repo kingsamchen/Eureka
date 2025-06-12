@@ -1,0 +1,15 @@
+
+add_executable(cpp11_timeouts_async_tcp_client async_tcp_client.cpp)
+target_link_libraries(cpp11_timeouts_async_tcp_client Boost::asio)
+
+add_executable(cpp11_timeouts_blocking_tcp_client blocking_tcp_client.cpp)
+target_link_libraries(cpp11_timeouts_blocking_tcp_client Boost::asio)
+
+add_executable(cpp11_timeouts_blocking_udp_client blocking_udp_client.cpp)
+target_link_libraries(cpp11_timeouts_blocking_udp_client Boost::asio)
+
+add_executable(cpp11_timeouts_blocking_token_tcp_client blocking_token_tcp_client.cpp)
+target_link_libraries(cpp11_timeouts_blocking_token_tcp_client Boost::asio)
+
+add_executable(cpp11_timeouts_server server.cpp)
+target_link_libraries(cpp11_timeouts_server Boost::asio)
