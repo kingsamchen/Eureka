@@ -7,3 +7,5 @@ add_subdirectory(socks4a)
 add_subdirectory(socks5)
 add_subdirectory(timer)
 add_subdirectory(use-with-coroutine)
+
+add_subdirectory(official-examples/cpp11)

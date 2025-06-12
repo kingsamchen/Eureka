@@ -93,6 +93,12 @@ target_compile_definitions(asio::asio INTERFACE
   >
 )
 
+target_compile_definitions(Boost::asio INTERFACE
+  $<$<BOOL:${WIN32}>:
+    _WIN32_WINNT=0x0601
+  >
+)
+
 add_subdirectory(asio)
 add_subdirectory(beast)
 add_subdirectory(chrono)
