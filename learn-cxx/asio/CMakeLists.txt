@@ -10,3 +10,4 @@ add_subdirectory(timer)
 add_subdirectory(use-with-coroutine)
 
 add_subdirectory(official-examples/cpp11)
+add_subdirectory(official-examples/cpp14)
