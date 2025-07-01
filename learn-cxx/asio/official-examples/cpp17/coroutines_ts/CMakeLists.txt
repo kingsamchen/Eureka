@@ -1,0 +1,21 @@
+
+add_executable(cpp17_coro_chat_server chat_server.cpp)
+target_link_libraries(cpp17_coro_chat_server Boost::asio)
+
+add_executable(cpp17_coro_echo_server echo_server.cpp)
+target_link_libraries(cpp17_coro_echo_server Boost::asio)
+
+add_executable(cpp17_coro_refactored_echo_server refactored_echo_server.cpp)
+target_link_libraries(cpp17_coro_refactored_echo_server Boost::asio)
+
+add_executable(cpp17_coro_echo_server_default echo_server_with_default.cpp)
+target_link_libraries(cpp17_coro_echo_server_default Boost::asio)
+
+add_executable(cpp17_coro_echo_server_tuple_default echo_server_with_as_tuple_default.cpp)
+target_link_libraries(cpp17_coro_echo_server_tuple_default Boost::asio)
+
+add_executable(cpp17_coro_echo_server_single_default echo_server_with_as_single_default.cpp)
+target_link_libraries(cpp17_coro_echo_server_single_default Boost::asio)
+
+# add_executable(cpp17_coro_range_based_for range_based_for.cpp)
+# target_link_libraries(cpp17_coro_range_based_for Boost::asio)

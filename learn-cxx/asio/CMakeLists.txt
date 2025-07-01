@@ -11,3 +11,4 @@ add_subdirectory(use-with-coroutine)
 
 add_subdirectory(official-examples/cpp11)
 add_subdirectory(official-examples/cpp14)
+add_subdirectory(official-examples/cpp17)
