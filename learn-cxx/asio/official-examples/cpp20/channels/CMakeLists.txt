@@ -1,0 +1,9 @@
+
+add_executable(cpp20_channels_mutual_exclusion_1 mutual_exclusion_1.cpp)
+target_link_libraries(cpp20_channels_mutual_exclusion_1 Boost::asio)
+
+add_executable(cpp20_channels_mutual_exclusion_2 mutual_exclusion_2.cpp)
+target_link_libraries(cpp20_channels_mutual_exclusion_2 Boost::asio)
+
+add_executable(cpp20_channels_throttling_proxy throttling_proxy.cpp)
+target_link_libraries(cpp20_channels_throttling_proxy Boost::asio)

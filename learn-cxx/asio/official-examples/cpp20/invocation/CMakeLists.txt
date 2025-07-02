@@ -1,0 +1,3 @@
+
+add_executable(cpp20_completion_invocation completion_invocation.cpp)
+target_link_libraries(cpp20_completion_invocation Boost::asio)

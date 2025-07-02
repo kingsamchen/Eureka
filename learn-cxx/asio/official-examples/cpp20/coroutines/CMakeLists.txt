@@ -1,0 +1,27 @@
+
+add_executable(cpp20_coro_chat_server chat_server.cpp)
+target_link_libraries(cpp20_coro_chat_server Boost::asio)
+
+add_executable(cpp20_coro_echo_server echo_server.cpp)
+target_link_libraries(cpp20_coro_echo_server Boost::asio)
+
+add_executable(cpp20_coro_refactored_echo_server refactored_echo_server.cpp)
+target_link_libraries(cpp20_coro_refactored_echo_server Boost::asio)
+
+add_executable(cpp20_coro_echo_server_default echo_server_with_default.cpp)
+target_link_libraries(cpp20_coro_echo_server_default Boost::asio)
+
+add_executable(cpp20_coro_echo_server_tuple_default echo_server_with_as_tuple_default.cpp)
+target_link_libraries(cpp20_coro_echo_server_tuple_default Boost::asio)
+
+add_executable(cpp20_coro_echo_server_single_default echo_server_with_as_single_default.cpp)
+target_link_libraries(cpp20_coro_echo_server_single_default Boost::asio)
+
+add_executable(cpp20_coro_echo_server_deferred echo_server_with_deferred.cpp)
+target_link_libraries(cpp20_coro_echo_server_deferred Boost::asio)
+
+add_executable(cpp20_coro_echo_server_deferred_default echo_server_with_deferred_default.cpp)
+target_link_libraries(cpp20_coro_echo_server_deferred_default Boost::asio)
+
+add_executable(cpp20_coro_timeout timeout.cpp)
+target_link_libraries(cpp20_coro_timeout Boost::asio)
