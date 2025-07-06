@@ -68,6 +68,7 @@ endif()
 
 include(${LEARN_CXX_CMAKE_DIR}/clang_tidy.cmake)
 include(${LEARN_CXX_CMAKE_DIR}/sanitizer.cmake)
+include(${LEARN_CXX_CMAKE_DIR}/pch.cmake)
 
 if(POLICY CMP0167)
   cmake_policy(SET CMP0167 NEW)
