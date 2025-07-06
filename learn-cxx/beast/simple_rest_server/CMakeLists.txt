@@ -18,6 +18,12 @@ target_link_libraries(simple_rest_server
     gflags::gflags
 )
 
+target_precompile_headers(simple_rest_server
+  PRIVATE
+    ${LEARN_CXX_PCH_HEADERS_BASE}
+    <boost/asio.hpp>
+)
+
 learn_cxx_common_compile_configs(simple_rest_server)
 learn_cxx_sanitizers(simple_rest_server)
 
