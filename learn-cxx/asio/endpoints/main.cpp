@@ -3,6 +3,7 @@
 */
 
 #include <cstdint>
+#include <sstream>
 
 #include <asio/ip/address.hpp>
 #include <asio/ip/tcp.hpp>
@@ -34,4 +35,11 @@ TEST_CASE("Make ipv6 tcp endpoint") {
     CHECK_EQ(ep.port(), 9876);
     CHECK(ep.address().is_v6());
     CHECK_EQ(ep.address().to_string(), "::");
+}
+
+TEST_CASE("Default endpoint") {
+    asio::ip::tcp::endpoint ep;
+    std::ostringstream oss;
+    oss << ep;
+    CHECK_EQ(oss.str(), "0.0.0.0:0");
 }
