@@ -1,0 +1,126 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 25,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "linux-release",
+            "displayName": "Linux Release",
+            "description": "Release build on Linux",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/${presetName}",
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "SPDLOG_WRAPPER_USE_SANITIZERS": "ASAN;UBSAN",
+                "SPDLOG_WRAPPER_CLANG_TIDY_ON_BUILD": "OFF"
+            }
+        },
+        {
+            "name": "linux-dev",
+            "inherits": "linux-release",
+            "displayName": "Linux Dev",
+            "description": "Dev build on Linux",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "windows-release",
+            "displayName": "Windows Release",
+            "description": "Release build on Windows",
+            "binaryDir": "${sourceDir}/out/${presetName}",
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+            "cacheVariables": {
+                "SPDLOG_WRAPPER_USE_SANITIZERS": "ASAN",
+                "SPDLOG_WRAPPER_CLANG_TIDY_ON_BUILD": "ON"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "windows-dev",
+            "inherits": "windows-release",
+            "displayName": "Windows Dev",
+            "description": "Dev build on Windows",
+            "cacheVariables": {
+                "SPDLOG_WRAPPER_CLANG_TIDY_ON_BUILD": "OFF"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "linux-release",
+            "configurePreset": "linux-release",
+            "configuration": "Release",
+            "cleanFirst": true,
+            "verbose": true
+        },
+        {
+            "name": "windows-release",
+            "inherits": "linux-release",
+            "configurePreset": "windows-release"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "linux-release",
+            "configurePreset": "linux-release",
+            "configuration": "Release",
+            "output": {
+                "outputOnFailure": true
+            },
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": true
+            }
+        },
+        {
+            "name": "windows-release",
+            "inherits": "linux-release",
+            "configurePreset": "windows-release"
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "linux-release",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-release"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-release"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-release"
+                }
+            ]
+        },
+        {
+            "name": "windows-release",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "windows-release"
+                },
+                {
+                    "type": "build",
+                    "name": "windows-release"
+                },
+                {
+                    "type": "test",
+                    "name": "windows-release"
+                }
+            ]
+        }
+    ]
+}
