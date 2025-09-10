@@ -8,6 +8,7 @@
     "boost-beast",
     "boost-serialization",
     "boost-thread",
+    "boost-url",
     "date",
     "doctest",
     "esl",
