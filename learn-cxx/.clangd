@@ -1,0 +1,18 @@
+
+CompileFlags:
+  CompilationDatabase: out
+
+Index:
+  Background: Build
+  StandardLibrary: true
+
+Diagnostics:
+  ClangTidy:
+    FastCheckFilter: Loose
+  UnusedIncludes: Strict
+
+Completion:
+  AllScopes: Yes
+  ArgumentLists: FullPlaceholders
+  HeaderInsertion: Never
+  CodePatterns: All

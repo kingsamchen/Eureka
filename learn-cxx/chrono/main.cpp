@@ -13,10 +13,8 @@ TEST_CASE("custom time point with 20mins resolution") {
     constexpr intmax_t res = 1200;
     using twenty_mins_t = std::chrono::duration<int, std::ratio<res>>;
     auto tp = std::chrono::floor<twenty_mins_t>(std::chrono::system_clock::now());
-    fmt::println("{:%Y-%m-%d %H:%M}\n", tp);
+    fmt::println("{:%Y-%m-%d %H:%M}", tp);
 }
-
-#if __cpp_lib_chrono >= 201907L
 
 TEST_CASE("display datetime in local timezone") {
     const auto* my_timezone = std::chrono::current_zone();
@@ -26,10 +24,8 @@ TEST_CASE("display datetime in local timezone") {
     using twenty_mins_t = std::chrono::duration<int, std::ratio<res>>;
 
     auto tp = std::chrono::floor<twenty_mins_t>(local_tp);
-    fmt::println("{:%Y-%m-%d %H:%M}\n", tp);
+    fmt::println("{:%Y-%m-%d %H:%M}", tp);
 }
-
-#endif
 
 // NOLINTBEGIN(readability-magic-numbers)
 
@@ -101,6 +97,28 @@ TEST_CASE("Add days to year_month_day") {
     REQUIRE(ymd.ok());
     ymd = date::sys_days(ymd) + date::days(2);
     CHECK_EQ(ymd, date::year(2024) / date::month(3) / date::day(2));
+}
+
+TEST_CASE("Specific datetime between time point") {
+    using namespace std::chrono_literals;
+    constexpr auto tp = std::chrono::sys_seconds{std::chrono::sys_days{2025y / 12 / 9} +
+                                                 15h + 4min + 5s};
+    fmt::println("{:%a, %d %b %Y %H:%M:%S %Z}", tp);
+
+    constexpr auto year = std::chrono::year_month_day(std::chrono::floor<std::chrono::days>(tp))
+                                  .year();
+    static_assert(year == 2025y);
+
+    constexpr auto time_part = std::chrono::hh_mm_ss<std::chrono::seconds>(
+            tp - std::chrono::floor<std::chrono::days>(tp));
+    static_assert(time_part.hours() == 15h);
+    static_assert(time_part.minutes() == 4min);
+    static_assert(time_part.seconds() == 5s);
+}
+
+TEST_CASE("Default inited and min sys_seconds") {
+    static_assert(std::chrono::sys_seconds{}.time_since_epoch().count() == 0);
+    static_assert(std::chrono::sys_seconds::min().time_since_epoch().count() < 0);
 }
 
 // NOLINTEND(readability-magic-numbers)
