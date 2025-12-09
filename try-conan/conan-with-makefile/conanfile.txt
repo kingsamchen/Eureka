@@ -1,0 +1,9 @@
+[requires]
+abseil/20260107.1
+
+[generators]
+PkgConfigDeps
+VirtualRunEnv
+
+[options]
+*:shared=True
