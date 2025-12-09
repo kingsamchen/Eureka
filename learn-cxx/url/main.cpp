@@ -49,7 +49,7 @@ TEST_CASE("Parse query") {
     auto it = ps.find("colors");
     REQUIRE(it != ps.end());
     for (const auto& qp : ps) {
-        fmt::println("has_value={}\t{} -> {}",qp.has_value, qp.key, qp.value);
+        fmt::println("has_value={}\t{} -> {}", qp.has_value, qp.key, qp.value);
     }
 }
 
@@ -62,4 +62,12 @@ TEST_CASE("Parse path") {
     for (auto seg : decoded) {
         fmt::println("{}", seg);
     }
+}
+
+TEST_CASE("Parse domain") {
+    constexpr std::string_view domain = ".ex-maple.com";
+    auto auth = urls::parse_authority(domain);
+    INFO(auth.error());
+    REQUIRE(auth.has_value());
+    fmt::println("{}", auth->host());
 }
