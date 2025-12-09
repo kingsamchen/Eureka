@@ -1,0 +1,1 @@
+conan create . -o abseil/*:shared=True -s build_type=Release --version=20260107.1
