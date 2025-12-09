@@ -116,3 +116,11 @@ add_subdirectory(cpo)
 add_subdirectory(error_code_condition)
 add_subdirectory(ranges)
 add_subdirectory(url)
+
+if(NOT CMAKE_GENERATOR MATCHES "Visual Studio")
+  file(CREATE_LINK
+    "${CMAKE_BINARY_DIR}/compile_commands.json"
+    "${CMAKE_BINARY_DIR}/../compile_commands.json"
+    SYMBOLIC
+  )
+endif()

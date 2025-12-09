@@ -10,6 +10,11 @@ target_include_directories(use_chrono
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../
 )
 
+target_compile_definitions(use_chrono
+  PRIVATE
+    FMT_USE_LOCAL_TIME=1
+)
+
 target_link_libraries(use_chrono
   PRIVATE
     doctest::doctest
