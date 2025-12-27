@@ -7,9 +7,7 @@
 #include <thread>
 #include <unordered_set>
 
-#include <asio/dispatch.hpp>
-#include <asio/post.hpp>
-#include <asio/thread_pool.hpp>
+#include <asio.hpp>
 #include <fmt/core.h>
 #include <fmt/std.h>
 
@@ -40,4 +38,37 @@ TEST_CASE("Get thread-id of all threads in the pool") {
     pool.join();
 
     CHECK_EQ(tids.size(), 4);
+}
+
+TEST_CASE("Switch between main thread and worker threads") {
+    asio::io_context ioc{1};
+    asio::thread_pool pool(4);
+
+    asio::co_spawn(
+            ioc,
+            [&pool]() -> asio::awaitable<void> { // NOLINT
+                auto main_ext = asio::bind_executor(co_await asio::this_coro::executor);
+                auto wrk_ext = asio::bind_executor(pool.get_executor());
+
+                int cnt = 0;
+                fmt::println("in thread/{} -> {}", std::this_thread::get_id(), cnt);
+
+                co_await asio::post(wrk_ext);
+                ++cnt;
+                fmt::println("in thread/{} -> {}", std::this_thread::get_id(), cnt);
+
+                co_await asio::post(main_ext);
+                ++cnt;
+                fmt::println("in thread/{} -> {}", std::this_thread::get_id(), cnt);
+
+                co_await asio::post(wrk_ext);
+                ++cnt;
+                fmt::println("in thread/{} -> {}", std::this_thread::get_id(), cnt);
+
+                co_return;
+            },
+            asio::detached);
+
+    ioc.run();
+    pool.join();
 }

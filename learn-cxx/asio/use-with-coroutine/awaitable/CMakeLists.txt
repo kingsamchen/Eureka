@@ -4,6 +4,7 @@ add_executable(coro_awaitable)
 target_sources(coro_awaitable
   PRIVATE
     main.cpp
+    with_async_initiate.cpp
 )
 
 target_link_libraries(coro_awaitable

@@ -1,4 +1,9 @@
+#include <chrono>
+#include <system_error>
+#include <thread>
+
 #include <asio.hpp>
+#include <fmt/std.h>
 #include <spdlog/spdlog.h>
 
 namespace {
@@ -25,11 +30,14 @@ asio::awaitable<void> launcher() {
 
 } // namespace
 
+asio::awaitable<void> run_custom_async();
+
 int main() {
     asio::io_context io_ctx{1};
 
-    asio::co_spawn(io_ctx, launcher(), asio::detached);
-
+    // asio::co_spawn(io_ctx, launcher(), asio::detached);
+    // asio::co_spawn(io_ctx, timer(), asio::detached);
+    // asio::co_spawn(io_ctx, run_custom_async(), asio::detached);
     io_ctx.run();
     return 0;
 }
