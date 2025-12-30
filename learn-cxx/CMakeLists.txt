@@ -114,6 +114,7 @@ add_subdirectory(concurrency)
 add_subdirectory(coroutine)
 add_subdirectory(cpo)
 add_subdirectory(error_code_condition)
+add_subdirectory(polymorphism_without_virtual)
 add_subdirectory(ranges)
 add_subdirectory(url)
 
