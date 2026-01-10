@@ -20,6 +20,11 @@ target_compile_definitions(coro_awaitable
     SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG
 )
 
+target_compile_features(coro_awaitable
+  PRIVATE
+    cxx_std_23
+)
+
 target_include_directories(coro_awaitable
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../
 )
