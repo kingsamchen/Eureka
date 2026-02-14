@@ -53,3 +53,19 @@ target_link_libraries(beast_http_server_coro_ssl
     OpenSSL::SSL
     OpenSSL::Crypto
 )
+
+add_executable(beast_http_server_advanced http_server_advanced.cpp)
+target_link_libraries(beast_http_server_advanced
+  PRIVATE
+    Boost::asio
+    Boost::beast
+)
+
+add_executable(beast_http_server_advanced_flex_coro http_server_advanced_flex_coro.cpp)
+target_link_libraries(beast_http_server_advanced_flex_coro
+  PRIVATE
+    Boost::asio
+    Boost::beast
+    OpenSSL::SSL
+    OpenSSL::Crypto
+)
