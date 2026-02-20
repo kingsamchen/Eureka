@@ -72,3 +72,45 @@ TEST_CASE("Switch between main thread and worker threads") {
     ioc.run();
     pool.join();
 }
+
+TEST_CASE("Post task after join completed") {
+    asio::thread_pool pool(4);
+    asio::post(pool.get_executor(), [] {
+        fmt::println("task before join on thread={}", std::this_thread::get_id());
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+        fmt::println("complete sleep on thread={}", std::this_thread::get_id());
+    });
+    std::jthread th([&pool] {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        asio::post(pool.get_executor(), [] {
+            fmt::println("new task-1 on thread={}", std::this_thread::get_id());
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+        });
+
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        asio::post(pool.get_executor(), [] {
+            fmt::println("new task-2 on thread={}", std::this_thread::get_id());
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+        });
+
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        asio::post(pool.get_executor(), [] {
+            fmt::println("new task-3 on thread={}", std::this_thread::get_id());
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+        });
+
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        asio::post(pool.get_executor(), [] {
+            fmt::println("new task-4 on thread={}", std::this_thread::get_id());
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+        });
+    });
+
+    fmt::println("start to join thread_pool");
+    pool.join();
+    fmt::println("join completed");
+
+    asio::post(pool.get_executor(), [] {
+        fmt::println("task after join");
+    });
+}
