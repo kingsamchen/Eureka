@@ -16,6 +16,7 @@
 namespace asio = boost::asio;
 
 using namespace asio::experimental::awaitable_operators; // NOLINT(google-build-using-namespace)
+using namespace std::chrono_literals;
 
 namespace {
 
@@ -96,6 +97,169 @@ auto coro_sleep_with_busy_work(int id, std::chrono::seconds dur, std::chrono::se
     co_return id;
 
 } // namespace
+
+TEST_CASE("Trivial Cancellation Signal/Slot with Handler") {
+    asio::cancellation_signal cancel_signal;
+
+    std::thread j([slot = cancel_signal.slot()] mutable {
+        std::atomic<bool> quit{false};
+        slot.assign([&quit](asio::cancellation_type type) {
+            SPDLOG_INFO("Cancel with type={} on thread={}",
+                        static_cast<unsigned int>(type), std::this_thread::get_id());
+            quit.store(true);
+        });
+
+        while (!quit.load()) {
+            SPDLOG_INFO("Worker is doing job on thread={}", std::this_thread::get_id());
+            std::this_thread::sleep_for(1s);
+        }
+    });
+
+    std::this_thread::sleep_for(4s);
+    SPDLOG_INFO("Emitting cancellation on thread={}", std::this_thread::get_id());
+    cancel_signal.emit(asio::cancellation_type_t::all);
+
+    j.join();
+}
+
+TEST_CASE("Trivial Cancellation Signal/Slot with Bound AsyncOP") {
+    asio::io_context ioc{1};
+
+    asio::cancellation_signal cancel_signal;
+
+    struct worker_op {
+        void operator()(std::error_code ec) {
+            if (ec) {
+                SPDLOG_INFO("{}", ec.message());
+                return;
+            }
+            SPDLOG_INFO("Repeat worker is doing job");
+            t.expires_after(1s);
+            t.async_wait(asio::bind_cancellation_slot(cancel_slot, *this));
+        }
+        asio::steady_timer& t;
+        asio::cancellation_slot cancel_slot;
+    };
+
+    asio::steady_timer repeat_worker(ioc);
+    worker_op op{repeat_worker, cancel_signal.slot()}; // NOLINT(modernize-use-designated-initializers)
+    repeat_worker.async_wait(asio::bind_cancellation_slot(cancel_signal.slot(), op));
+
+    asio::steady_timer cancel_timer(ioc);
+    cancel_timer.expires_after(4s);
+    cancel_timer.async_wait([&cancel_signal](std::error_code ec) {
+        (void)ec;
+        cancel_signal.emit(asio::cancellation_type_t::all);
+    });
+
+    ioc.run();
+}
+
+template<typename CompletionToken>
+auto async_low_wait(asio::steady_timer& timer, CompletionToken&& token) {
+    return timer.async_wait(std::forward<CompletionToken>(token));
+}
+
+template<typename CompletionToken>
+auto async_outer_wait(asio::steady_timer& timer, CompletionToken&& token) {
+    auto op = [&timer, started = false](auto& self, boost::system::error_code ec = {}) mutable {
+        if (!started) {
+            started = true;
+
+            auto parent_slot =
+                    asio::get_associated_cancellation_slot(self);
+
+            // Outer layer creates its own state from the caller's slot.
+            auto cs = asio::cancellation_state(parent_slot);
+
+            SPDLOG_INFO("[outer] started");
+
+            // Pass the OUTER child slot down to middle.
+            async_low_wait(
+                    timer,
+                    asio::bind_cancellation_slot(
+                            cs.slot(),
+                            std::move(self)));
+            return;
+        }
+
+        if (ec == asio::error::operation_aborted) {
+            SPDLOG_INFO("[outer] inner layer completed with cancellation");
+        }
+
+        self.complete(ec);
+    };
+
+    return asio::async_compose<CompletionToken, void(boost::system::error_code)>(
+            std::move(op),
+            token,
+            timer);
+}
+
+TEST_CASE("Layered Cancellation with cancellation_state") {
+    asio::io_context io;
+
+    asio::steady_timer work_timer(io);
+    work_timer.expires_after(10s);
+
+    asio::steady_timer cancel_timer(io);
+    cancel_timer.expires_after(2s);
+
+    asio::cancellation_signal sig;
+
+    async_outer_wait(
+            work_timer,
+            asio::bind_cancellation_slot(
+                    sig.slot(),
+                    [](boost::system::error_code ec) {
+                        std::cout << "[user handler] ec = " << ec.message() << "\n";
+                    }));
+
+    cancel_timer.async_wait(
+            [&](boost::system::error_code ec) {
+                if (!ec) {
+                    std::cout << "[caller] emit terminal cancellation\n";
+                    sig.emit(asio::cancellation_type::terminal);
+                }
+            });
+
+    io.run();
+}
+
+TEST_CASE("Coroutine Cancellation") {
+    asio::io_context ioc{1};
+    asio::cancellation_signal cancel_signal;
+
+    auto launch = []() -> asio::awaitable<void> {
+        SPDLOG_INFO("Launch work timer");
+        co_await []() -> asio::awaitable<void> {
+            auto cs = co_await asio::this_coro::cancellation_state;
+
+            SPDLOG_INFO("Work timer starts");
+            asio::steady_timer timer(co_await asio::this_coro::executor);
+            timer.expires_after(10s);
+            auto [ec] = co_await timer.async_wait(
+                    asio::bind_cancellation_slot(cs.slot(), asio::as_tuple));
+            if (ec) {
+                SPDLOG_INFO("Work timer {}", ec.message());
+                co_return;
+            }
+            SPDLOG_INFO("Timer tick");
+        }();
+    };
+    asio::co_spawn(ioc, launch, asio::bind_cancellation_slot(cancel_signal.slot(), asio::detached));
+
+    asio::steady_timer cancel_timer(ioc);
+    cancel_timer.expires_after(2s);
+    cancel_timer.async_wait([&cancel_signal](boost::system::error_code ec) {
+        if (!ec) {
+            SPDLOG_INFO("Emit cancellation");
+            cancel_signal.emit(asio::cancellation_type::all);
+        }
+    });
+
+    ioc.run();
+}
 
 TEST_CASE("Cancellation Signal/Slot and State") {
     asio::io_context ioc{1};
