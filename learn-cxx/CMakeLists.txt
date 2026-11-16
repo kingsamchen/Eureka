@@ -108,6 +108,7 @@ target_compile_definitions(Boost::asio
 )
 
 add_subdirectory(asio)
+add_subdirectory(at_exit)
 add_subdirectory(beast)
 add_subdirectory(chrono)
 add_subdirectory(concurrency)
